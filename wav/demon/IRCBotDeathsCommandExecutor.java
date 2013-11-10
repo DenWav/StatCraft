@@ -6,9 +6,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
+import java.util.Iterator;
+import java.util.Map;
 
 public class IRCBotDeathsCommandExecutor implements CommandExecutor {
 
@@ -34,30 +33,35 @@ public class IRCBotDeathsCommandExecutor implements CommandExecutor {
         } else {
             // if no arguments were given from a player, simply use him as the name
             if (args.length == 0) {
+                int deaths = 0;
                 String name = sender.getName();
-                try {
-                    File deathList = new File("/opt/msm/servers/ocminecraft/deaths/" + name);
-                    Scanner scanner = new Scanner(deathList);
-                    String deaths = scanner.nextLine();
-                    session.getChannel("#ocminecraft").say(name + " has died " + deaths + " times!");
-                    scanner.close();
-                } catch (FileNotFoundException e) {
-                    session.getChannel("#ocminecraft").say(name + " has no deaths on record!");
-                    return true;
+                Iterator it = plugin.getMap().get(name).get("death").entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry pairs = (Map.Entry) it.next();
+                    deaths += (Integer) pairs.getValue();
+                    //it.remove();
+                }
+                if (deaths == 1) {
+                    session.getChannel("#ocminecraft").say(name + " has died " + deaths + " time.");
+                } else {
+                    session.getChannel("#ocminecraft").say(name + " has died " + deaths + " times.");
                 }
                 return true;
             }
         }
         // otherwise, go through the array and print deaths for each player
+        int deaths = 0;
         for (String name : args) {
-            try {
-                File deathList = new File("/opt/msm/servers/ocminecraft/deaths/" + name);
-                Scanner scanner = new Scanner(deathList);
-                String deaths = scanner.nextLine();
-                plugin.getServer().broadcastMessage(name + " has died " + deaths + " times!");
-                scanner.close();
-            } catch (FileNotFoundException e) {
-                plugin.getServer().broadcastMessage(name + " has no deaths on record!");
+            Iterator it = plugin.getMap().get(name).get("deaths").entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pairs = (Map.Entry) it.next();
+                deaths += (Integer) pairs.getValue();
+                //it.remove();
+            }
+            if (deaths == 1) {
+                session.getChannel("#ocminceraft").say(name + " has died " + deaths + " time.");
+            } else {
+                session.getChannel("#ocminecraft").say(name + " has died " + deaths + " times.");
             }
         }
         return true;

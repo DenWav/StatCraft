@@ -10,12 +10,14 @@ import jerklib.listeners.IRCEventListener;
 import org.bukkit.entity.Player;
 
 import java.io.*;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Scanner;
 
 public class IRC implements IRCEventListener {
 
     final private String nick = "OCMCB";
-    final private String pass = "";
+    final private String pass = "6EZvZU^,29PNqRJ";
     private IRCBot plugin;
     private ConnectionManager manager;
     private Session session;
@@ -59,17 +61,23 @@ public class IRC implements IRCEventListener {
 
                 names = name.split(" ");
 
+                int deaths = 0;
                 for (String n : names) {
-                    try {
-                        File deathList = new File("/opt/msm/servers/ocminecraft/deaths/" + n);
-                        Scanner scanner = new Scanner(deathList);
-                        String deaths = scanner.nextLine();
-                        me.getChannel().say(name + " has died " + deaths + " times!");
-                        scanner.close();
-                    } catch (FileNotFoundException e) {
-                        me.getChannel().say(name + " has no deaths on record!");
+                    Iterator it = plugin.getMap().get(name).get("death").entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry pairs = (Map.Entry) it.next();
+                        deaths += (Integer) pairs.getValue();
+                        //it.remove();
+                    }
+                    if (deaths == 1) {
+                        me.getChannel().say(name + " has died " + deaths + " time.");
+                    } else {
+                        me.getChannel().say(name + " has died " + deaths + " times.");
                     }
                 }
+              ////////////////////////
+             //    Kill Player     //
+            ////////////////////////
             } else if (message.startsWith("!kill")) {
                 String name = me.getNick();
                 String args[];
@@ -291,7 +299,7 @@ public class IRC implements IRCEventListener {
 
     public void enableIRC() {
         manager = new ConnectionManager(new Profile(nick));
-        session = manager.requestConnection("irc.freenode.net");
+         session = manager.requestConnection("irc.freenode.net");
         session.addIRCEventListener(this);
     }
 
