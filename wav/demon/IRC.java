@@ -9,15 +9,13 @@ import jerklib.events.modes.ModeAdjustment;
 import jerklib.listeners.IRCEventListener;
 import org.bukkit.entity.Player;
 
-import java.io.*;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Scanner;
 
 public class IRC implements IRCEventListener {
 
     final private String nick = "OCMCB";
-    final private String pass = "6EZvZU^,29PNqRJ";
+    final private String pass = "";
     private IRCBot plugin;
     private ConnectionManager manager;
     private Session session;

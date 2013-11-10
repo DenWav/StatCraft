@@ -4,12 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.Map;
 
 public final class IRCBot extends JavaPlugin {
