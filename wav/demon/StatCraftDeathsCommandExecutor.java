@@ -29,7 +29,7 @@ public class StatCraftDeathsCommandExecutor implements CommandExecutor {
             int deaths;
             if (args.length == 0) {
                 String name = sender.getName();
-                deaths = plugin.getMap().get(name).get("death").get("total");
+                deaths = plugin.getMap().get(name).get(1).get("total");
                 if (deaths == 1) {
                     sender.getServer().broadcastMessage(name + " has died " + deaths + " time.");
                 } else {
@@ -41,7 +41,7 @@ public class StatCraftDeathsCommandExecutor implements CommandExecutor {
         // otherwise, go through the array and print deaths for each player
         int deaths;
         for (String name : args) {
-            deaths = plugin.getMap().get(name).get("death").get("total");
+            deaths = plugin.getMap().get(name).get(1).get("total");
             if (deaths == 1) {
                 sender.getServer().broadcastMessage(name + " has died " + deaths + " time.");
             } else {
