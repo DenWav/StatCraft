@@ -23,7 +23,7 @@ public final class StatCraft extends JavaPlugin {
     @Override
     public void onEnable() {
         Gson gson = new Gson();
-        Type type = new TypeToken<Map<String, Map<String, Map<String, Integer>>>>(){}.getType();
+        Type type = new TypeToken<Map<String, Map<Integer, Map<String, Integer>>>>(){}.getType();
         try {
             statsForPlayers = gson.fromJson(readFile("/opt/msm/servers/ocminecraft/stats.txt", StandardCharsets.UTF_8), type);
         } catch (IOException e) {

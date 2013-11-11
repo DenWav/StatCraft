@@ -23,7 +23,7 @@ public class StatListener implements Listener {
             statsForPlayers.put(name, new HashMap<Integer, Map<String, Integer>>());
         }
         if (statsForPlayers.get(name).get(type) == null) {
-            statsForPlayers.get(name).put(new Integer(type), new HashMap<String, Integer>());
+            statsForPlayers.get(name).put(type, new HashMap<String, Integer>());
         }
         if (statsForPlayers.get(name).get(type).get(message) == null) {
             statsForPlayers.get(name).get(type).put(message, 1);
