@@ -12,9 +12,9 @@ import java.util.Map;
 
 public final class DeathsListener implements Listener{
 
-    private IRCBot plugin;
+    private StatCraft plugin;
 
-    public DeathsListener(IRCBot plugin) {
+    public DeathsListener(StatCraft plugin) {
         this.plugin = plugin;
     }
 
@@ -36,8 +36,10 @@ public final class DeathsListener implements Listener{
         }
         if (statsForPlayers.get(name).get("death").get(deathMessage) == null) {
             statsForPlayers.get(name).get("death").put(deathMessage, 1);
+            statsForPlayers.get(name).get("death").put("total", 1);
         } else {
             statsForPlayers.get(name).get("death").put(deathMessage, statsForPlayers.get(name).get("death").get(deathMessage) + 1);
+            statsForPlayers.get(name).get("death").put("total", statsForPlayers.get(name).get("death").get("total") + 1);
         }
         try {
             Gson gson = new Gson();
@@ -48,52 +50,5 @@ public final class DeathsListener implements Listener{
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-//        try {
-//            File deathLog = new File("/opt/msm/servers/ocminecraft/deaths/" + name);
-//            boolean newFile = false;
-//            if (!deathLog.exists()) {
-//                deathLog.createNewFile();
-//                newFile = true;
-//            }
-//
-//            FileInputStream deathLogStream = new FileInputStream(deathLog);
-//            BufferedReader br = new BufferedReader(new InputStreamReader(deathLogStream));
-//            String strLine;
-//            StringBuilder fileContent = new StringBuilder();
-//            if (newFile) {
-//                while ((strLine = br.readLine()) != null) {
-//                    String tokens[] = strLine.split("~");
-//                    if (tokens.length == 1) {
-//                        fileContent.append(Integer.getInteger(tokens[0]) + 1);
-//                        fileContent.append("\n");
-//                    } else {
-//                        if (tokens[0].equals(deathMessage)) {
-//                            tokens[1] = "" + (Integer.getInteger(tokens[1]) + 1);
-//                            String newLine = tokens[0] + "~" + tokens[1];
-//                            fileContent.append(newLine);
-//                            fileContent.append("\n");
-//                        } else {
-//                            String newLine = tokens[0] + "~" + tokens[1];
-//                            fileContent.append(newLine);
-//                            fileContent.append("\n");
-//                        }
-//                    }
-//                }
-//            } else {
-//                fileContent.append(1);
-//                fileContent.append("\n");
-//                fileContent.append(deathMessage + "~" + 1);
-//                fileContent.append("\n");
-//            }
-//            deathLogStream.close();
-//            FileWriter fstreamWrite = new FileWriter("/opt/msm/servers/ocminecraft/deaths/" + name);
-//            BufferedWriter out = new BufferedWriter(fstreamWrite);
-//            out.write(fileContent.toString());
-//            out.close();
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 }
