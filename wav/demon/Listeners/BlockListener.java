@@ -11,10 +11,10 @@ public class BlockListener extends StatListener {
         super(plugin);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "deprecation"})
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event) {
-        final String message = event.getBlock().toString();
+        final String message = event.getBlock().getType().getId() + ":" + event.getBlock().getData();
         final String name = event.getPlayer().getName();
         addStat(2, name, message);
     }

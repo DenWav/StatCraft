@@ -13,6 +13,11 @@ commands:
     usage: /<command> [player] [type], [type] is optional, either "explode" or "slap"
     permission: StatCraft.killer.*
     permission-message: You don't have <permission>
+  resetstats:
+    description: Resets the server stats
+    usage: /<command> force
+    permission: StatCraft.killer.*
+    permission-message: You don't ahve <permission>
 permissions:
   killer.kill:
     description: Allows you to kill a player

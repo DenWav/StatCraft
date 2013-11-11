@@ -29,7 +29,18 @@ public class StatCraftDeathsCommandExecutor implements CommandExecutor {
             int deaths;
             if (args.length == 0) {
                 String name = sender.getName();
-                deaths = plugin.getMap().get(name).get(1).get("total");
+                // make sure we don't try to set deaths to null
+                if (plugin.statsForPlayers.get(name) != null)
+                    if (plugin.statsForPlayers.get(name).get(1) != null)
+                        if (!plugin.statsForPlayers.get(name).get(1).containsKey("total"))
+                            deaths = plugin.statsForPlayers.get(name).get(1).get("total");
+                        else
+                            deaths = 0;
+                    else
+                        deaths = 0;
+                else
+                    deaths = 0;
+
                 if (deaths == 1) {
                     sender.getServer().broadcastMessage(name + " has died " + deaths + " time.");
                 } else {
@@ -41,12 +52,23 @@ public class StatCraftDeathsCommandExecutor implements CommandExecutor {
         // otherwise, go through the array and print deaths for each player
         int deaths;
         for (String name : args) {
-            deaths = plugin.getMap().get(name).get(1).get("total");
-            if (deaths == 1) {
+            // make sure we don't try to set deaths to null
+            if (plugin.statsForPlayers.get(name) != null)
+                if (plugin.statsForPlayers.get(name).get(1) != null)
+                    if (!plugin.statsForPlayers.get(name).get(1).containsKey("total"))
+                        deaths = plugin.statsForPlayers.get(name).get(1).get("total");
+                    else
+                        deaths = 0;
+                else
+                    deaths = 0;
+            else
+                deaths = 0;
+
+            // print out the results
+            if (deaths == 1)
                 sender.getServer().broadcastMessage(name + " has died " + deaths + " time.");
-            } else {
+            else
                 sender.getServer().broadcastMessage(name + " has died " + deaths + " times.");
-            }
         }
         return true;
     }
