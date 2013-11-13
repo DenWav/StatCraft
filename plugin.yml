@@ -8,6 +8,9 @@ commands:
   deaths:
     description: Lists total deaths logged of a player
     usage: /<command> [player] or just /<command> to list deaths of yourself
+  blocks:
+    description: Lists total blocks broken and placed by a player
+    usage: /<command> [player] or just /<command> to list blocks of yourself
   kill:
     description: Kills a player
     usage: /<command> [player] [type], [type] is optional, either "explode" or "slap"
@@ -17,7 +20,17 @@ commands:
     description: Resets the server stats
     usage: /<command> force
     permission: StatCraft.killer.*
-    permission-message: You don't ahve <permission>
+    permission-message: You don't have <permission>
+  printdata:
+    description: Prints the data held in statsForPlayers
+    usage: /<command>
+    permission: StatCraft.killer.*
+    permission-message: You don't have <permission>
+  updateTotals:
+    description: Updates the totals
+    usage: /<command>
+    permission: StatCraft.killer.*
+    permission-message: You don't have <permission>
 permissions:
   killer.kill:
     description: Allows you to kill a player

@@ -1,0 +1,100 @@
+# must be a boolean value, "true" or "false"
+# enables or disables entire plugin statistics tracking
+# if set to false, this overrides all other individual tracking settings
+trackStats: true
+stats:
+  # record deaths
+  death: true
+  # record when a player breaks a block
+  blockBreak: true
+  # record when a player places a block
+  blockPlace: true
+  # keep track of how long players are online
+  playTime: true
+  # record number of items crafted
+  itemsCrafted: true
+  # record number of times a player is on fire
+  onFire: true
+  # record number of times a player changes worlds
+  worldChange: true
+  # record when a player breaks a tool
+  toolsBroken: true
+  # record number of arrows shot
+  arrowsShot: true
+  # record the last time a player joined
+  lastJoinTime: true
+  # record the last time a player left
+  lastLeaveTime: true
+  # record when a player fills a bucket
+  fillBucket: true
+  # record when a player empties a bucket
+  emptyBucket: true
+  # record when a player drops an item
+  itemDrops: true
+  # record when a player picks up an item
+  itemPickups: true
+  # record number of times a player enters a bed
+  enterBed: true
+  # keep track of how long a player has been in bed
+  timeSlept: true
+  # keep track of the total number of words a player has spoken
+  wordsSpoken: true
+  # keep track of the total damage a player has received
+  damageTaken: true
+  # record when a player catches a fish
+  fishCaught: true
+  # keep track of the number of times a player joins the server
+  joins: true
+  # keep track of the total xp gained by a player
+  xpGained: true
+  # keep track of how far a player has moved
+  move: true
+  # record when a user kills a mob
+  kills: true
+  # keeps track of the number of times a user has jumped
+  jumps: true
+  # keeps track of how far a player has fallen
+  fallen: true
+  # track the number of times a player has died in specific worlds
+  deathLocations: true
+  # track the number of eggs thrown
+  eggThrows: true
+  # track how many chickens have hatched from egg throws
+  chickHatches: true
+  # track how many ender pearls have been thrown
+  enderPearls: true
+  # track how many animals a player has bred
+  animalsBred: true
+  # track how many blocks of TNT a player has set off
+  tntDetonated: true
+  # track how many times a player has enchanted an item
+  enchantsDone: true
+  # track the highest level a player has obtained
+  highestLevel: true
+  # track the amount of damage a player has dealt to specific mobs and other players
+  damageDealt: true
+
+permissions:
+  # boolean value for whether a player can reset his or her own stats
+  # with the /reset command
+  resetOwnStats: true
+  # level of admin that can reset another player's stats
+  resetAnotherPlayerStats: op
+  # level of admin that can reset a full server's stats
+  resetServerStats: op
+  # keep a backup of stats in case something goes wrong?
+
+
+backups:
+  # determines whether the plugin should keep a backup of the stats
+  # the below settings only apply if set to true
+  backupStats: true
+  # if the above is true, where?
+  # make sure the plugin can write to this path!
+  backupStatsLocation: /some/path
+  # how often should the plugin backup stats?
+  # allowed input: some integer followed by an "m" for minutes, "h" for hours, or "d" for days
+  # example: 2h = 2 hours ; 45m = 45 minutes ; etc'
+  backupStatsInterval: 1d
+  # how many backups of the stats should the plugin keep?
+  backupStatsNumber: 1

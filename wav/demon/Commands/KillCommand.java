@@ -1,15 +1,16 @@
-package wav.demon;
+package wav.demon.Commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import wav.demon.StatCraft;
 
-public class StatCraftKillCommandExecutor implements CommandExecutor {
+public class KillCommand implements CommandExecutor {
 
     private StatCraft plugin;
 
-    public StatCraftKillCommandExecutor(StatCraft plugin) {
+    public KillCommand(StatCraft plugin) {
         this.plugin = plugin;
     }
 
