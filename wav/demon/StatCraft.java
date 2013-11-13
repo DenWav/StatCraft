@@ -27,8 +27,8 @@ public final class StatCraft extends JavaPlugin {
 
     public volatile Map<String, Map<Integer, Map<String, Integer>>> statsForPlayers;
     private TimedActivities timedActivities;
+    // TODO: enable config support
     private boolean enabled = true;
-    final private String statFile = "/opt/msm/servers/ocminecraft/stats.txt";
 
     @Override
     public void onEnable() {
