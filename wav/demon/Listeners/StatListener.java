@@ -144,7 +144,7 @@ public class StatListener implements Listener {
             // if this is run from the console, then a player name must be provided
             if (args.length == 0) {
                 // tell them to provide only one name and print usage
-                sender.sendMessage("You must name someone to list deaths for from the console!");
+                sender.sendMessage("You must name someone from the console!");
                 return null;
             }
         }

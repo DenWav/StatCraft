@@ -17,7 +17,7 @@ public class ItemPickUp extends StatListener implements CommandExecutor {
 
     @SuppressWarnings({"unused", "deprecation"})
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onJoin(PlayerPickupItemEvent event) {
+    public void onItemPickup(PlayerPickupItemEvent event) {
         // FIXME: Need to find a different way to keep track of the items
         final String message = event.getItem().getItemStack().getData().toString();
         final String name = event.getPlayer().getName();
