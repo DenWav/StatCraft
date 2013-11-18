@@ -37,8 +37,8 @@ public class TimedActivities extends Timer {
 
     private boolean updateTotals() {
         // set the tempMap
-        Map<Integer, Map<String, Integer>> tempMap =
-                new HashMap<Integer, Map<String, Integer>>();
+        Map<Integer, Map<String, Long>> tempMap =
+                new HashMap<Integer, Map<String, Long>>();
 
         // set the first iterator
         Iterator baseIt = plugin.statsForPlayers.entrySet().iterator();
@@ -48,8 +48,8 @@ public class TimedActivities extends Timer {
             String name = (String) pairs.getKey();
             if (!name.equalsIgnoreCase("total")) {
 
-                Map<Integer, Map<String, Integer>> secondaryMap =
-                        (Map<Integer, Map<String, Integer>>) pairs.getValue();
+                Map<Integer, Map<String, Long>> secondaryMap =
+                        (Map<Integer, Map<String, Long>>) pairs.getValue();
                 // set the second iterator off of the second map
                 Iterator secondaryIt = secondaryMap.entrySet().iterator();
                 while (secondaryIt.hasNext()) {
@@ -57,11 +57,11 @@ public class TimedActivities extends Timer {
                     Map.Entry secondPairs = (Map.Entry) secondaryIt.next();
                     int type = (Integer) secondPairs.getKey();
                     if (!tempMap.containsKey(type))
-                        tempMap.put(type, new HashMap<String, Integer>());
+                        tempMap.put(type, new HashMap<String, Long>());
 
                     // figure out what the total value is, but don't try to grab a null value!
                     // if a value doesn't exist, set it as 0
-                    final int totalValue;
+                    final long totalValue;
                     if (plugin.statsForPlayers.get(name).containsKey(type))
                         if (plugin.statsForPlayers.get(name).get(type).containsKey("total"))
                             totalValue = plugin.statsForPlayers.get(name).get(type).get("total");

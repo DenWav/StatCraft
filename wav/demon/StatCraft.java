@@ -8,6 +8,8 @@ import wav.demon.Commands.*;
 import wav.demon.Commands.KillCommand;
 import wav.demon.Listeners.BlockListener;
 import wav.demon.Listeners.DeathListener;
+import wav.demon.Listeners.ItemPickUp;
+import wav.demon.Listeners.PlayTime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -48,8 +50,6 @@ public final class StatCraft extends JavaPlugin {
                 if (reloadStatFiles()) {
                     // yay, it worked
                     System.out.println("StatCraft: Old stats loaded successfully.");
-                    Gson gson = new Gson();
-                    System.out.println("StatCraft: " + gson.toJson(statsForPlayers));
                 } else {
                     // something isn't quite right, so start from scratch
                     statsForPlayers = new HashMap<String, Map<Integer, Map<String, Integer>>>();
@@ -70,6 +70,8 @@ public final class StatCraft extends JavaPlugin {
         // load up the listeners
         getServer().getPluginManager().registerEvents(new DeathListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayTime(this), this);
+        getServer().getPluginManager().registerEvents(new ItemPickUp(this), this);
 
         // load up commands
         getCommand("list").setExecutor(new ListCommand());
@@ -79,6 +81,9 @@ public final class StatCraft extends JavaPlugin {
         getCommand("resetstats").setExecutor(new ResetCommand(this));
         getCommand("printdata").setExecutor(new PrintData(this));
         getCommand("updatetotals").setExecutor(new UpdateTotals(this));
+        getCommand("playtime").setExecutor(new PlayTime(this));
+        getCommand("lastseen").setExecutor(new PlayTime(this));
+        getCommand("itempickups").setExecutor(new ItemPickUp(this));
 
         timedActivities = new TimedActivities(this);
 
@@ -95,7 +100,7 @@ public final class StatCraft extends JavaPlugin {
             Map.Entry pairs = (Map.Entry) baseIt.next();
             String name = (String) pairs.getKey();
             if (!name.equalsIgnoreCase("total")) {
-                Map<Integer, Map<String, Integer>> secondaryMap = (Map<Integer, Map<String, Integer>>) pairs.getValue();
+                Map<Integer, Map<String, Long>> secondaryMap = (Map<Integer, Map<String, Long>>) pairs.getValue();
                 // set the second iterator off of the second map
                 Iterator secondaryIt = secondaryMap.entrySet().iterator();
                 while (secondaryIt.hasNext()) {

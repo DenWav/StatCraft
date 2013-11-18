@@ -12,6 +12,7 @@ import java.util.Map;
 public class ResetCommand implements CommandExecutor {
 
     // TODO: make this where it can reset only a single person's stats, or a single person's type of stats
+    // TODO: update this to the new multi-files format
 
     private StatCraft plugin;
 

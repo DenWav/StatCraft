@@ -25,7 +25,7 @@ public class BlockListener extends StatListener implements CommandExecutor {
     public void onBlockBreak(BlockBreakEvent event) {
         final String message = event.getBlock().getType().getId() + ":" + event.getBlock().getData();
         final String name = event.getPlayer().getName();
-        addStat(StatTypes.BLOCK_BREAK, name, message);
+        incrementStat(StatTypes.BLOCK_BREAK, name, message);
     }
 
     @SuppressWarnings({"unused", "deprecation"})
@@ -33,7 +33,7 @@ public class BlockListener extends StatListener implements CommandExecutor {
     public void onBlockPlace(BlockPlaceEvent event) {
         final String message = event.getBlock().getType().getId() + ":" + event.getBlock().getData();
         final String name = event.getPlayer().getName();
-        addStat(StatTypes.BLOCK_PLACE, name, message);
+        incrementStat(StatTypes.BLOCK_PLACE, name, message);
     }
 
     @Override
@@ -54,8 +54,8 @@ public class BlockListener extends StatListener implements CommandExecutor {
         else
             names = args;
 
-        int blocksBroken;
-        int blocksPlaced;
+        long blocksBroken;
+        long blocksPlaced;
 
         for (String name : names) {
             blocksBroken = getStat(name, StatTypes.BLOCK_BREAK);

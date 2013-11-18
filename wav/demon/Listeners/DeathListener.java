@@ -12,11 +12,8 @@ import wav.demon.StatTypes;
 
 public final class DeathListener extends StatListener implements CommandExecutor {
 
-    StatCraft plugin;
-
     public DeathListener(StatCraft plugin) {
         super(plugin);
-        this.plugin = plugin;
     }
 
     @SuppressWarnings("unused")
@@ -24,7 +21,7 @@ public final class DeathListener extends StatListener implements CommandExecutor
     public void onDeath(PlayerDeathEvent event) {
         final String message = event.getDeathMessage();
         final String name = event.getEntity().getName();
-        addStat(StatTypes.DEATH, name, message);
+        incrementStat(StatTypes.DEATH, name, message);
     }
 
     @Override
@@ -47,7 +44,7 @@ public final class DeathListener extends StatListener implements CommandExecutor
             names = args;
 
         // otherwise, go through the array and print deaths for each player
-        int deaths;
+        long deaths;
         for (String name : names) {
             deaths = getStat(name, StatTypes.DEATH);
 
