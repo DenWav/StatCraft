@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import wav.demon.Commands.*;
-import wav.demon.Commands.KillCommand;
 import wav.demon.Listeners.*;
 
 import java.io.File;
