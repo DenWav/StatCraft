@@ -9,9 +9,9 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
-public class ItemPickUp extends StatListener implements CommandExecutor {
+public class ItemDrop extends StatListener implements CommandExecutor {
 
-    public ItemPickUp(StatCraft plugin) {
+    public ItemDrop(StatCraft plugin) {
         super(plugin);
     }
 
@@ -24,7 +24,7 @@ public class ItemPickUp extends StatListener implements CommandExecutor {
         final int x = event.getItem().getItemStack().getAmount();
 
         for (int y = 0; y < x; y++)
-            incrementStat(StatTypes.ITEM_PICKUPS.id, name, message);
+            incrementStat(StatTypes.ITEM_DROPS.id, name, message);
     }
 
     @Override
@@ -34,9 +34,9 @@ public class ItemPickUp extends StatListener implements CommandExecutor {
             return false;
 
         for (String name : names) {
-            long itemsPickedUp = getStat(name, StatTypes.ITEM_PICKUPS.id);
+            int itemsPickedUp = getStat(name, StatTypes.ITEM_DROPS.id);
 
-            sender.getServer().broadcastMessage(name + " - Items Picked Up: " + itemsPickedUp);
+            sender.getServer().broadcastMessage(name + " - Items Dropped: " + itemsPickedUp);
         }
         return true;
     }

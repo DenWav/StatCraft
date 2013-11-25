@@ -6,10 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import wav.demon.Commands.*;
 import wav.demon.Commands.KillCommand;
-import wav.demon.Listeners.BlockListener;
-import wav.demon.Listeners.DeathListener;
-import wav.demon.Listeners.ItemPickUp;
-import wav.demon.Listeners.PlayTime;
+import wav.demon.Listeners.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,6 +26,23 @@ public final class StatCraft extends JavaPlugin {
 
     public volatile Map<String, Map<Integer, Map<String, Integer>>> statsForPlayers;
     private TimedActivities timedActivities;
+
+    // listeners
+    public PlayTime playtime = new PlayTime(this);
+    private DeathListener deathListener = new DeathListener(this);
+    private BlockListener blockListener = new BlockListener(this);
+    private ItemPickUp itemPickUp = new ItemPickUp(this);
+    private ItemDrop itemDrop = new ItemDrop(this);
+    private ItemsCrafted itemsCrafted = new ItemsCrafted(this);
+    private OnFire onFire = new OnFire(this);
+
+    // commands
+    private ListCommand listCommand = new ListCommand();
+    private KillCommand killCommand = new KillCommand(this);
+    private ResetCommand resetCommand = new ResetCommand(this);
+    private PrintData printData = new PrintData(this);
+    private UpdateTotals updateTotals = new UpdateTotals(this);
+
     // TODO: enable config support
     private boolean enabled = true;
 
@@ -55,7 +69,8 @@ public final class StatCraft extends JavaPlugin {
                     statsForPlayers = new HashMap<String, Map<Integer, Map<String, Integer>>>();
                 }
             } catch (IOException e) {
-                System.out.println("StatCraft: Something when wrong when trying to read the old stats. Could not initialize.");
+                System.out.println("StatCraft: Something when wrong when trying to read the old stats." +
+                        "Could not initialize.");
                 e.printStackTrace();
             }
         } else if (!stat.exists()) {
@@ -64,26 +79,33 @@ public final class StatCraft extends JavaPlugin {
             statsForPlayers = new HashMap<String, Map<Integer, Map<String, Integer>>>();
         } else if (!stat.isDirectory()) {
             // the file exists, but it's not a directory, so warn the user
-            System.out.println("StatCraft: stats file in the plugin data folder is not a directory, cannot initialize!");
+            System.out.println("StatCraft: stats file in the plugin data folder is not a directory," +
+                    "cannot initialize!");
             enabled = false;
         }
         // load up the listeners
-        getServer().getPluginManager().registerEvents(new DeathListener(this), this);
-        getServer().getPluginManager().registerEvents(new BlockListener(this), this);
-        getServer().getPluginManager().registerEvents(new PlayTime(this), this);
-        getServer().getPluginManager().registerEvents(new ItemPickUp(this), this);
+        getServer().getPluginManager().registerEvents(deathListener, this);
+        getServer().getPluginManager().registerEvents(blockListener, this);
+        getServer().getPluginManager().registerEvents(playtime, this);
+        getServer().getPluginManager().registerEvents(itemPickUp, this);
+        getServer().getPluginManager().registerEvents(itemDrop, this);
+        getServer().getPluginManager().registerEvents(itemsCrafted, this);
+        getServer().getPluginManager().registerEvents(onFire, this);
 
         // load up commands
-        getCommand("list").setExecutor(new ListCommand());
-        getCommand("deaths").setExecutor(new DeathListener(this));
-        getCommand("blocks").setExecutor(new BlockListener(this));
-        getCommand("kill").setExecutor(new KillCommand(this));
-        getCommand("resetstats").setExecutor(new ResetCommand(this));
-        getCommand("printdata").setExecutor(new PrintData(this));
-        getCommand("updatetotals").setExecutor(new UpdateTotals(this));
-        getCommand("playtime").setExecutor(new PlayTime(this));
-        getCommand("lastseen").setExecutor(new PlayTime(this));
-        getCommand("itempickups").setExecutor(new ItemPickUp(this));
+        getCommand("list").setExecutor(listCommand);
+        getCommand("deaths").setExecutor(deathListener);
+        getCommand("blocks").setExecutor(blockListener);
+        getCommand("kill").setExecutor(killCommand);
+        getCommand("resetstats").setExecutor(resetCommand);
+        getCommand("printdata").setExecutor(printData);
+        getCommand("updatetotals").setExecutor(updateTotals);
+        getCommand("playtime").setExecutor(playtime);
+        getCommand("lastseen").setExecutor(playtime);
+        getCommand("itempickups").setExecutor(itemPickUp);
+        getCommand("itemdrops").setExecutor(itemDrop);
+        getCommand("itemscrafted").setExecutor(itemsCrafted);
+        getCommand("onfire").setExecutor(onFire);
 
         timedActivities = new TimedActivities(this);
 
@@ -93,6 +115,17 @@ public final class StatCraft extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        saveStatFiles();
+
+        System.out.println("Successfully stopped totals updating: " + timedActivities.stopTotalsUpdating());
+    }
+
+    static String readFile(String path, Charset encoding) throws IOException {
+        byte[] encoded = Files.readAllBytes(Paths.get(path));
+        return encoding.decode(ByteBuffer.wrap(encoded)).toString();
+    }
+
+    final public boolean saveStatFiles() {
         // set the first iterator
         Iterator baseIt = statsForPlayers.entrySet().iterator();
         while (baseIt.hasNext()) {
@@ -132,16 +165,10 @@ public final class StatCraft extends JavaPlugin {
 
             }
         }
-
-        System.out.println("Successfully stopped totals updating: " + timedActivities.stopTotalsUpdating());
+        return true;
     }
 
-    static String readFile(String path, Charset encoding) throws IOException {
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return encoding.decode(ByteBuffer.wrap(encoded)).toString();
-    }
-
-    private boolean reloadStatFiles() throws IOException {
+    final public boolean reloadStatFiles() throws IOException {
         statsForPlayers = new HashMap<String, Map<Integer, Map<String, Integer>>>();
         if (getDataFolder().exists()) {
             // check the root stats directory

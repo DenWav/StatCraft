@@ -21,45 +21,34 @@ public class BlockListener extends StatListener implements CommandExecutor {
     }
 
     @SuppressWarnings({"unused", "deprecation"})
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         final String message = event.getBlock().getType().getId() + ":" + event.getBlock().getData();
         final String name = event.getPlayer().getName();
-        incrementStat(StatTypes.BLOCK_BREAK, name, message);
+        incrementStat(StatTypes.BLOCK_BREAK.id, name, message);
     }
 
     @SuppressWarnings({"unused", "deprecation"})
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         final String message = event.getBlock().getType().getId() + ":" + event.getBlock().getData();
         final String name = event.getPlayer().getName();
-        incrementStat(StatTypes.BLOCK_PLACE, name, message);
+        incrementStat(StatTypes.BLOCK_PLACE.id, name, message);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // list the number of recorded deaths for a player
-        // first, figure out which player to list deaths for
-        if (!(sender instanceof Player)) {
-            // if this is run from the console, then a player name must be provided
-            if (args.length == 0) {
-                // tell them to provide only one name and print usage
-                sender.sendMessage("You must name someone to list blocks for from the console!");
-                return false;
-            }
-        }
-        String[] names;
-        if (args.length == 0)
-            names = new String[] {sender.getName()};
-        else
-            names = args;
+        String[] names = getPlayers(sender, args);
+        if (names == null)
+            return false;
 
         long blocksBroken;
         long blocksPlaced;
 
         for (String name : names) {
-            blocksBroken = getStat(name, StatTypes.BLOCK_BREAK);
-            blocksPlaced = getStat(name, StatTypes.BLOCK_PLACE);
+            blocksBroken = getStat(name, StatTypes.BLOCK_BREAK.id);
+            blocksPlaced = getStat(name, StatTypes.BLOCK_PLACE.id);
 
             // print out the results
             sender.getServer().broadcastMessage(name + " - Blocks Broken: " + blocksBroken +

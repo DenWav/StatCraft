@@ -47,7 +47,7 @@ public class KillCommand implements CommandExecutor {
                         // make sure the player has permission to issue this command
                         if (player.hasPermission("killer.explode")) {
                             // he does, so make a fake explosion and kill the target
-                            target.getWorld().createExplosion(target.getLocation(), 0);
+                            target.getWorld().createExplosion(target.getLocation(), 42);
                             target.setHealth(0);
                             return true;
                         } else {
@@ -84,7 +84,7 @@ public class KillCommand implements CommandExecutor {
                     // check the type of kill the sender wants
                     if (type.equalsIgnoreCase("explode")) {
                         // we know the sender has permission, so make a fake explosion and return true
-                        target.getWorld().createExplosion(target.getLocation(), 0);
+                        target.getWorld().createExplosion(target.getLocation(), 42);
                         target.setHealth(0);
                         return true;
                     } else if (type.equalsIgnoreCase("slap")) {

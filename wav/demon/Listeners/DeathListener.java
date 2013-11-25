@@ -17,36 +17,24 @@ public final class DeathListener extends StatListener implements CommandExecutor
     }
 
     @SuppressWarnings("unused")
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(PlayerDeathEvent event) {
         final String message = event.getDeathMessage();
         final String name = event.getEntity().getName();
-        incrementStat(StatTypes.DEATH, name, message);
+        incrementStat(StatTypes.DEATH.id, name, message);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // list the number of recorded deaths for a player
-        // first, figure out which player to list deaths for
-        if (!(sender instanceof Player)) {
-            // if this is run from the console, then a player name must be provided
-            if (args.length == 0) {
-                // tell them to provide only one name and print usage
-                sender.sendMessage("You must name someone to list deaths for from the console!");
-                return false;
-            }
-        }
-
-        String[] names;
-        if (args.length == 0)
-            names = new String[] {sender.getName()};
-        else
-            names = args;
+        String[] names = getPlayers(sender, args);
+        if (names == null)
+            return false;
 
         // otherwise, go through the array and print deaths for each player
         long deaths;
         for (String name : names) {
-            deaths = getStat(name, StatTypes.DEATH);
+            deaths = getStat(name, StatTypes.DEATH.id);
 
             // print out the results
             sender.getServer().broadcastMessage(name + " - Deaths: " + deaths);
