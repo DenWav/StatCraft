@@ -38,7 +38,6 @@ public final class StatCraft extends JavaPlugin {
 
     // commands
     private ListCommand listCommand = new ListCommand();
-    private KillCommand killCommand = new KillCommand(this);
     private ResetCommand resetCommand = new ResetCommand(this);
     private PrintData printData = new PrintData(this);
     private UpdateTotals updateTotals = new UpdateTotals(this);
@@ -96,7 +95,6 @@ public final class StatCraft extends JavaPlugin {
         getCommand("list").setExecutor(listCommand);
         getCommand("deaths").setExecutor(deathListener);
         getCommand("blocks").setExecutor(blockListener);
-        getCommand("kill").setExecutor(killCommand);
         getCommand("resetstats").setExecutor(resetCommand);
         getCommand("printdata").setExecutor(printData);
         getCommand("updatetotals").setExecutor(updateTotals);
