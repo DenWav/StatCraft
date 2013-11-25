@@ -1,5 +1,6 @@
 package wav.demon.Listeners;
 
+import com.sun.deploy.config.PluginServerConfig;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -21,9 +22,17 @@ public class OnFire extends StatListener implements CommandExecutor {
     public void oniFire(EntityCombustEvent event) {
         if (event.getEntity() instanceof Player) {
             final String name = ((Player) event.getEntity()).getName();
-            final int timeAdd = event.getDuration();
-            final int currentTime = getStat(name, StatTypes.ON_FIRE.id);
-            addStat(StatTypes.ON_FIRE.id, name, currentTime + timeAdd);
+
+            incrementStat(StatTypes.ON_FIRE.id, name, "onFire");
+
+            // Currently getting the time an entity was actually on fire is impossible, as far as I can tell
+            // the getDuration() method only specifies how long an entity *should* be on fire, not how long it actually
+            // is on fire, from the entity jumping into water, dying, or whatever. Until I can figure out a way to do
+            // this, I will just keep track of how many times the entity has been on fire.
+
+            // final int timeAdd = event.getDuration();
+            // final int currentTime = getStat(name, StatTypes.ON_FIRE.id);
+            // addStat(StatTypes.ON_FIRE.id, name, currentTime + timeAdd);
         }
     }
 
@@ -33,16 +42,17 @@ public class OnFire extends StatListener implements CommandExecutor {
         if (names == null)
             return false;
 
-        int fireTime;
+        //int fireTime;
         for (String name : names) {
-            fireTime = getStat(name, StatTypes.ON_FIRE.id);
+            sender.getServer().broadcastMessage(name + " - On Fire: " + getStat(name, StatTypes.ON_FIRE.id));
+            // fireTime = getStat(name, StatTypes.ON_FIRE.id);
 
-            String message = transformTime(fireTime);
+            // String message = transformTime(fireTime);
 
-            if (message.equalsIgnoreCase(""))
-                sender.getServer().broadcastMessage(name + " doesn't have any logged time on fire yet.");
-            else
-                sender.getServer().broadcastMessage(name + " - Time on fire: " + message);
+            // if (message.equalsIgnoreCase(""))
+            //     sender.getServer().broadcastMessage(name + " doesn't have any logged time on fire yet.");
+            // else
+             //    sender.getServer().broadcastMessage(name + " - Time on fire: " + message);
         }
 
         return true;

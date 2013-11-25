@@ -25,7 +25,7 @@ public class StatListener implements Listener {
      * each listener. This class holds a few methods used multiple times by each of the subclasses
      * to clean-up the overall code.
      *
-     * */
+     **/
 
     // Synchronized method to increment stats on players, this method will be run in a separate
     // asynchronous thread.

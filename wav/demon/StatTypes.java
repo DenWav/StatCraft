@@ -3,6 +3,7 @@ package wav.demon;
 public enum StatTypes {
     //    <- to the right of an item indicates it is being implemented
     ///   <- to the right of an item indicates it has been implemented
+    //x   <- to the right of an item indicates it has been implemented, but not in the desired fashion
     ///x  <- to the right of an item indicates a successful implementation has not yet been found
 
     DEATH            (1 , "death"),           ///
@@ -10,14 +11,14 @@ public enum StatTypes {
     BLOCK_PLACE      (3 , "block_place"),     ///
     PLAY_TIME        (4 , "play_time"),       ///
     ITEMS_CRAFTED    (5 , "items_crafted"),   ///
-    ON_FIRE          (6 , "on_fire"),         //  can only get max duration, not actual duration, of combustion
+    ON_FIRE          (6 , "on_fire"),         //x  can only count the number of times a player has been on fire, not how long
     WORLD_CHANGE     (7 , "world_change"),
-    TOOLS_BROKEN     (8 , "tools_broken"),
-    ARROWS_SHOT      (9 , "arrows_shot"),
+    TOOLS_BROKEN     (8 , "tools_broken"),    ///
+    ARROWS_SHOT      (9 , "arrows_shot"),     ///
     LAST_JOIN_TIME   (10, "last_join_time"),  ///
     LAST_LEAVE_TIME  (11, "last_leave_time"), ///
-    FILL_BUCKET      (12, "bucket_fill"),
-    EMPTY_BUCKET     (13, "bucket_empty"),
+    FILL_BUCKET      (12, "bucket_fill"),     ///
+    EMPTY_BUCKET     (13, "bucket_empty"),    ///
     ITEM_DROPS       (14, "item_drops"),      ///
     ITEM_PICKUPS     (15, "item_pickups"),    ///
     ENTER_BED        (16, "enter_bed"),

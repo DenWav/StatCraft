@@ -42,6 +42,18 @@ commands:
   onfire:
     description: Lists how long a player has been on fire
     usage: /<command> [player] or just /<command> to list time on fire for yourself
+  toolsbroken:
+    description: Lists how many tools a player has broken
+    usage: /<command> [player] or just /<command> to list tools broken for yourself
+  arrowsshot:
+    description: Lists how many arrows a player has shot
+    usage: /<command> [player] or just /<command> to list the arrows shot for yourself
+  bucketsfilled:
+    description: Lists how many buckets a player has filled
+    usage: /<command> [player] or just /<command> to list buckets filled for yourself
+  bucketsemptied:
+    description: Lists how many buckets a player has emptied
+    usage: /<command> [player] or just /<command> to list buckets emptied for yourself
 permissions:
   killer.kill:
     description: Basically OP

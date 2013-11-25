@@ -34,6 +34,10 @@ public final class StatCraft extends JavaPlugin {
     private ItemDrop itemDrop = new ItemDrop(this);
     private ItemsCrafted itemsCrafted = new ItemsCrafted(this);
     private OnFire onFire = new OnFire(this);
+    private ToolsBroken toolsBroken = new ToolsBroken(this);
+    private ArrowsShot arrowsShot = new ArrowsShot(this);
+    private BucketFill bucketFill = new BucketFill(this);
+    private BucketEmpty bucketEmpty = new BucketEmpty(this);
 
     // commands
     private ListCommand listCommand = new ListCommand();
@@ -89,6 +93,10 @@ public final class StatCraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(itemDrop, this);
         getServer().getPluginManager().registerEvents(itemsCrafted, this);
         getServer().getPluginManager().registerEvents(onFire, this);
+        getServer().getPluginManager().registerEvents(toolsBroken, this);
+        getServer().getPluginManager().registerEvents(arrowsShot, this);
+        getServer().getPluginManager().registerEvents(bucketFill, this);
+        getServer().getPluginManager().registerEvents(bucketEmpty, this);
 
         // load up commands
         getCommand("list").setExecutor(listCommand);
@@ -103,6 +111,10 @@ public final class StatCraft extends JavaPlugin {
         getCommand("itemdrops").setExecutor(itemDrop);
         getCommand("itemscrafted").setExecutor(itemsCrafted);
         getCommand("onfire").setExecutor(onFire);
+        getCommand("toolsbroken").setExecutor(toolsBroken);
+        getCommand("arrowsshot").setExecutor(arrowsShot);
+        getCommand("bucketsfilled").setExecutor(bucketFill);
+        getCommand("bucketsemptied").setExecutor(bucketEmpty);
 
         timedActivities = new TimedActivities(this);
 
