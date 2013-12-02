@@ -26,7 +26,7 @@ public class ResetCommand implements CommandExecutor {
         if (strings.length > 3)
             return false;
         else if (strings[0].equalsIgnoreCase("force-all") && strings.length == 1) {
-            if (commandSender.hasPermission("killer.*")) {
+            if (commandSender.hasPermission("admin.*")) {
                 File statsDir = new File(plugin.getDataFolder(), "stats");
                 try {
                     deleteRecursive(statsDir);
@@ -44,7 +44,7 @@ public class ResetCommand implements CommandExecutor {
             commandSender.sendMessage("You don't have permission to do that.");
             return false;
         } else if (strings[0].equalsIgnoreCase("force-all") && strings.length == 2) {
-            if (commandSender.hasPermission("killer.*")) {
+            if (commandSender.hasPermission("admin.*")) {
                 plugin.saveStatFiles();
                 String type = strings[1];
 
@@ -87,7 +87,7 @@ public class ResetCommand implements CommandExecutor {
                 plugin.playtime.addStatToPlayer(StatTypes.LAST_JOIN_TIME.id, name,
                         (int) (System.currentTimeMillis() / 1000));
                 return true;
-            } else if (commandSender.hasPermission("killer.*")) {
+            } else if (commandSender.hasPermission("admin.*")) {
                 File statsDir = new File(plugin.getDataFolder(), "stats/" + name);
                 try {
                     deleteRecursive(statsDir);
@@ -137,7 +137,7 @@ public class ResetCommand implements CommandExecutor {
                             (int) (System.currentTimeMillis() / 1000));
 
                 return true;
-            } else if (commandSender.hasPermission("killer.*")) {
+            } else if (commandSender.hasPermission("admin.*")) {
                 File statsDir = new File(plugin.getDataFolder(), "stats/" + name);
                 try {
                     deleteType(statsDir, typeString);

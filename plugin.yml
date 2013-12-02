@@ -17,12 +17,12 @@ commands:
   printdata:
     description: Prints the data held in statsForPlayers
     usage: /<command>
-    permission: StatCraft.killer.*
+    permission: StatCraft.admin.*
     permission-message: You don't have <permission>
   updateTotals:
     description: Updates the totals
     usage: /<command>
-    permission: StatCraft.killer.*
+    permission: StatCraft.admin.*
     permission-message: You don't have <permission>
   playtime:
     description: Lists a player's playtime
@@ -54,7 +54,23 @@ commands:
   bucketsemptied:
     description: Lists how many buckets a player has emptied
     usage: /<command> [player] or just /<command> to list buckets emptied for yourself
+  lastslept:
+    description: Lists the last time a player slept
+    usage: /<command> [player] or just /<command> to list the last time you slept
+  timeslept:
+    description: Lists how long a player has slept
+    usage: /<command> [player] or just /<command> to list the time slept for yourself
+  worldchanges:
+    description: Lists the number of times a player has changed worlds
+    usage: /<command> [player] or just /<command> to list the number of world changes for yourself
+  wordsspoken:
+    description: Lists the number of words a player has spoken
+    usage: /<command> [player] or just /<command> to list the number of words you have spoken
+  messagesspoken:
+    description: Lists the number of a messages a player has spoken
+    usage: /<command> [player] or just /<command> to list the number of messages you have spoken
+
 permissions:
-  killer.kill:
+  admin.op:
     description: Basically OP
     default: op

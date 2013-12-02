@@ -21,6 +21,7 @@ public final class DeathListener extends StatListener implements CommandExecutor
         final String message = event.getDeathMessage();
         final String name = event.getEntity().getName();
         incrementStat(StatTypes.DEATH.id, name, message);
+        incrementStat(StatTypes.DEATH_LOCATIONS.id, name, event.getEntity().getWorld().getName());
     }
 
     @Override

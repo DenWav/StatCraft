@@ -25,7 +25,7 @@ public class PlayTime extends StatListener implements CommandExecutor {
         this.plugin = plugin;
     }
 
-    @SuppressWarnings({"unused", "deprecation"})
+    @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent event) {
         final String name = event.getPlayer().getName();
@@ -33,7 +33,7 @@ public class PlayTime extends StatListener implements CommandExecutor {
         addStat(StatTypes.LAST_JOIN_TIME.id, name, currentTime);
     }
 
-    @SuppressWarnings({"unused", "deprecation"})
+    @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onLeave(PlayerQuitEvent event) {
         final String name = event.getPlayer().getName();
@@ -43,7 +43,7 @@ public class PlayTime extends StatListener implements CommandExecutor {
         addStat(StatTypes.PLAY_TIME.id, name, calculateTimeInterval(name, currentTime));
     }
 
-    /** Only call this method on PlayerQuitEvent! */
+    // NOTE: Only call this method on PlayerQuitEvent!
     private int calculateTimeInterval(String name, final int leaveTime) {
         final int currentPlayTime = getStat(name, StatTypes.PLAY_TIME.id);
         final int joinTime = getStat(name, StatTypes.LAST_JOIN_TIME.id);
@@ -94,7 +94,7 @@ public class PlayTime extends StatListener implements CommandExecutor {
                     } else {
                         Date date = new Date(dateTime);
                         SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd, hh:mm aa yyyy");
-                        format.setTimeZone(TimeZone.getTimeZone("CST"));
+                        format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
                         sender.getServer().broadcastMessage(name + " - Last Seen: " + format.format(date));
                     }
                 }

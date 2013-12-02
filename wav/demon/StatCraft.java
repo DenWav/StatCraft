@@ -17,14 +17,14 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public final class StatCraft extends JavaPlugin {
 
     public volatile Map<String, Map<Integer, Map<String, Integer>>> statsForPlayers;
     private TimedActivities timedActivities;
+
+    private String timeZone;
 
     // listeners
     public PlayTime playtime = new PlayTime(this);
@@ -38,6 +38,9 @@ public final class StatCraft extends JavaPlugin {
     private ArrowsShot arrowsShot = new ArrowsShot(this);
     private BucketFill bucketFill = new BucketFill(this);
     private BucketEmpty bucketEmpty = new BucketEmpty(this);
+    private SleepyTime sleepyTime = new SleepyTime(this);
+    private WorldChange worldChange = new WorldChange(this);
+    private WordsSpoken wordsSpoken = new WordsSpoken(this);
 
     // commands
     private ListCommand listCommand = new ListCommand();
@@ -85,6 +88,12 @@ public final class StatCraft extends JavaPlugin {
                     "cannot initialize!");
             enabled = false;
         }
+
+        // set the time zone of the server
+        // TODO: get options from the config
+        TimeZone tz = Calendar.getInstance().getTimeZone();
+        timeZone = tz.getDisplayName(false, TimeZone.SHORT);
+
         // load up the listeners
         getServer().getPluginManager().registerEvents(deathListener, this);
         getServer().getPluginManager().registerEvents(blockListener, this);
@@ -97,6 +106,9 @@ public final class StatCraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(arrowsShot, this);
         getServer().getPluginManager().registerEvents(bucketFill, this);
         getServer().getPluginManager().registerEvents(bucketEmpty, this);
+        getServer().getPluginManager().registerEvents(sleepyTime, this);
+        getServer().getPluginManager().registerEvents(worldChange, this);
+        getServer().getPluginManager().registerEvents(wordsSpoken, this);
 
         // load up commands
         getCommand("list").setExecutor(listCommand);
@@ -115,10 +127,15 @@ public final class StatCraft extends JavaPlugin {
         getCommand("arrowsshot").setExecutor(arrowsShot);
         getCommand("bucketsfilled").setExecutor(bucketFill);
         getCommand("bucketsemptied").setExecutor(bucketEmpty);
+        getCommand("timeslept").setExecutor(sleepyTime);
+        getCommand("lastslept").setExecutor(sleepyTime);
+        getCommand("worldchanges").setExecutor(worldChange);
+        getCommand("wordsspoken").setExecutor(wordsSpoken);
+        getCommand("messagesspoken").setExecutor(wordsSpoken);
 
         timedActivities = new TimedActivities(this);
 
-        System.out.println("Successfully started totals updating: " + timedActivities.startTotalsUpdateing(10));
+        System.out.println("StatCraft: Successfully started totals updating: " + timedActivities.startTotalsUpdateing(10));
 
     }
 
@@ -126,7 +143,7 @@ public final class StatCraft extends JavaPlugin {
     public void onDisable() {
         saveStatFiles();
 
-        System.out.println("Successfully stopped totals updating: " + timedActivities.stopTotalsUpdating());
+        System.out.println("StatCraft: Successfully stopped totals updating: " + timedActivities.stopTotalsUpdating());
     }
 
     static String readFile(String path, Charset encoding) throws IOException {
@@ -215,5 +232,9 @@ public final class StatCraft extends JavaPlugin {
 
     public TimedActivities getTimedActivities() {
         return timedActivities;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
     }
 }
