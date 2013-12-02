@@ -1,7 +1,7 @@
 package wav.demon;
 
 public enum StatTypes {
-    //    <- to the right of an item indicates it is being implemented
+    //    <- to the right of an item indicates it is in the process of being implemented
     ///   <- to the right of an item indicates it has been implemented
     //x   <- to the right of an item indicates it has been implemented, but not in the desired fashion
     ///x  <- to the right of an item indicates a successful implementation has not yet been found
@@ -12,7 +12,7 @@ public enum StatTypes {
     PLAY_TIME        (4 , "play_time"),       ///
     ITEMS_CRAFTED    (5 , "items_crafted"),   ///
     ON_FIRE          (6 , "on_fire"),         //x  can only count the number of times a player has been on fire, not how long
-    WORLD_CHANGE     (7 , "world_change"),    //
+    WORLD_CHANGE     (7 , "world_change"),    ///
     TOOLS_BROKEN     (8 , "tools_broken"),    ///
     ARROWS_SHOT      (9 , "arrows_shot"),     ///
     LAST_JOIN_TIME   (10, "last_join_time"),  ///
@@ -24,8 +24,8 @@ public enum StatTypes {
     ENTER_BED        (16, "enter_bed"),       //
     LEAVE_BED        (17, "leave_bed"),       //
     TIME_SLEPT       (18, "time_slept"),      //
-    WORDS_SPOKEN     (19, "words_spoken"),    //
-    MESSAGES_SPOKEN  (20, "messages_spoken"), //
+    WORDS_SPOKEN     (19, "words_spoken"),    ///
+    MESSAGES_SPOKEN  (20, "messages_spoken"), ///
     DAMAGE_TAKEN     (21, "damage_taken"),
     FISH_CAUGHT      (22, "fish_caught"),
     JOINS            (23, "joins"),
@@ -34,7 +34,7 @@ public enum StatTypes {
     KILLS            (26, "kills"),
     JUMPS            (27, "jumps"),
     FALLEN           (28, "fallen"),
-    DEATH_LOCATIONS  (29, "death_locations"), //
+    DEATH_LOCATIONS  (29, "death_locations"), ///
     EGGS_THROWN      (30, "eggs_thrown"),
     CHICKEN_HATCHES  (31, "chicken_hatches"),
     ENDER_PEARLS     (32, "ender_pearls"),

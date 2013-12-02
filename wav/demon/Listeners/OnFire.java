@@ -23,7 +23,7 @@ public class OnFire extends StatListener implements CommandExecutor {
         if (event.getEntity() instanceof Player) {
             final String name = ((Player) event.getEntity()).getName();
 
-            incrementStat(StatTypes.ON_FIRE.id, name, "onFire");
+            addStat(StatTypes.ON_FIRE.id, name, getStat(name, StatTypes.ON_FIRE.id) + 1);
 
             // Currently getting the time an entity was actually on fire is impossible, as far as I can tell
             // the getDuration() method only specifies how long an entity *should* be on fire, not how long it actually

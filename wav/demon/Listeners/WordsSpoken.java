@@ -21,7 +21,7 @@ public class WordsSpoken extends StatListener implements CommandExecutor {
         final String name = event.getPlayer().getName();
         final String[] message = event.getMessage().trim().split("\\s+");
 
-        incrementStat(StatTypes.MESSAGES_SPOKEN.id, name, "total");
+        addStat(StatTypes.MESSAGES_SPOKEN.id, name, getStat(name, StatTypes.MESSAGES_SPOKEN.id) + 1);
 
         for (String word : message) {
             incrementStat(StatTypes.WORDS_SPOKEN.id, name, word);

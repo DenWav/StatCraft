@@ -22,7 +22,7 @@ public class ArrowsShot extends StatListener implements CommandExecutor {
         if (event.getEntity() instanceof Player) {
             final String name = ((Player) event.getEntity()).getName();
 
-            incrementStat(StatTypes.ARROWS_SHOT.id, name, "arrowsShot");
+            addStat(StatTypes.ARROWS_SHOT.id, name, getStat(name, StatTypes.ARROWS_SHOT.id) + 1);
         }
 
     }
