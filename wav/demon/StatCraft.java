@@ -1,5 +1,6 @@
 package wav.demon;
 
+import com.avaje.ebean.validation.NotNull;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -135,7 +136,7 @@ public final class StatCraft extends JavaPlugin {
 
         timedActivities = new TimedActivities(this);
 
-        System.out.println("StatCraft: Successfully started totals updating: " + timedActivities.startTotalsUpdateing(10));
+        System.out.println("StatCraft: Successfully started totals updating: " + timedActivities.startTotalsUpdating(10));
 
     }
 
@@ -167,7 +168,7 @@ public final class StatCraft extends JavaPlugin {
                     Map.Entry secondPairs = (Map.Entry) secondaryIt.next();
                     int type = (Integer) secondPairs.getKey();
                     try {
-                        // set gson and grab the json text out of the second map's "vale" area
+                        // set gson and grab the json text out of the second map's "value" area
                         Gson gson = new Gson();
                         String json = gson.toJson(secondPairs.getValue());
 
@@ -230,10 +231,12 @@ public final class StatCraft extends JavaPlugin {
         }
     }
 
+    @NotNull
     public TimedActivities getTimedActivities() {
         return timedActivities;
     }
 
+    @NotNull
     public String getTimeZone() {
         return timeZone;
     }

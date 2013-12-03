@@ -11,12 +11,13 @@ public class TimedActivities extends Timer {
 
     private StatCraft plugin;
     private TimerTask totalsUpdate;
+    private TimerTask toDisk;
 
     public TimedActivities(StatCraft plugin) {
         this.plugin = plugin;
     }
 
-    public boolean startTotalsUpdateing(int minutes) {
+    public boolean startTotalsUpdating(int minutes) {
         totalsUpdate = new TimerTask() {
             @Override
             public void run() {
@@ -33,6 +34,25 @@ public class TimedActivities extends Timer {
 
     public boolean forceTotalUpdate() {
         return updateTotals();
+    }
+
+    public boolean startStatsToDisk(int minutes) {
+        toDisk = new TimerTask() {
+            @Override
+            public void run() {
+                plugin.saveStatFiles();
+            }
+        };
+        schedule(toDisk, 01, 1000*60*minutes);
+        return true;
+    }
+
+    public boolean stopStatsToDisk() {
+        return toDisk.cancel();
+    }
+
+    public boolean forceStatsToDisk() {
+        return plugin.saveStatFiles();
     }
 
     private boolean updateTotals() {
