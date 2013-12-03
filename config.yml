@@ -111,7 +111,7 @@ stats:
 
 permissions:
   # boolean value for whether a player can reset his or her own stats
-  # with the /reset command
+  # with the /resetstats command
   resetOwnStats: true
 
   # the two options for admin levels are currently "op" and "user"
