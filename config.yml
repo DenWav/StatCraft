@@ -183,6 +183,7 @@ backups:
 
   # how many backups of the stats should the plugin keep?
   # once the number of backups on disk exceeds this number, the plugin will delete the oldest backup
+  # if you do not want the plugin to delete backups, use 0
   backupStatsNumber: 3
 
   # format for naming backups
