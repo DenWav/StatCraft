@@ -49,17 +49,207 @@ public final class StatCraft extends JavaPlugin {
     private PrintData printData = new PrintData(this);
     private UpdateTotals updateTotals = new UpdateTotals(this);
 
-    // TODO: enable config support
-    private boolean enabled = true;
+    /**
+     *  Config settings
+     */
+    private boolean enabled;
+
+    // individual stats
+    private boolean death;                 /* 1*/
+    private boolean death_locations;       /* 2*/
+    private boolean block_break;           /* 3*/
+    private boolean block_place;           /* 4*/
+    private boolean play_time;             /* 5*/
+    private boolean last_join_time;        /* 6*/
+    private boolean last_leave_time;       /* 7*/
+    private boolean joins;                 /* 8*/
+    private boolean items_crafted;         /* 9*/
+    private boolean on_fire;               /*10*/
+    private boolean world_change;          /*12*/
+    private boolean tools_broken;          /*13*/
+    private boolean arrows_shot;           /*14*/
+    private boolean bucket_fill;           /*15*/
+    private boolean bucket_empty;          /*16*/
+    private boolean item_drops;            /*17*/
+    private boolean item_pickups;          /*18*/
+    private boolean bed;                   /*19*/
+    private boolean messages_spken;        /*20*/
+    private boolean words_spoken;          /*21*/
+    private boolean specific_words_spoken; /*22*/
+    private boolean damage_taken;          /*23*/
+    private boolean fish_caught;           /*24*/
+    private boolean xp_gained;             /*25*/
+    private boolean move;                  /*26*/
+    private boolean move_type;             /*27*/
+    private boolean kills;                 /*28*/
+    private boolean jumps;                 /*29*/
+    private boolean fallen;                /*30*/
+    private boolean egg_throws;            /*31*/
+    private boolean chicken_hatches;       /*32*/
+    private boolean ender_pearls;          /*33*/
+    private boolean animals_bred;          /*34*/
+    private boolean tnt_detonated;         /*35*/
+    private boolean enchants_done;         /*36*/
+    private boolean highest_level;         /*37*/
+    private boolean damage_dealt;          /*38*/
+    private boolean items_brewed;          /*39*/
+    private boolean items_cooked;          /*40*/
+    private boolean fires_started;         /*41*/
+
+    // permissions
+    private boolean resetOwnStats;
+    private String resetAnotherPlayerStats;
+    private String resetServerStats;
+
+    // disk writings
+    private String totalsUpdating;
+    private String statsToDisk;
+
+    // backups
+    private boolean backupStats;
+    private String backupStatsLocation;
+    private String backupStatsInterval;
+    private int backupStatsNumber;
+    private String backupName;
+    /**
+     * End config settings
+     */
 
     @Override
     public void onEnable() {
         // See if the config file exists
         File config = new File(getDataFolder(), "config.yml");
-        if (!config.exists())
+        if (!config.exists()) {
             saveDefaultConfig();
-        else
-            getConfig();
+        }
+
+        // load up the config settings
+        // should we track anything?
+        enabled = getConfig().getBoolean("trackStats");
+        if (enabled) {
+            // death stuff
+            death = getConfig().getBoolean("stats.death");
+            death_locations = getConfig().getBoolean("stats.death_locations");
+            if (death_locations && !death) {
+                System.out.println("StatCraft: death_locations could be enabled because death is false.");
+                death_locations = false;
+            }
+
+            // blocks
+            block_break = getConfig().getBoolean("stats.block_break");
+            block_place = getConfig().getBoolean("stats.block_place");
+
+            // playtime
+            last_join_time = getConfig().getBoolean("stats.last_join_time");
+            last_leave_time = getConfig().getBoolean("stats.last_leave_time");
+            play_time = getConfig().getBoolean("stats.play_time");
+            if (play_time && (!last_join_time || !last_leave_time)) {
+                System.out.println("StatCraft: play_time could be enabled because either last_join_time or " +
+                        "last_leave_time are false.");
+                play_time = false;
+            }
+            joins = getConfig().getBoolean("stats.joins");
+            if (joins && !last_join_time) {
+                System.out.println("StatCraft: joins could be enabled because last_join_time is false.");
+            }
+
+            // item creation
+            items_crafted = getConfig().getBoolean("stats.items_crafted");
+            items_brewed = getConfig().getBoolean("stats.items_brewed");
+            items_cooked = getConfig().getBoolean("stats.items_cooked");
+
+            // misc
+            on_fire = getConfig().getBoolean("stats.on_fire");
+            world_change = getConfig().getBoolean("stats.world_change");
+            tools_broken = getConfig().getBoolean("stats.tools_broken");
+            arrows_shot = getConfig().getBoolean("stats.arrows_shot");
+
+            // buckets!
+            bucket_fill = getConfig().getBoolean("stats.bucket_fill");
+            bucket_empty = getConfig().getBoolean("stats.bucket_empty");
+
+            // item dropping and picking up
+            item_drops = getConfig().getBoolean("stats.item_drops");
+            item_pickups = getConfig().getBoolean("stats.item_pickups");
+
+            // sleep!
+            bed = getConfig().getBoolean("stats.bed");
+
+            // talking
+            messages_spken = getConfig().getBoolean("stats.messages_spoken");
+            words_spoken = getConfig().getBoolean("stats.words_spoken");
+            specific_words_spoken = getConfig().getBoolean("stats.specific_words_spoken");
+            if (words_spoken && !messages_spken) {
+                System.out.println("StatCraft: words_spoken could not be enabled because messages_spoken is false.");
+                words_spoken = false;
+            }
+            if (specific_words_spoken && !words_spoken) {
+                System.out.println("StatCraft: specific_words_spoken could not be enabled because words_spoken is false.");
+            }
+
+            // misc
+            damage_taken = getConfig().getBoolean("stats.damage_taken");
+            fish_caught = getConfig().getBoolean("stats.fish_caught");
+            xp_gained = getConfig().getBoolean("stats.xp_gained");
+
+            // movement
+            move = getConfig().getBoolean("stats.move");
+            move_type = getConfig().getBoolean("stats.move_type");
+            if (move_type && !move) {
+                System.out.println("StatCraft: move_type could not be enabled because move is false.");
+                move_type = false;
+            }
+
+            // misc
+            kills = getConfig().getBoolean("stats.kills");
+            jumps = getConfig().getBoolean("stats.jumps");
+            fallen = getConfig().getBoolean("stats.fallen");
+
+            // chickens
+            egg_throws = getConfig().getBoolean("stats.egg_throws");
+            chicken_hatches = getConfig().getBoolean("stats.chicken_hatches");
+            if (chicken_hatches && !egg_throws) {
+                System.out.println("StatCraft: chicken_hatches could not be enabled because egg_throws is false.");
+            }
+
+            // misc
+            ender_pearls = getConfig().getBoolean("stats.ender_pearls");
+            animals_bred = getConfig().getBoolean("stats.animals_bred");
+            tnt_detonated = getConfig().getBoolean("stats.tnt_detonated");
+            enchants_done = getConfig().getBoolean("stats.enchants_done");
+            highest_level = getConfig().getBoolean("stats.highest_level");
+            damage_dealt = getConfig().getBoolean("stats.damage_dealt");
+            fires_started = getConfig().getBoolean("stats.fires_started");
+
+            // Permissions
+            resetOwnStats = getConfig().getBoolean("permissions.resetOwnStats");
+            resetAnotherPlayerStats = getConfig().getString("permissions.resetAnotherPlayerStats");
+            resetServerStats = getConfig().getString("permissions.resetServerStats");
+            if (!(resetAnotherPlayerStats.equalsIgnoreCase("op") || resetAnotherPlayerStats.equalsIgnoreCase("user"))) {
+                System.out.println("StatCraft: resetAnotherPlayerStats must either be \"op\" or \"user\", defaulting" +
+                        "to \"op\"");
+                resetAnotherPlayerStats = "op";
+            }
+            if (!(resetServerStats.equalsIgnoreCase("op") || resetServerStats.equalsIgnoreCase("user"))) {
+                System.out.println("StatCraft: resetServerStats must either be \"op\" or \"user\", defaulting" +
+                        "to \"op\"");
+                resetServerStats = "op";
+            }
+
+            // TODO: implement Disk writing and Backups
+            // Disk writing
+            // TODO: implement input checks for these values
+            totalsUpdating = getConfig().getString("writingToDisk.totalsUpdating");
+            statsToDisk = getConfig().getString("writingToDisk.statsToDisk");
+
+            // Backups
+            // TODO: implement input checks for these values
+            backupStats = getConfig().getBoolean("backups.backupStats");
+            backupStatsLocation = getConfig().getString("backups.backupStatsLocation");
+            backupStatsInterval = getConfig().getString("backups.backupStatsInterval");
+            backupStatsNumber = getConfig().getInt("backups.backupStatsNumber");
+            backupName = getConfig().getString("backups.backupName");
+        }
 
         // make sure the stats directory exists
         File stat = new File(getDataFolder(), "stats");
@@ -72,7 +262,7 @@ public final class StatCraft extends JavaPlugin {
                     System.out.println("StatCraft: Old stats loaded successfully.");
                 } else {
                     // something isn't quite right, so start from scratch
-                    statsForPlayers = new HashMap<String, Map<Integer, Map<String, Integer>>>();
+                    statsForPlayers = new HashMap<>();
                 }
             } catch (IOException e) {
                 System.out.println("StatCraft: Something when wrong when trying to read the old stats." +
@@ -82,7 +272,7 @@ public final class StatCraft extends JavaPlugin {
         } else if (!stat.exists()) {
             // the directory doesn't exist, so make a new one and create a new stat HashMap
             stat.mkdir();
-            statsForPlayers = new HashMap<String, Map<Integer, Map<String, Integer>>>();
+            statsForPlayers = new HashMap<>();
         } else if (!stat.isDirectory()) {
             // the file exists, but it's not a directory, so warn the user
             System.out.println("StatCraft: stats file in the plugin data folder is not a directory," +
@@ -152,6 +342,8 @@ public final class StatCraft extends JavaPlugin {
         return encoding.decode(ByteBuffer.wrap(encoded)).toString();
     }
 
+    // TODO: implement staggered stat saving based on number of online players
+    @SuppressWarnings("unchecked")
     final public boolean saveStatFiles() {
         // set the first iterator
         Iterator baseIt = statsForPlayers.entrySet().iterator();
@@ -167,26 +359,31 @@ public final class StatCraft extends JavaPlugin {
                     // grab the second pair and the type
                     Map.Entry secondPairs = (Map.Entry) secondaryIt.next();
                     int type = (Integer) secondPairs.getKey();
-                    try {
-                        // set gson and grab the json text out of the second map's "value" area
-                        Gson gson = new Gson();
-                        String json = gson.toJson(secondPairs.getValue());
+                    // set gson and grab the json text out of the second map's "value" area
+                    Gson gson = new Gson();
+                    String json = gson.toJson(secondPairs.getValue());
 
+                    PrintWriter out = null;
+                    try {
                         // make sure the directory exists for us to write to
                         File outputDir = new File(this.getDataFolder(), "stats/" + name);
-                        PrintWriter out;
                         if (outputDir.exists()) {
                             out = new PrintWriter(outputDir.toString() + "/" + type);
                         } else {
-                            outputDir.mkdirs();
-                            out = new PrintWriter(outputDir.toString() + "/" + type);
+                            if (outputDir.mkdirs())
+                                out = new PrintWriter(outputDir.toString() + "/" + type);
+                            else {
+                                System.out.println("StatCraft: Fatal error trying to create stat directory");
+                                break;
+                            }
                         }
-
                         // write the json to the file
                         out.println(json);
-                        out.close();
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
+                    } finally {
+                        if (out != null)
+                            out.close();
                     }
                 }
 
@@ -195,8 +392,9 @@ public final class StatCraft extends JavaPlugin {
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     final public boolean reloadStatFiles() throws IOException {
-        statsForPlayers = new HashMap<String, Map<Integer, Map<String, Integer>>>();
+        statsForPlayers = new HashMap<>();
         if (getDataFolder().exists()) {
             // check the root stats directory
             File statsDir = new File(getDataFolder(), "stats");
@@ -239,5 +437,20 @@ public final class StatCraft extends JavaPlugin {
     @NotNull
     public String getTimeZone() {
         return timeZone;
+    }
+
+    @NotNull
+    public boolean getResetOwnStats() {
+        return resetOwnStats;
+    }
+
+    @NotNull
+    public String getResetAnotherPlayerStats() {
+        return resetAnotherPlayerStats;
+    }
+
+    @NotNull
+    public String getResetServerStats() {
+        return resetServerStats;
     }
 }

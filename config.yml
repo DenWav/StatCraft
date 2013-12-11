@@ -6,71 +6,90 @@ stats:
   # record deaths
   death: true
 
+  # track the number of times a player has died in specific worlds
+  # deaths must be true to enable this
+  death_locations: true
+
   # record when a player breaks a block
-  blockBreak: true
+  block_break: true
 
   # record when a player places a block
-  blockPlace: true
+  block_place: true
 
   # keep track of how long players are online
-  playTime: true
-
-  # record number of items crafted
-  itemsCrafted: true
-
-  # record number of times a player is on fire
-  onFire: true
-
-  # record number of times a player changes worlds
-  worldChange: true
-
-  # record when a player breaks a tool
-  toolsBroken: true
-
-  # record number of arrows shot
-  arrowsShot: true
+  # this last_join_time and last_leave_time must be true to enable this
+  play_time: true
 
   # record the last time a player joined
-  lastJoinTime: true
+  last_join_time: true
 
   # record the last time a player left
-  lastLeaveTime: true
-
-  # record when a player fills a bucket
-  fillBucket: true
-
-  # record when a player empties a bucket
-  emptyBucket: true
-
-  # record when a player drops an item
-  itemDrops: true
-
-  # record when a player picks up an item
-  itemPickups: true
-
-  # record number of times a player enters a bed
-  enterBed: true
-
-  # keep track of how long a player has been in bed
-  timeSlept: true
-
-  # keep track of the total number of words a player has spoken
-  wordsSpoken: true
-
-  # keep track of the total damage a player has received
-  damageTaken: true
-
-  # record when a player catches a fish
-  fishCaught: true
+  last_leave_time: true
 
   # keep track of the number of times a player joins the server
+  # last_join_time must be true to enable this
   joins: true
 
+  # record number of items crafted
+  items_crafted: true
+
+  # track how many items a player has brewed
+  items_brewed: true
+
+  # track how many items a player has cooked
+  items_cooked: true
+
+  # record number of times a player is on fire
+  on_fire: true
+
+  # record number of times a player changes worlds
+  world_change: true
+
+  # record when a player breaks a tool
+  tools_broken: true
+
+  # record number of arrows shot
+  arrows_shot: true
+
+  # record when a player fills a bucket
+  bucket_fill: true
+
+  # record when a player empties a bucket
+  bucket_empty: true
+
+  # record when a player drops an item
+  item_drops: true
+
+  # record when a player picks up an item
+  item_pickups: true
+
+  # record number of times a player enters and leaves a bed
+  # this includes time slept
+  bed: true
+
+  # keep track of the number of messages a player has spoken
+  messages_spoken: true
+  # keep track of the total number of words a player has spoken
+  # messages_spoken must be true to enable this
+  words_spoken: true
+  # keep track of specific words spoken by players
+  # words_spken must be true to enable this
+  specific_words_spken: true
+
+  # keep track of the total damage a player has received
+  damage_taken: true
+
+  # record when a player catches a fish
+  fish_caught: true
+
   # keep track of the total xp gained by a player
-  xpGained: true
+  xp_gained: true
 
   # keep track of how far a player has moved
   move: true
+  # keep track of how far a player has moved in different modes of transportation
+  # move must be true to enable this
+  move_type: true
 
   # record when a user kills a mob
   kills: true
@@ -81,33 +100,32 @@ stats:
   # keeps track of how far a player has fallen
   fallen: true
 
-  # track the number of times a player has died in specific worlds
-  deathLocations: true
-
   # track the number of eggs thrown
-  eggThrows: true
-
+  egg_throws: true
   # track how many chickens have hatched from egg throws
-  chickHatches: true
+  # egg_throws must be true to enable this
+  chicken_hatches: true
 
   # track how many ender pearls have been thrown
-  enderPearls: true
+  ender_pearls: true
 
   # track how many animals a player has bred
-  animalsBred: true
+  animals_bred: true
 
   # track how many blocks of TNT a player has set off
-  tntDetonated: true
+  tnt_detonated: true
 
   # track how many times a player has enchanted an item
-  enchantsDone: true
+  enchants_done: true
 
   # track the highest level a player has obtained
-  highestLevel: true
+  highest_level: true
 
   # track the amount of damage a player has dealt to specific mobs and other players
-  damageDealt: true
+  damage_dealt: true
 
+  # trakc how many times a player has started a fire
+  fires_started: true
 
 permissions:
   # boolean value for whether a player can reset his or her own stats
