@@ -57,44 +57,43 @@ public final class StatCraft extends JavaPlugin {
     // individual stats
     private boolean death;                 /* 1*/
     private boolean death_locations;       /* 2*/
-    private boolean block_break;           /* 3*/
-    private boolean block_place;           /* 4*/
-    private boolean play_time;             /* 5*/
-    private boolean last_join_time;        /* 6*/
-    private boolean last_leave_time;       /* 7*/
-    private boolean joins;                 /* 8*/
-    private boolean items_crafted;         /* 9*/
-    private boolean on_fire;               /*10*/
-    private boolean world_change;          /*12*/
-    private boolean tools_broken;          /*13*/
-    private boolean arrows_shot;           /*14*/
-    private boolean bucket_fill;           /*15*/
-    private boolean bucket_empty;          /*16*/
-    private boolean item_drops;            /*17*/
-    private boolean item_pickups;          /*18*/
-    private boolean bed;                   /*19*/
-    private boolean messages_spken;        /*20*/
-    private boolean words_spoken;          /*21*/
-    private boolean specific_words_spoken; /*22*/
-    private boolean damage_taken;          /*23*/
-    private boolean fish_caught;           /*24*/
-    private boolean xp_gained;             /*25*/
-    private boolean move;                  /*26*/
-    private boolean move_type;             /*27*/
-    private boolean kills;                 /*28*/
-    private boolean jumps;                 /*29*/
-    private boolean fallen;                /*30*/
-    private boolean egg_throws;            /*31*/
-    private boolean chicken_hatches;       /*32*/
-    private boolean ender_pearls;          /*33*/
-    private boolean animals_bred;          /*34*/
-    private boolean tnt_detonated;         /*35*/
-    private boolean enchants_done;         /*36*/
-    private boolean highest_level;         /*37*/
-    private boolean damage_dealt;          /*38*/
-    private boolean items_brewed;          /*39*/
-    private boolean items_cooked;          /*40*/
-    private boolean fires_started;         /*41*/
+    private boolean block;                 /* 3*/
+    private boolean play_time;             /* 4*/
+    private boolean last_join_time;        /* 5*/
+    private boolean last_leave_time;       /* 6*/
+    private boolean joins;                 /* 7*/
+    private boolean items_crafted;         /* 8*/
+    private boolean on_fire;               /* 9*/
+    private boolean world_change;          /*10*/
+    private boolean tools_broken;          /*11*/
+    private boolean arrows_shot;           /*12*/
+    private boolean bucket_fill;           /*13*/
+    private boolean bucket_empty;          /*14*/
+    private boolean item_drops;            /*15*/
+    private boolean item_pickups;          /*16*/
+    private boolean bed;                   /*17*/
+    private boolean messages_spoken;       /*18*/
+    private boolean words_spoken;          /*19*/
+    private boolean specific_words_spoken; /*20*/
+    private boolean damage_taken;          /*21*/
+    private boolean fish_caught;           /*22*/
+    private boolean xp_gained;             /*23*/
+    private boolean move;                  /*24*/
+    private boolean move_type;             /*25*/
+    private boolean kills;                 /*26*/
+    private boolean jumps;                 /*27*/
+    private boolean fallen;                /*28*/
+    private boolean egg_throws;            /*29*/
+    private boolean chicken_hatches;       /*30*/
+    private boolean ender_pearls;          /*31*/
+    private boolean animals_bred;          /*32*/
+    private boolean tnt_detonated;         /*33*/
+    private boolean enchants_done;         /*34*/
+    private boolean highest_level;         /*35*/
+    private boolean damage_dealt;          /*36*/
+    private boolean items_brewed;          /*37*/
+    private boolean items_cooked;          /*39*/
+    private boolean fires_started;         /*40*/
 
     // permissions
     private boolean resetOwnStats;
@@ -116,7 +115,7 @@ public final class StatCraft extends JavaPlugin {
      */
 
     @Override
-    public void onEnable() {
+    final public void onEnable() {
         // See if the config file exists
         File config = new File(getDataFolder(), "config.yml");
         if (!config.exists()) {
@@ -136,8 +135,7 @@ public final class StatCraft extends JavaPlugin {
             }
 
             // blocks
-            block_break = getConfig().getBoolean("stats.block_break");
-            block_place = getConfig().getBoolean("stats.block_place");
+            block = getConfig().getBoolean("stats.block");
 
             // playtime
             last_join_time = getConfig().getBoolean("stats.last_join_time");
@@ -176,10 +174,10 @@ public final class StatCraft extends JavaPlugin {
             bed = getConfig().getBoolean("stats.bed");
 
             // talking
-            messages_spken = getConfig().getBoolean("stats.messages_spoken");
+            messages_spoken = getConfig().getBoolean("stats.messages_spoken");
             words_spoken = getConfig().getBoolean("stats.words_spoken");
             specific_words_spoken = getConfig().getBoolean("stats.specific_words_spoken");
-            if (words_spoken && !messages_spken) {
+            if (words_spoken && !messages_spoken) {
                 System.out.println("StatCraft: words_spoken could not be enabled because messages_spoken is false.");
                 words_spoken = false;
             }
@@ -281,48 +279,127 @@ public final class StatCraft extends JavaPlugin {
         }
 
         // set the time zone of the server
-        // TODO: get options from the config
-        TimeZone tz = Calendar.getInstance().getTimeZone();
-        timeZone = tz.getDisplayName(false, TimeZone.SHORT);
+        if (getConfig().getString("timezone").equalsIgnoreCase("auto")) {
+            TimeZone tz = Calendar.getInstance().getTimeZone();
+            timeZone = tz.getDisplayName(false, TimeZone.SHORT);
+        } else {
+            timeZone = getConfig().getString("timezone");
+        }
 
-        // load up the listeners
-        getServer().getPluginManager().registerEvents(deathListener, this);
-        getServer().getPluginManager().registerEvents(blockListener, this);
-        getServer().getPluginManager().registerEvents(playtime, this);
-        getServer().getPluginManager().registerEvents(itemPickUp, this);
-        getServer().getPluginManager().registerEvents(itemDrop, this);
-        getServer().getPluginManager().registerEvents(itemsCrafted, this);
-        getServer().getPluginManager().registerEvents(onFire, this);
-        getServer().getPluginManager().registerEvents(toolsBroken, this);
-        getServer().getPluginManager().registerEvents(arrowsShot, this);
-        getServer().getPluginManager().registerEvents(bucketFill, this);
-        getServer().getPluginManager().registerEvents(bucketEmpty, this);
-        getServer().getPluginManager().registerEvents(sleepyTime, this);
-        getServer().getPluginManager().registerEvents(worldChange, this);
-        getServer().getPluginManager().registerEvents(wordsSpoken, this);
 
-        // load up commands
-        getCommand("list").setExecutor(listCommand);
-        getCommand("deaths").setExecutor(deathListener);
-        getCommand("blocks").setExecutor(blockListener);
-        getCommand("resetstats").setExecutor(resetCommand);
-        getCommand("printdata").setExecutor(printData);
-        getCommand("updatetotals").setExecutor(updateTotals);
-        getCommand("playtime").setExecutor(playtime);
-        getCommand("lastseen").setExecutor(playtime);
-        getCommand("itempickups").setExecutor(itemPickUp);
-        getCommand("itemdrops").setExecutor(itemDrop);
-        getCommand("itemscrafted").setExecutor(itemsCrafted);
-        getCommand("onfire").setExecutor(onFire);
-        getCommand("toolsbroken").setExecutor(toolsBroken);
-        getCommand("arrowsshot").setExecutor(arrowsShot);
-        getCommand("bucketsfilled").setExecutor(bucketFill);
-        getCommand("bucketsemptied").setExecutor(bucketEmpty);
-        getCommand("timeslept").setExecutor(sleepyTime);
-        getCommand("lastslept").setExecutor(sleepyTime);
-        getCommand("worldchanges").setExecutor(worldChange);
-        getCommand("wordsspoken").setExecutor(wordsSpoken);
-        getCommand("messagesspoken").setExecutor(wordsSpoken);
+        if (enabled) {
+            String statsEnabled = "";
+            // load up the listeners
+            if (death) {
+                getServer().getPluginManager().registerEvents(deathListener, this);
+                statsEnabled = statsEnabled + " death";
+                if (death_locations) {
+                    statsEnabled = statsEnabled + " death_locations";
+                    getCommand("deathlocations").setExecutor(deathListener);
+                }
+
+                getCommand("deaths").setExecutor(deathListener);
+            }
+
+            if (block) {
+                getServer().getPluginManager().registerEvents(blockListener, this);
+                statsEnabled = statsEnabled + " block";
+
+                getCommand("blocks").setExecutor(blockListener);
+            }
+
+            if (play_time || last_join_time || last_leave_time) {
+                getServer().getPluginManager().registerEvents(playtime, this);
+                if (last_join_time) {
+                    statsEnabled = statsEnabled + " last_join_time";
+                    getCommand("lastseen").setExecutor(playtime);
+                }
+                if (last_leave_time)
+                    statsEnabled = statsEnabled + " last_leave_time";
+                if (play_time) {
+                    statsEnabled = statsEnabled + " playtime";
+                    getCommand("playtime").setExecutor(playtime);
+                }
+            }
+
+            if (item_pickups) {
+                getServer().getPluginManager().registerEvents(itemPickUp, this);
+                statsEnabled = statsEnabled + " item_pickups";
+                getCommand("itempickups").setExecutor(itemPickUp);
+            }
+
+            if (item_drops) {
+                getServer().getPluginManager().registerEvents(itemDrop, this);
+                statsEnabled = statsEnabled + " item_drops";
+                getCommand("itemdrops").setExecutor(itemDrop);
+            }
+
+            if (items_crafted) {
+                getServer().getPluginManager().registerEvents(itemsCrafted, this);
+                statsEnabled = statsEnabled + " items_crafted";
+                getCommand("itemscrafted").setExecutor(itemsCrafted);
+            }
+
+            if (on_fire) {
+                getServer().getPluginManager().registerEvents(onFire, this);
+                statsEnabled = statsEnabled + " on_fire";
+                getCommand("onfire").setExecutor(onFire);
+            }
+
+            if (tools_broken) {
+                getServer().getPluginManager().registerEvents(toolsBroken, this);
+                statsEnabled = statsEnabled + " tools_broken";
+                getCommand("toolsbroken").setExecutor(toolsBroken);
+            }
+
+            if (arrows_shot) {
+                getServer().getPluginManager().registerEvents(arrowsShot, this);
+                statsEnabled = statsEnabled + " arrows_shot";
+                getCommand("arrowsshot").setExecutor(arrowsShot);
+            }
+
+            if (bucket_fill) {
+                getServer().getPluginManager().registerEvents(bucketFill, this);
+                statsEnabled = statsEnabled + " bucket_fill";
+                getCommand("bucketsfilled").setExecutor(bucketFill);
+            }
+
+            if (bucket_empty) {
+                getServer().getPluginManager().registerEvents(bucketEmpty, this);
+                statsEnabled = statsEnabled + " bucket_empty";
+                getCommand("bucketsemptied").setExecutor(bucketEmpty);
+            }
+
+            if (bed) {
+                getServer().getPluginManager().registerEvents(sleepyTime, this);
+                statsEnabled = statsEnabled + " bed";
+                getCommand("timeslept").setExecutor(sleepyTime);
+                getCommand("lastslept").setExecutor(sleepyTime);
+            }
+
+            if (world_change) {
+                getServer().getPluginManager().registerEvents(worldChange, this);
+                statsEnabled = statsEnabled + " world_change";
+                getCommand("worldchanges").setExecutor(worldChange);
+            }
+
+            if (words_spoken || messages_spoken || specific_words_spoken) {
+                getServer().getPluginManager().registerEvents(wordsSpoken, this);
+                statsEnabled = statsEnabled + " words_spoken";
+                if (words_spoken)
+                    getCommand("wordsspoken").setExecutor(wordsSpoken);
+                if (messages_spoken)
+                    getCommand("messagesspoken").setExecutor(wordsSpoken);
+            }
+
+            System.out.println("StatCraft: Successfully enabled:" + statsEnabled);
+
+            // load up commands
+            getCommand("list").setExecutor(listCommand);
+            getCommand("resetstats").setExecutor(resetCommand);
+            getCommand("printdata").setExecutor(printData);
+            getCommand("updatetotals").setExecutor(updateTotals);
+        }
 
         timedActivities = new TimedActivities(this);
 
@@ -331,20 +408,20 @@ public final class StatCraft extends JavaPlugin {
     }
 
     @Override
-    public void onDisable() {
+    final public void onDisable() {
         saveStatFiles();
 
         System.out.println("StatCraft: Successfully stopped totals updating: " + timedActivities.stopTotalsUpdating());
     }
 
-    static String readFile(String path, Charset encoding) throws IOException {
+    private static String readFile(String path, Charset encoding) throws IOException {
         byte[] encoded = Files.readAllBytes(Paths.get(path));
         return encoding.decode(ByteBuffer.wrap(encoded)).toString();
     }
 
     // TODO: implement staggered stat saving based on number of online players
     @SuppressWarnings("unchecked")
-    final public boolean saveStatFiles() {
+    public boolean saveStatFiles() {
         // set the first iterator
         Iterator baseIt = statsForPlayers.entrySet().iterator();
         while (baseIt.hasNext()) {
@@ -393,7 +470,7 @@ public final class StatCraft extends JavaPlugin {
     }
 
     @SuppressWarnings("unchecked")
-    final public boolean reloadStatFiles() throws IOException {
+    public boolean reloadStatFiles() throws IOException {
         statsForPlayers = new HashMap<>();
         if (getDataFolder().exists()) {
             // check the root stats directory
@@ -430,27 +507,35 @@ public final class StatCraft extends JavaPlugin {
     }
 
     @NotNull
-    public TimedActivities getTimedActivities() {
-        return timedActivities;
-    }
+    public TimedActivities getTimedActivities() { return timedActivities; }
 
     @NotNull
-    public String getTimeZone() {
-        return timeZone;
-    }
+    public String getTimeZone() { return timeZone; }
 
     @NotNull
-    public boolean getResetOwnStats() {
-        return resetOwnStats;
-    }
+    public boolean getResetOwnStats(){ return resetOwnStats; }
 
     @NotNull
-    public String getResetAnotherPlayerStats() {
-        return resetAnotherPlayerStats;
-    }
+    public String getResetAnotherPlayerStats() { return resetAnotherPlayerStats; }
 
     @NotNull
-    public String getResetServerStats() {
-        return resetServerStats;
-    }
+    public String getResetServerStats() { return resetServerStats; }
+
+    @NotNull
+    public boolean getDeath_locations() { return death_locations; }
+
+    @NotNull
+    public boolean getPlay_time() { return play_time; }
+
+    @NotNull
+    public boolean getLast_join_time() { return last_join_time; }
+
+    @NotNull
+    public boolean getLast_leave_time() { return last_leave_time; }
+
+    @NotNull
+    public boolean getSpecific_words_spoken() { return specific_words_spoken; }
+
+    @NotNull
+    public boolean getWords_spoken() { return words_spoken; }
 }

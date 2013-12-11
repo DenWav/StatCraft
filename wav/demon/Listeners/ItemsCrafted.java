@@ -18,11 +18,8 @@ import wav.demon.StatTypes;
  * https://forums.bukkit.org/threads/cant-get-amount-of-shift-click-craft-item.79090/ */
 public class ItemsCrafted extends StatListener implements CommandExecutor {
 
-    private StatCraft plugin;
-
     public ItemsCrafted(StatCraft plugin) {
         super(plugin);
-        this.plugin = plugin;
     }
 
     /** this method is Comphenix's code */

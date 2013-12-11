@@ -23,8 +23,13 @@ public class WordsSpoken extends StatListener implements CommandExecutor {
 
         addStat(StatTypes.MESSAGES_SPOKEN.id, name, getStat(name, StatTypes.MESSAGES_SPOKEN.id) + 1);
 
-        for (String word : message) {
-            incrementStat(StatTypes.WORDS_SPOKEN.id, name, word);
+        if (plugin.getWords_spoken()) {
+            if (plugin.getSpecific_words_spoken())
+                for (String word : message) {
+                    incrementStat(StatTypes.WORDS_SPOKEN.id, name, word);
+                }
+            else
+                addStat(StatTypes.WORDS_SPOKEN.id, name, getStat(name, StatTypes.WORDS_SPOKEN.id) + message.length);
         }
     }
 

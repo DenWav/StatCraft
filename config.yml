@@ -10,11 +10,8 @@ stats:
   # deaths must be true to enable this
   death_locations: true
 
-  # record when a player breaks a block
-  block_break: true
-
-  # record when a player places a block
-  block_place: true
+  # record when a player breaks/places a block
+  block: true
 
   # keep track of how long players are online
   # this last_join_time and last_leave_time must be true to enable this
@@ -217,3 +214,7 @@ backups:
   # for the 27th backup on the 7th of February of the year 2014 at 2:37:54 PM, the output will look like:
   # 27-20140207-14:37:54.zip
   backupName: !!-yyyyMMdd-HH:mm:ss
+
+# you can specify a server time zone here for the last seen command, or just leave it as "auto"
+# if you specify a timezone, it must be a proper three letter abreviation
+timezone: auto

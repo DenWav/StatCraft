@@ -18,19 +18,18 @@ import java.util.TimeZone;
 
 public class PlayTime extends StatListener implements CommandExecutor {
 
-    StatCraft plugin;
-
     public PlayTime(StatCraft plugin) {
         super(plugin);
-        this.plugin = plugin;
     }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent event) {
-        final String name = event.getPlayer().getName();
-        final int currentTime = (int) (System.currentTimeMillis() / 1000);
-        addStat(StatTypes.LAST_JOIN_TIME.id, name, currentTime);
+        if (plugin.getLast_join_time()) {
+            final String name = event.getPlayer().getName();
+            final int currentTime = (int) (System.currentTimeMillis() / 1000);
+            addStat(StatTypes.LAST_JOIN_TIME.id, name, currentTime);
+        }
     }
 
     @SuppressWarnings("unused")
@@ -38,9 +37,11 @@ public class PlayTime extends StatListener implements CommandExecutor {
     public void onLeave(PlayerQuitEvent event) {
         final String name = event.getPlayer().getName();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
-        addStat(StatTypes.LAST_LEAVE_TIME.id, name, currentTime);
+        if (plugin.getLast_leave_time())
+            addStat(StatTypes.LAST_LEAVE_TIME.id, name, currentTime);
 
-        addStat(StatTypes.PLAY_TIME.id, name, calculateTimeInterval(name, currentTime));
+        if (plugin.getPlay_time())
+            addStat(StatTypes.PLAY_TIME.id, name, calculateTimeInterval(name, currentTime));
     }
 
     // NOTE: Only call this method on PlayerQuitEvent!

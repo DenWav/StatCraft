@@ -12,11 +12,8 @@ import wav.demon.StatTypes;
 
 public class BlockListener extends StatListener implements CommandExecutor {
 
-    StatCraft plugin;
-
     public BlockListener(StatCraft plugin) {
         super(plugin);
-        this.plugin = plugin;
     }
 
     @SuppressWarnings({"unused", "deprecation"})

@@ -16,11 +16,8 @@ import java.util.TimeZone;
 
 public class SleepyTime extends StatListener implements CommandExecutor {
 
-    private StatCraft plugin;
-
     public SleepyTime(StatCraft plugin) {
         super(plugin);
-        this.plugin = plugin;
     }
 
     @SuppressWarnings("unused")

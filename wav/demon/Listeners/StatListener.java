@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class StatListener implements Listener {
 
-    private StatCraft plugin;
+    protected StatCraft plugin;
 
     public StatListener(StatCraft plugin) {
         this.plugin = plugin;
@@ -77,8 +77,17 @@ public class StatListener implements Listener {
         }
     }
 
-    // Synchronized method to add stats to players, this method will be run in a separate
-    // asynchronous thread.
+    /**
+     * FOR MOST CASES YOU SHOULD ONLY USE THE addStat() METHOD, WHICH WILL RUN THIS METHOD IN AN
+     * ASYNCHRONOUS THREAD
+     * <p>
+     * Synchronized method to add stats to players, this method should always be run in a separate
+     * asynchronous thread.
+     *
+     * @param type StatType.id int of whatever stat you want to add
+     * @param name Name of the player to add stat to
+     * @param data Whatever number to be added to the player's stat
+     */
     public synchronized void addStatToPlayer(int type, String name, int data) {
 
         // check if they have any stats yet, if not, make one
@@ -118,9 +127,18 @@ public class StatListener implements Listener {
         }
     }
 
-    // Method called by the subclasses to create an asynchronous thread and increment the stats
-    // of a player. The incrementation is done by a separate thread to prevent slowdowns of the
-    // server as files will be written in the process
+    /**
+     * Use this method to increment a stat. This will increment a specific stat value to the provided
+     * field, and also increment the "total" value
+     * <p>
+     * This is called by the subclasses to create an asynchronous thread and increment the stats
+     * of a player. The incrementation is done by a separate thread to prevent slowdowns of the
+     * server as files will be written in the process
+     *
+     * @param type StatType.id int of whatever stat you want to increment
+     * @param name name of the player to increment stat
+     * @param message Specific stat to increment
+     */
     protected void incrementStat(final int type, final String name, final String message) {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
@@ -130,9 +148,21 @@ public class StatListener implements Listener {
         });
     }
 
-    // Method called by the subclasses to create an asynchronous thread and add the stats
-    // to a player. The addition is done by a separate thread to prevent slowdowns of the
-    // server as files will be written in the process
+    /**
+     * Use this method to add a stat that isn't incremented. This will add whatever data is provided
+     * to the "total" field in the provided StatType
+     * <p>
+     * This is called by the subclasses to create an asynchronous thread and add the stats
+     * to a player. The addition is done by a separate thread to prevent slowdowns of the
+     * server as files will be written in the process
+     * <p>
+     * Always use this method when adding stats instead of the addStatToPlayer method. The
+     * addStatToPlayer method is only public because of a special case in the ResetStats command
+     *
+     * @param type StatType.id int of whatever stat you want to add
+     * @param name name of the player to add stat
+     * @param data Whatever number to be added to the player's stat
+     */
     protected void addStat(final int type, final String name, final int data) {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
@@ -142,9 +172,16 @@ public class StatListener implements Listener {
         });
     }
 
-    // Return a certain stat on a player without trying to reference a key that doesn't exist.
-    // This method is used by the command parts of the subclasses
-    protected int  getStat(String name, int type) {
+    /**
+     * Return a certain stat on a player without trying to reference a key that doesn't exist.
+     * This method is used by the command parts of the subclasses. The returned value is the "total"
+     * value of the specified stat.
+     *
+     * @param name Name of the player to get stats from
+     * @param type StatType.id int of whatever stat you want to get
+     * @return "total" value of specified type
+     */
+    protected int getStat(String name, int type) {
         int stat;
         if (plugin.statsForPlayers.containsKey(name))
             if (plugin.statsForPlayers.get(name).containsKey(type))
@@ -160,7 +197,13 @@ public class StatListener implements Listener {
         return stat;
     }
 
-    // Return the players that the subclass should run the command on.
+    /**
+     * Return the players that the subclass should run the command on.
+     *
+     * @param sender The CommandSender that was provided in the onCommand method
+     * @param args The arguments array that was provided in the onCommand method
+     * @return A String array of the players to run the command on
+     */
     protected String[] getPlayers(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
             // if this is run from the console, then a player name must be provided
@@ -180,7 +223,12 @@ public class StatListener implements Listener {
         return names;
     }
 
-    // Transform time held in seconds to human readable time
+    /**
+     * Transform time held in seconds to human readable time
+     *
+     * @param seconds Length of time interval in seconds
+     * @return String of time in a more human readable format, for example 219 seconds would read as "3 minutes, 39 seconds"
+     */
     protected String transformTime(int seconds) {
         // Figure out the playtime in a human readable format
         final int secondsInMinute = 60;

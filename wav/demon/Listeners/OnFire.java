@@ -1,6 +1,5 @@
 package wav.demon.Listeners;
 
-import com.sun.deploy.config.PluginServerConfig;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
