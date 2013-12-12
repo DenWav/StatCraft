@@ -20,7 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-public final class StatCraft extends JavaPlugin {
+public class StatCraft extends JavaPlugin {
 
     public volatile Map<String, Map<Integer, Map<String, Integer>>> statsForPlayers;
     private TimedActivities timedActivities;
@@ -48,6 +48,7 @@ public final class StatCraft extends JavaPlugin {
     private ResetCommand resetCommand = new ResetCommand(this);
     private PrintData printData = new PrintData(this);
     private UpdateTotals updateTotals = new UpdateTotals(this);
+    private SaveStats saveStats = new SaveStats(this);
 
     /**
      *  Config settings
@@ -102,7 +103,11 @@ public final class StatCraft extends JavaPlugin {
 
     // disk writings
     private String totalsUpdating;
+    private boolean totalsUpdatingEnabled = true;
+    private int totalsUpdatingMilliSec;
     private String statsToDisk;
+    private boolean saveStatsRealTime = false;
+    private int statsToDiskMilliSec;
 
     // backups
     private boolean backupStats;
@@ -130,7 +135,7 @@ public final class StatCraft extends JavaPlugin {
             death = getConfig().getBoolean("stats.death");
             death_locations = getConfig().getBoolean("stats.death_locations");
             if (death_locations && !death) {
-                System.out.println("StatCraft: death_locations could be enabled because death is false.");
+                getLogger().info("death_locations could be enabled because death is false.");
                 death_locations = false;
             }
 
@@ -142,13 +147,13 @@ public final class StatCraft extends JavaPlugin {
             last_leave_time = getConfig().getBoolean("stats.last_leave_time");
             play_time = getConfig().getBoolean("stats.play_time");
             if (play_time && (!last_join_time || !last_leave_time)) {
-                System.out.println("StatCraft: play_time could be enabled because either last_join_time or " +
+                getLogger().info("play_time could not be enabled because either last_join_time or " +
                         "last_leave_time are false.");
                 play_time = false;
             }
             joins = getConfig().getBoolean("stats.joins");
             if (joins && !last_join_time) {
-                System.out.println("StatCraft: joins could be enabled because last_join_time is false.");
+                getLogger().info("joins could not be enabled because last_join_time is false.");
             }
 
             // item creation
@@ -178,11 +183,11 @@ public final class StatCraft extends JavaPlugin {
             words_spoken = getConfig().getBoolean("stats.words_spoken");
             specific_words_spoken = getConfig().getBoolean("stats.specific_words_spoken");
             if (words_spoken && !messages_spoken) {
-                System.out.println("StatCraft: words_spoken could not be enabled because messages_spoken is false.");
+                getLogger().info("words_spoken could not be enabled because messages_spoken is false.");
                 words_spoken = false;
             }
             if (specific_words_spoken && !words_spoken) {
-                System.out.println("StatCraft: specific_words_spoken could not be enabled because words_spoken is false.");
+                getLogger().info("specific_words_spoken could not be enabled because words_spoken is false.");
             }
 
             // misc
@@ -194,7 +199,7 @@ public final class StatCraft extends JavaPlugin {
             move = getConfig().getBoolean("stats.move");
             move_type = getConfig().getBoolean("stats.move_type");
             if (move_type && !move) {
-                System.out.println("StatCraft: move_type could not be enabled because move is false.");
+                getLogger().info("move_type could not be enabled because move is false.");
                 move_type = false;
             }
 
@@ -207,7 +212,7 @@ public final class StatCraft extends JavaPlugin {
             egg_throws = getConfig().getBoolean("stats.egg_throws");
             chicken_hatches = getConfig().getBoolean("stats.chicken_hatches");
             if (chicken_hatches && !egg_throws) {
-                System.out.println("StatCraft: chicken_hatches could not be enabled because egg_throws is false.");
+                getLogger().info("chicken_hatches could not be enabled because egg_throws is false.");
             }
 
             // misc
@@ -224,21 +229,38 @@ public final class StatCraft extends JavaPlugin {
             resetAnotherPlayerStats = getConfig().getString("permissions.resetAnotherPlayerStats");
             resetServerStats = getConfig().getString("permissions.resetServerStats");
             if (!(resetAnotherPlayerStats.equalsIgnoreCase("op") || resetAnotherPlayerStats.equalsIgnoreCase("user"))) {
-                System.out.println("StatCraft: resetAnotherPlayerStats must either be \"op\" or \"user\", defaulting" +
+                getLogger().info("resetAnotherPlayerStats must either be \"op\" or \"user\", defaulting" +
                         "to \"op\"");
                 resetAnotherPlayerStats = "op";
             }
             if (!(resetServerStats.equalsIgnoreCase("op") || resetServerStats.equalsIgnoreCase("user"))) {
-                System.out.println("StatCraft: resetServerStats must either be \"op\" or \"user\", defaulting" +
+                getLogger().info("resetServerStats must either be \"op\" or \"user\", defaulting" +
                         "to \"op\"");
                 resetServerStats = "op";
             }
 
             // TODO: implement Disk writing and Backups
             // Disk writing
-            // TODO: implement input checks for these values
             totalsUpdating = getConfig().getString("writingToDisk.totalsUpdating");
+            totalsUpdatingMilliSec = parseTime(totalsUpdating);
+
+            if (totalsUpdatingMilliSec == -1) {
+                totalsUpdatingEnabled = false;
+                getLogger().info("Totals Updating could not be enabled, \"" + totalsUpdating + "\" is invalid.");
+            }
+
             statsToDisk = getConfig().getString("writingToDisk.statsToDisk");
+            if (statsToDisk.equalsIgnoreCase("real-time"))
+                saveStatsRealTime = true;
+            else
+                statsToDiskMilliSec = parseTime(statsToDisk);
+
+            if (statsToDiskMilliSec == -1) {
+                statsToDiskMilliSec = 30 * 1000;
+                getLogger().info("StatsToDisk could not be enabled correctly, \"" + statsToDisk + "\"" +
+                        " is invalid. Defaulting to 30 seconds delay.");
+            }
+
 
             // Backups
             // TODO: implement input checks for these values
@@ -257,13 +279,13 @@ public final class StatCraft extends JavaPlugin {
             try {
                 if (reloadStatFiles()) {
                     // yay, it worked
-                    System.out.println("StatCraft: Old stats loaded successfully.");
+                    getLogger().info("Old stats loaded successfully.");
                 } else {
                     // something isn't quite right, so start from scratch
                     statsForPlayers = new HashMap<>();
                 }
             } catch (IOException e) {
-                System.out.println("StatCraft: Something when wrong when trying to read the old stats." +
+                getLogger().info("Something when wrong when trying to read the old stats." +
                         "Could not initialize.");
                 e.printStackTrace();
             }
@@ -273,7 +295,7 @@ public final class StatCraft extends JavaPlugin {
             statsForPlayers = new HashMap<>();
         } else if (!stat.isDirectory()) {
             // the file exists, but it's not a directory, so warn the user
-            System.out.println("StatCraft: stats file in the plugin data folder is not a directory," +
+            getLogger().info("Stats file in the plugin data folder is not a directory," +
                     "cannot initialize!");
             enabled = false;
         }
@@ -308,7 +330,7 @@ public final class StatCraft extends JavaPlugin {
                 getCommand("blocks").setExecutor(blockListener);
             }
 
-            if (play_time || last_join_time || last_leave_time) {
+            if (play_time || last_join_time || last_leave_time || joins) {
                 getServer().getPluginManager().registerEvents(playtime, this);
                 if (last_join_time) {
                     statsEnabled = statsEnabled + " last_join_time";
@@ -319,6 +341,10 @@ public final class StatCraft extends JavaPlugin {
                 if (play_time) {
                     statsEnabled = statsEnabled + " playtime";
                     getCommand("playtime").setExecutor(playtime);
+                }
+                if (joins) {
+                    statsEnabled = statsEnabled + " joins";
+                    getCommand("joins").setExecutor(playtime);
                 }
             }
 
@@ -392,26 +418,35 @@ public final class StatCraft extends JavaPlugin {
                     getCommand("messagesspoken").setExecutor(wordsSpoken);
             }
 
-            System.out.println("StatCraft: Successfully enabled:" + statsEnabled);
+            getLogger().info("Successfully enabled:" + statsEnabled);
 
             // load up commands
             getCommand("list").setExecutor(listCommand);
             getCommand("resetstats").setExecutor(resetCommand);
             getCommand("printdata").setExecutor(printData);
             getCommand("updatetotals").setExecutor(updateTotals);
+            getCommand("savestats").setExecutor(saveStats);
         }
 
         timedActivities = new TimedActivities(this);
 
-        System.out.println("StatCraft: Successfully started totals updating: " + timedActivities.startTotalsUpdating(10));
-
+        if (totalsUpdatingEnabled)
+            getLogger().info("Successfully started totals updating (" + totalsUpdating + "): "
+                + timedActivities.startTotalsUpdating(totalsUpdatingMilliSec));
+        if (!saveStatsRealTime)
+            getLogger().info("Successfully started delayed stat saving (" + statsToDisk + "): "
+                    + timedActivities.startStatsToDisk(statsToDiskMilliSec));
     }
 
     @Override
     final public void onDisable() {
         saveStatFiles();
 
-        System.out.println("StatCraft: Successfully stopped totals updating: " + timedActivities.stopTotalsUpdating());
+        if (!timedActivities.totalUpdateNull())
+            getLogger().info("Successfully stopped totals updating: " + timedActivities.stopTotalsUpdating());
+
+        if (!timedActivities.statsToDiskNull())
+            getLogger().info("Successfully stopped delayed stat saving: " + timedActivities.stopStatsToDisk());
     }
 
     private static String readFile(String path, Charset encoding) throws IOException {
@@ -419,9 +454,11 @@ public final class StatCraft extends JavaPlugin {
         return encoding.decode(ByteBuffer.wrap(encoded)).toString();
     }
 
-    // TODO: implement staggered stat saving based on number of online players
     @SuppressWarnings("unchecked")
     public boolean saveStatFiles() {
+        // we need this inside the asynchronous thread
+        final File dataFolder = getDataFolder();
+        final StatCraft plugin = this;
         // set the first iterator
         Iterator baseIt = statsForPlayers.entrySet().iterator();
         while (baseIt.hasNext()) {
@@ -443,14 +480,14 @@ public final class StatCraft extends JavaPlugin {
                     PrintWriter out = null;
                     try {
                         // make sure the directory exists for us to write to
-                        File outputDir = new File(this.getDataFolder(), "stats/" + name);
+                        File outputDir = new File(dataFolder, "stats/" + name);
                         if (outputDir.exists()) {
                             out = new PrintWriter(outputDir.toString() + "/" + type);
                         } else {
-                            if (outputDir.mkdirs())
+                            if (outputDir.mkdirs()) {
                                 out = new PrintWriter(outputDir.toString() + "/" + type);
-                            else {
-                                System.out.println("StatCraft: Fatal error trying to create stat directory");
+                            } else {
+                                getLogger().info("Fatal error trying to create stat directory");
                                 break;
                             }
                         }
@@ -482,7 +519,7 @@ public final class StatCraft extends JavaPlugin {
                     // get the player's name
                     String name = player.getName();
                     if (!name.equalsIgnoreCase("totals")) {
-                        System.out.println("StatCraft: " + name + " found at: " + player.getPath());
+                        getLogger().info("" + name + " found at: " + player.getPath());
                         // put player's name into map, now we need to get the stats themselves
                         statsForPlayers.put(name, new HashMap<Integer, Map<String, Integer>>());
                         for (File type : player.listFiles()) {
@@ -506,13 +543,63 @@ public final class StatCraft extends JavaPlugin {
         }
     }
 
+    private int parseTime(String time) {
+        char timeUnit = 'a';
+        if (time.endsWith("s")) {
+            time = time.replace("s", "");
+            timeUnit = 's';
+        } else if (time.endsWith("m")) {
+            time = time.replace("m", "");
+            timeUnit = 'm';
+        } else if (time.endsWith("h")) {
+            time = time.replace("h", "");
+            timeUnit = 'h';
+        } else if (time.endsWith("d")) {
+            time = time.replace("d", "");
+            timeUnit = 'd';
+        } else if (time.endsWith("w")) {
+            time = time.replace("w", "");
+            timeUnit = 'w';
+        } else {
+            return -1;
+        }
+
+        int timeInt;
+        try {
+            timeInt = Integer.parseInt(time);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+
+        int timeMilliSec = 0;
+        switch (timeUnit) {
+            case 's':
+                timeMilliSec = timeInt * 1000;
+                break;
+            case 'm':
+                timeMilliSec = timeInt * 60 * 1000;
+                break;
+            case 'h':
+                timeMilliSec = timeInt * 60 * 60 * 1000;
+                break;
+            case 'd':
+                timeMilliSec = timeInt * 60 * 60 * 24 * 1000;
+                break;
+            case 'w':
+                timeMilliSec = timeInt * 60 * 60 * 24 * 7 * 1000;
+                break;
+            default:
+                break;
+        }
+        return timeMilliSec;
+    }
+
     @NotNull
     public TimedActivities getTimedActivities() { return timedActivities; }
 
     @NotNull
     public String getTimeZone() { return timeZone; }
 
-    @NotNull
     public boolean getResetOwnStats(){ return resetOwnStats; }
 
     @NotNull
@@ -521,21 +608,19 @@ public final class StatCraft extends JavaPlugin {
     @NotNull
     public String getResetServerStats() { return resetServerStats; }
 
-    @NotNull
     public boolean getDeath_locations() { return death_locations; }
 
-    @NotNull
     public boolean getPlay_time() { return play_time; }
 
-    @NotNull
     public boolean getLast_join_time() { return last_join_time; }
 
-    @NotNull
     public boolean getLast_leave_time() { return last_leave_time; }
 
-    @NotNull
     public boolean getSpecific_words_spoken() { return specific_words_spoken; }
 
-    @NotNull
     public boolean getWords_spoken() { return words_spoken; }
+
+    public boolean getJoins() { return joins; }
+
+    public boolean getSaveStatsRealTime() { return saveStatsRealTime; }
 }

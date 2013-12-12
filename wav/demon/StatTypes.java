@@ -28,7 +28,7 @@ public enum StatTypes {
     MESSAGES_SPOKEN  (20, "messages_spoken"), ///
     DAMAGE_TAKEN     (21, "damage_taken"),
     FISH_CAUGHT      (22, "fish_caught"),
-    JOINS            (23, "joins"),
+    JOINS            (23, "joins"),           //
     XP_GAINED        (24, "xp_gained"),
     MOVE             (25, "move"),
     KILLS            (26, "kills"),

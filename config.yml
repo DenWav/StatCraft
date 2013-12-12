@@ -163,6 +163,9 @@ writingToDisk:
   # to the website immediately with no delay. Larger servers with more activity, or servers that aren't as powerful may
   # want to write the stats to disk every few minutes, instead, however.
   # to enable real time stat saving, use real-time
+  #
+  # It is recommended to keep this value as low as possible, if the server crashes any unsaved stats will be lost
+  # Even on the busiest of servers there should be no real need to go above 30s
   statsToDisk: real-time
 
 backups:
@@ -203,17 +206,17 @@ backups:
 
   # format for naming backups
   # the format must either utilize a date or backup number, or both.
-  # to use a backup number, use the !! variable, and the backup number will be used, incremented for each backup
+  # to use a backup number, use the (~) variable, and the backup number will be used, incremented for each backup
   # all other text will be sent directly to SimpleDateFormat. To see the SimpleDateFormat syntax, go to
   # http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
-  # the !! variable will be handled by the plugin and will not be sent to SimpleDateFormat
+  # the (~) variable will be handled by the plugin and will not be sent to SimpleDateFormat
   # all backups will be zipped and placed in the backupStatsLocation
 
   # here is an example of how the format works:
-  # the default format is: !!-yyyyMMdd-HH:mm:ss
+  # the default format is: (~)-yyyyMMdd-HH:mm:ss
   # for the 27th backup on the 7th of February of the year 2014 at 2:37:54 PM, the output will look like:
   # 27-20140207-14:37:54.zip
-  backupName: !!-yyyyMMdd-HH:mm:ss
+  backupName: (~)-yyyyMMdd-HH:mm:ss
 
 # you can specify a server time zone here for the last seen command, or just leave it as "auto"
 # if you specify a timezone, it must be a proper three letter abreviation

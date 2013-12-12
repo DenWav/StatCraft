@@ -1,6 +1,6 @@
 name: StatCraft
 main: wav.demon.StatCraft
-version: 1.0
+version: 1.1
 commands:
   list:
     description: Lists all online players.
@@ -69,6 +69,17 @@ commands:
   messagesspoken:
     description: Lists the number of a messages a player has spoken
     usage: /<command> [player] or just /<command> to list the number of messages you have spoken
+  joins:
+    description: Lists the number of times a player has joined the server
+    usage: /<command> [player] or just /<command> to list server joins for yourself
+  savestats:
+    description: Saves the stats that are in memory to the disk
+    usage: /<command>
+    permission: StatCraft.admin.*
+    permission-message: You don't have <permission>
+  deathlocations:
+    description: Lists the number of deaths and their locations of a player
+    usgage: /<command> [player] or just /<command> to list death locations for yourself
 
 permissions:
   admin.op:

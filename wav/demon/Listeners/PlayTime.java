@@ -25,11 +25,12 @@ public class PlayTime extends StatListener implements CommandExecutor {
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent event) {
-        if (plugin.getLast_join_time()) {
             final String name = event.getPlayer().getName();
             final int currentTime = (int) (System.currentTimeMillis() / 1000);
+        if (plugin.getLast_join_time())
             addStat(StatTypes.LAST_JOIN_TIME.id, name, currentTime);
-        }
+        if (plugin.getJoins())
+            addStat(StatTypes.JOINS.id, name, getStat(name, StatTypes.JOINS.id) + 1);
     }
 
     @SuppressWarnings("unused")
@@ -49,8 +50,7 @@ public class PlayTime extends StatListener implements CommandExecutor {
         final int currentPlayTime = getStat(name, StatTypes.PLAY_TIME.id);
         final int joinTime = getStat(name, StatTypes.LAST_JOIN_TIME.id);
 
-        int playTime = (leaveTime - joinTime) + currentPlayTime;
-        return playTime;
+        return (leaveTime - joinTime) + currentPlayTime;
     }
 
     @Override
@@ -101,7 +101,20 @@ public class PlayTime extends StatListener implements CommandExecutor {
                 }
             }
             return true;
+        } else if (cmd.getName().equalsIgnoreCase("joins")) {
+            String[] names = getPlayers(sender, args);
+            if (names == null)
+                return false;
+
+            for (String name : names) {
+                int joins = getStat(name, StatTypes.JOINS.id);
+
+                sender.getServer().broadcastMessage(name + " - Joins: " + joins);
+            }
+
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 }

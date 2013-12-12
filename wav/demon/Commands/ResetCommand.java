@@ -34,7 +34,7 @@ public class ResetCommand implements CommandExecutor {
                         try {
                             deleteRecursive(statsDir);
                         } catch (FileNotFoundException e) {
-                            System.out.println("StatCraft: Fatal Error occurred while trying to delete stats.");
+                            plugin.getLogger().info("StatCraft: Fatal Error occurred while trying to delete stats.");
                             e.printStackTrace();
                         }
                     }
@@ -51,11 +51,12 @@ public class ResetCommand implements CommandExecutor {
             }
         } else if (strings[0].equalsIgnoreCase("force-all") && strings.length == 2) {
             if (commandSender.hasPermission("admin.*") || plugin.getResetServerStats().equalsIgnoreCase("user")) {
-                plugin.saveStatFiles();
 
                 plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
                     @Override
                     public void run() {
+                        plugin.saveStatFiles();
+
                         String type = strings[1];
 
                         for (StatTypes stat : StatTypes.values())
@@ -67,13 +68,13 @@ public class ResetCommand implements CommandExecutor {
                             // delete the stats for each player
                             deleteType(statsDir, type);
                         } catch (FileNotFoundException e) {
-                            System.out.println("StatCraft: Fatal Error occurred while trying to delete stats.");
+                            plugin.getLogger().info("StatCraft: Fatal Error occurred while trying to delete stats.");
                             e.printStackTrace();
                         } finally {
                             try {
                                 plugin.reloadStatFiles();
                             } catch (IOException e) {
-                                System.out.println("StatCraft: Fatal Error occurred while trying to reload stats.");
+                                plugin.getLogger().info("StatCraft: Fatal Error occurred while trying to reload stats.");
                                 e.printStackTrace();
                             } finally {
                                 for (Player player : commandSender.getServer().getOnlinePlayers()) {
@@ -101,7 +102,7 @@ public class ResetCommand implements CommandExecutor {
                         try {
                             deleteRecursive(statsDir);
                         } catch (FileNotFoundException e) {
-                            System.out.println("Fatal Error occurred while trying to delete " + name + "'s stats.");
+                            plugin.getLogger().info("Fatal Error occurred while trying to delete " + name + "'s stats.");
                             e.printStackTrace();
                         } finally {
                             if (plugin.statsForPlayers.containsKey(name))
@@ -139,7 +140,7 @@ public class ResetCommand implements CommandExecutor {
                 try {
                     deleteType(statsDir, typeString);
                 } catch (FileNotFoundException e) {
-                    System.out.println("Fatal Error occurred while trying to delete " + name + "'s stats.");
+                    plugin.getLogger().info("Fatal Error occurred while trying to delete " + name + "'s stats.");
                     e.printStackTrace();
                 } finally {
                     if (plugin.statsForPlayers.containsKey(name))

@@ -1,11 +1,13 @@
 package wav.demon.Listeners;
 
+import com.avaje.ebean.validation.NotNull;
 import com.google.gson.Gson;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import wav.demon.StatCraft;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,29 +53,34 @@ public class StatListener implements Listener {
         else
             plugin.statsForPlayers.get(name).get(type).put("total", plugin.statsForPlayers.get(name).get(type).get("total") + 1);
 
-        try {
-            // declare the gson for writing the json
-            Gson gson = new Gson();
-            String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
+        if (plugin.getSaveStatsRealTime()) {
+            PrintWriter out = null;
+            try {
+                // declare the gson for writing the json
+                Gson gson = new Gson();
+                String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
 
-            // ensure the output directory exists
-            File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
+                // ensure the output directory exists
+                File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
 
-            // create the PrintWriter objects for writing the files
-            PrintWriter out;
+                // check if the directory exists, if not, create it
+                if (!outputDir.exists())
+                    if (!outputDir.mkdirs()) {
+                        plugin.getLogger().info("Fatal error occurred while trying to save stat files: Could not create directory");
+                        return;
+                    }
 
-            // check if the directory exists, if not, create it
-            if (!outputDir.exists())
-                outputDir.mkdirs();
+                // set the PrintWriter to the file we are going to write to
+                out = new PrintWriter(outputDir.toString() + "/" + type);
 
-            // set the PrintWriter to the file we are going to write to
-            out = new PrintWriter(outputDir.toString() + "/" + type);
-
-            // write the json to the file
-            out.println(json);
-            out.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+                // write the json to the file
+                out.println(json);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                if (out != null)
+                    out.close();
+            }
         }
     }
 
@@ -101,29 +108,35 @@ public class StatListener implements Listener {
         // add the stat to the total
         plugin.statsForPlayers.get(name).get(type).put("total", data);
 
-        try {
-            // declare the gson for writing the json
-            Gson gson = new Gson();
-            String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
+        if (plugin.getSaveStatsRealTime()) {
+            PrintWriter out = null;
+            try {
+                // declare the gson for writing the json
+                Gson gson = new Gson();
+                String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
 
-            // ensure the output directory exists
-            File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
+                // ensure the output directory exists
+                File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
 
-            // create the PrintWriter objects for writing the files
-            PrintWriter out;
+                // check if the directory exists, if not, create it
+                if (!outputDir.exists())
+                    if (!outputDir.mkdirs()) {
+                        plugin.getLogger().info("Fatal error occurred while trying to save stat files: Could not create directory");
+                        return;
+                    }
 
-            // check if the directory exists, if not, create it
-            if (!outputDir.exists())
-                outputDir.mkdirs();
+                // set the PrintWriter to the file we are going to write to
+                out = new PrintWriter(outputDir.toString() + "/" + type);
 
-            // set the PrintWriter to the file we are going to write to
-            out = new PrintWriter(outputDir.toString() + "/" + type);
-
-            // write the json to the file
-            out.println(json);
-            out.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+                // write the json to the file
+                out.println(json);
+                out.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                if (out != null)
+                    out.close();
+            }
         }
     }
 
@@ -204,6 +217,7 @@ public class StatListener implements Listener {
      * @param args The arguments array that was provided in the onCommand method
      * @return A String array of the players to run the command on
      */
+    @Nullable
     protected String[] getPlayers(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
             // if this is run from the console, then a player name must be provided
@@ -229,6 +243,7 @@ public class StatListener implements Listener {
      * @param seconds Length of time interval in seconds
      * @return String of time in a more human readable format, for example 219 seconds would read as "3 minutes, 39 seconds"
      */
+    @NotNull
     protected String transformTime(int seconds) {
         // Figure out the playtime in a human readable format
         final int secondsInMinute = 60;

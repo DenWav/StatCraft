@@ -13,7 +13,7 @@ import javax.swing.text.html.HTMLDocument;
 import java.util.Iterator;
 import java.util.Map;
 
-public final class DeathListener extends StatListener implements CommandExecutor {
+public class DeathListener extends StatListener implements CommandExecutor {
 
     public DeathListener(StatCraft plugin) {
         super(plugin);
@@ -62,10 +62,12 @@ public final class DeathListener extends StatListener implements CommandExecutor
                             Map.Entry pairs = (Map.Entry) it.next();
 
                             String worldName = (String) pairs.getKey();
-                            int deaths = (int) pairs.getValue();
+                            if (!worldName.equalsIgnoreCase("total")) {
+                                int deaths = (int) pairs.getValue();
 
-                            // TODO: implement world aliases
-                            message = message + worldName + "[" + deaths + "] ";
+                                // TODO: implement world aliases
+                                message = message + worldName + ":" + deaths + " ";
+                            }
                         }
                         sender.getServer().broadcastMessage(message);
                     } else {

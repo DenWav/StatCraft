@@ -17,14 +17,14 @@ public class TimedActivities extends Timer {
         this.plugin = plugin;
     }
 
-    public boolean startTotalsUpdating(int minutes) {
+    public boolean startTotalsUpdating(int milliSecs) {
         totalsUpdate = new TimerTask() {
             @Override
             public void run() {
                 updateTotals();
             }
         };
-        schedule(totalsUpdate, 01, 1000*60*minutes);
+        schedule(totalsUpdate, 1, milliSecs);
         return true;
     }
 
@@ -36,14 +36,18 @@ public class TimedActivities extends Timer {
         return updateTotals();
     }
 
-    public boolean startStatsToDisk(int minutes) {
+    public boolean totalUpdateNull() {
+        return totalsUpdate == null;
+    }
+
+    public boolean startStatsToDisk(int milliSec) {
         toDisk = new TimerTask() {
             @Override
             public void run() {
                 plugin.saveStatFiles();
             }
         };
-        schedule(toDisk, 01, 1000*60*minutes);
+        schedule(toDisk, 1, milliSec);
         return true;
     }
 
@@ -55,6 +59,11 @@ public class TimedActivities extends Timer {
         return plugin.saveStatFiles();
     }
 
+    public boolean statsToDiskNull() {
+        return toDisk == null;
+    }
+
+    @SuppressWarnings("unchecked")
     private boolean updateTotals() {
         // set the tempMap
         Map<Integer, Map<String, Long>> tempMap =

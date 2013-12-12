@@ -69,6 +69,7 @@ public class ItemsCrafted extends StatListener implements CommandExecutor {
     /** From here down is Comphenix's code */
     // HACK! The API doesn't allow us to easily determine the resulting number of
     // crafted items, so we're forced to compare the inventory before and after.
+    @SuppressWarnings("deprecation")
     private void schedulePostDetection(final HumanEntity player, final ItemStack compareItem) {
         final ItemStack[] preInv = player.getInventory().getContents();
         final int ticks = 1;
@@ -111,7 +112,7 @@ public class ItemsCrafted extends StatListener implements CommandExecutor {
         if (a == null)
             return b == null;
         else if (b == null)
-            return a == null;
+            return false;
 
         return a.getTypeId() == b.getTypeId() &&
                 a.getDurability() == b.getDurability() &&
@@ -121,10 +122,7 @@ public class ItemsCrafted extends StatListener implements CommandExecutor {
 
     private boolean isStackSumLegal(ItemStack a, ItemStack b) {
         // See if we can create a new item stack with the combined elements of a and b
-        if (a == null || b == null)
-            return true; // Treat null as an empty stack
-        else
-            return a.getAmount() + b.getAmount() <= a.getType().getMaxStackSize();
+        return a == null || b == null || a.getAmount() + b.getAmount() <= a.getType().getMaxStackSize();
     }
 
     private boolean hasItems(ItemStack stack) {
