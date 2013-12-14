@@ -43,7 +43,7 @@ public class OnFire extends StatListener implements CommandExecutor {
 
         //int fireTime;
         for (String name : names) {
-            sender.getServer().broadcastMessage(name + " - On Fire: " + getStat(name, StatTypes.ON_FIRE.id));
+            sender.getServer().broadcastMessage(name + " - On Fire: " + df.format(getStat(name, StatTypes.ON_FIRE.id)));
             // fireTime = getStat(name, StatTypes.ON_FIRE.id);
 
             // String message = transformTime(fireTime);

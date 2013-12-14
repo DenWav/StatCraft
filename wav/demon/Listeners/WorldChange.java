@@ -32,7 +32,7 @@ public class WorldChange extends StatListener implements CommandExecutor {
             return false;
 
         for (String name : names) {
-            sender.getServer().broadcastMessage(name + " - World Changes: " + getStat(name, StatTypes.WORLD_CHANGE.id));
+            sender.getServer().broadcastMessage(name + " - World Changes: " + df.format(getStat(name, StatTypes.WORLD_CHANGE.id)));
         }
         return true;
     }

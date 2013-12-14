@@ -36,7 +36,7 @@ public class ItemPickUp extends StatListener implements CommandExecutor {
         for (String name : names) {
             long itemsPickedUp = getStat(name, StatTypes.ITEM_PICKUPS.id);
 
-            sender.getServer().broadcastMessage(name + " - Items Picked Up: " + itemsPickedUp);
+            sender.getServer().broadcastMessage(name + " - Items Picked Up: " + df.format(itemsPickedUp));
         }
         return true;
     }

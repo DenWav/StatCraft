@@ -30,7 +30,7 @@ public class BucketEmpty extends StatListener implements CommandExecutor {
             return false;
 
         for (String name : names) {
-            sender.getServer().broadcastMessage(name + " - Buckets Emptied: " + getStat(name, StatTypes.EMPTY_BUCKET.id));
+            sender.getServer().broadcastMessage(name + " - Buckets Emptied: " + df.format(getStat(name, StatTypes.EMPTY_BUCKET.id)));
         }
 
         return true;

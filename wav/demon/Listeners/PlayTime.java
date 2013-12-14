@@ -109,7 +109,7 @@ public class PlayTime extends StatListener implements CommandExecutor {
             for (String name : names) {
                 int joins = getStat(name, StatTypes.JOINS.id);
 
-                sender.getServer().broadcastMessage(name + " - Joins: " + joins);
+                sender.getServer().broadcastMessage(name + " - Joins: " + df.format(joins));
             }
 
             return true;

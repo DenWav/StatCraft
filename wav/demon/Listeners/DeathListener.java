@@ -43,7 +43,7 @@ public class DeathListener extends StatListener implements CommandExecutor {
                 deaths = getStat(name, StatTypes.DEATH.id);
 
                 // print out the results
-                sender.getServer().broadcastMessage(name + " - Deaths: " + deaths);
+                sender.getServer().broadcastMessage(name + " - Deaths: " + df.format(deaths));
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("deathlocations")) {
@@ -66,7 +66,7 @@ public class DeathListener extends StatListener implements CommandExecutor {
                                 int deaths = (int) pairs.getValue();
 
                                 // TODO: implement world aliases
-                                message = message + worldName + ":" + deaths + " ";
+                                message = message + worldName + ":" + df.format(deaths) + " ";
                             }
                         }
                         sender.getServer().broadcastMessage(message);

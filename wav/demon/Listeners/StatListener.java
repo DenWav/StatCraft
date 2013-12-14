@@ -9,6 +9,7 @@ import wav.demon.StatCraft;
 
 import javax.annotation.Nullable;
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,8 @@ import java.util.Map;
 public class StatListener implements Listener {
 
     protected StatCraft plugin;
+    // look, I don't know how big these number are gonna be
+    protected DecimalFormat df = new DecimalFormat("###,###,###,###,###,###,###,###");
 
     public StatListener(StatCraft plugin) {
         this.plugin = plugin;

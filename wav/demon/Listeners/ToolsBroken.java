@@ -34,7 +34,7 @@ public class ToolsBroken extends StatListener implements CommandExecutor {
         for (String name : names) {
             int toolsBroken = getStat(name, StatTypes.TOOLS_BROKEN.id);
 
-            sender.getServer().broadcastMessage(name + " - Tools Broken: " + toolsBroken);
+            sender.getServer().broadcastMessage(name + " - Tools Broken: " + df.format(toolsBroken));
         }
         return true;
     }

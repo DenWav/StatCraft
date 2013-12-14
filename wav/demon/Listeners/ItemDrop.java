@@ -36,7 +36,7 @@ public class ItemDrop extends StatListener implements CommandExecutor {
         for (String name : names) {
             int itemsPickedUp = getStat(name, StatTypes.ITEM_DROPS.id);
 
-            sender.getServer().broadcastMessage(name + " - Items Dropped: " + itemsPickedUp);
+            sender.getServer().broadcastMessage(name + " - Items Dropped: " + df.format(itemsPickedUp));
         }
         return true;
     }

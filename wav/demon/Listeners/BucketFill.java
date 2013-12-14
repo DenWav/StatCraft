@@ -30,7 +30,7 @@ public class BucketFill extends StatListener implements CommandExecutor {
             return false;
 
         for (String name : names) {
-            sender.getServer().broadcastMessage(name + " - Buckets Filled: " + getStat(name, StatTypes.FILL_BUCKET.id));
+            sender.getServer().broadcastMessage(name + " - Buckets Filled: " + df.format(getStat(name, StatTypes.FILL_BUCKET.id)));
         }
 
         return true;

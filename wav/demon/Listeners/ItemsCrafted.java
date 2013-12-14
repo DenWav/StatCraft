@@ -60,7 +60,7 @@ public class ItemsCrafted extends StatListener implements CommandExecutor {
         for (String name : names) {
             int itemsCrafted = getStat(name, StatTypes.ITEMS_CRAFTED.id);
 
-            sender.getServer().broadcastMessage(name + " - Items Crafted: " + itemsCrafted);
+            sender.getServer().broadcastMessage(name + " - Items Crafted: " + df.format(itemsCrafted));
         }
 
         return true;

@@ -47,8 +47,8 @@ public class BlockListener extends StatListener implements CommandExecutor {
             blocksPlaced = getStat(name, StatTypes.BLOCK_PLACE.id);
 
             // print out the results
-            sender.getServer().broadcastMessage(name + " - Blocks Broken: " + blocksBroken +
-                    " Blocks Placed: " + blocksPlaced);
+            sender.getServer().broadcastMessage(name + " - Blocks Broken: " + df.format(blocksBroken) +
+                    " Blocks Placed: " + df.format(blocksPlaced));
         }
         return true;
     }

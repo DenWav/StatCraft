@@ -80,6 +80,11 @@ commands:
   deathlocations:
     description: Lists the number of deaths and their locations of a player
     usgage: /<command> [player] or just /<command> to list death locations for yourself
+  forcebackup:
+    description: Forces a backup
+    uagge: /<command>
+    permission: StatCraft.admin.*
+    permission-message: You don't have <permission>
 
 permissions:
   admin.op:

@@ -42,7 +42,8 @@ public class WordsSpoken extends StatListener implements CommandExecutor {
                 return false;
 
             for (String name : names) {
-                sender.getServer().broadcastMessage(name + " - Words Spoken: " + getStat(name, StatTypes.WORDS_SPOKEN.id));
+                sender.getServer().broadcastMessage(name + " - Words Spoken: " +
+                        df.format(getStat(name, StatTypes.WORDS_SPOKEN.id)));
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("messagesspoken")) {
@@ -52,7 +53,8 @@ public class WordsSpoken extends StatListener implements CommandExecutor {
                 return false;
 
             for (String name : names) {
-                sender.getServer().broadcastMessage(name + " - Messages Spoken: " + getStat(name, StatTypes.MESSAGES_SPOKEN.id));
+                sender.getServer().broadcastMessage(name + " - Messages Spoken: " +
+                        df.format(getStat(name, StatTypes.MESSAGES_SPOKEN.id)));
             }
             return true;
         }

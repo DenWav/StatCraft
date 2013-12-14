@@ -8,12 +8,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import wav.demon.Commands.*;
 import wav.demon.Listeners.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileLockInterruptionException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -49,6 +47,7 @@ public class StatCraft extends JavaPlugin {
     private PrintData printData = new PrintData(this);
     private UpdateTotals updateTotals = new UpdateTotals(this);
     private SaveStats saveStats = new SaveStats(this);
+    private ForceBackup forceBackup = new ForceBackup(this);
 
     /**
      *  Config settings
@@ -115,11 +114,15 @@ public class StatCraft extends JavaPlugin {
     private String backupStatsInterval;
     private int backupStatsNumber;
     private String backupName;
+    private int backupMilliSec;
+    private ArrayList<String> backups = new ArrayList<>();
+    private int backupNumber;
     /**
      * End config settings
      */
 
     @Override
+    @SuppressWarnings("unchecked")
     final public void onEnable() {
         // See if the config file exists
         File config = new File(getDataFolder(), "config.yml");
@@ -127,7 +130,17 @@ public class StatCraft extends JavaPlugin {
             saveDefaultConfig();
         }
 
-        // load up the config settings
+        // set the time zone of the server
+        if (getConfig().getString("timezone").equalsIgnoreCase("auto")) {
+            TimeZone tz = Calendar.getInstance().getTimeZone();
+            timeZone = tz.getDisplayName(false, TimeZone.SHORT);
+        } else {
+            timeZone = getConfig().getString("timezone");
+        }
+
+          //////////////////////
+         //     CONFIG       //
+        //////////////////////
         // should we track anything?
         enabled = getConfig().getBoolean("trackStats");
         if (enabled) {
@@ -135,7 +148,7 @@ public class StatCraft extends JavaPlugin {
             death = getConfig().getBoolean("stats.death");
             death_locations = getConfig().getBoolean("stats.death_locations");
             if (death_locations && !death) {
-                getLogger().info("death_locations could be enabled because death is false.");
+                getLogger().warning("death_locations could be enabled because death is false.");
                 death_locations = false;
             }
 
@@ -147,13 +160,13 @@ public class StatCraft extends JavaPlugin {
             last_leave_time = getConfig().getBoolean("stats.last_leave_time");
             play_time = getConfig().getBoolean("stats.play_time");
             if (play_time && (!last_join_time || !last_leave_time)) {
-                getLogger().info("play_time could not be enabled because either last_join_time or " +
+                getLogger().warning("play_time could not be enabled because either last_join_time or " +
                         "last_leave_time are false.");
                 play_time = false;
             }
             joins = getConfig().getBoolean("stats.joins");
             if (joins && !last_join_time) {
-                getLogger().info("joins could not be enabled because last_join_time is false.");
+                getLogger().warning("joins could not be enabled because last_join_time is false.");
             }
 
             // item creation
@@ -183,11 +196,11 @@ public class StatCraft extends JavaPlugin {
             words_spoken = getConfig().getBoolean("stats.words_spoken");
             specific_words_spoken = getConfig().getBoolean("stats.specific_words_spoken");
             if (words_spoken && !messages_spoken) {
-                getLogger().info("words_spoken could not be enabled because messages_spoken is false.");
+                getLogger().warning("words_spoken could not be enabled because messages_spoken is false.");
                 words_spoken = false;
             }
             if (specific_words_spoken && !words_spoken) {
-                getLogger().info("specific_words_spoken could not be enabled because words_spoken is false.");
+                getLogger().warning("specific_words_spoken could not be enabled because words_spoken is false.");
             }
 
             // misc
@@ -199,7 +212,7 @@ public class StatCraft extends JavaPlugin {
             move = getConfig().getBoolean("stats.move");
             move_type = getConfig().getBoolean("stats.move_type");
             if (move_type && !move) {
-                getLogger().info("move_type could not be enabled because move is false.");
+                getLogger().warning("move_type could not be enabled because move is false.");
                 move_type = false;
             }
 
@@ -212,7 +225,7 @@ public class StatCraft extends JavaPlugin {
             egg_throws = getConfig().getBoolean("stats.egg_throws");
             chicken_hatches = getConfig().getBoolean("stats.chicken_hatches");
             if (chicken_hatches && !egg_throws) {
-                getLogger().info("chicken_hatches could not be enabled because egg_throws is false.");
+                getLogger().warning("chicken_hatches could not be enabled because egg_throws is false.");
             }
 
             // misc
@@ -229,24 +242,25 @@ public class StatCraft extends JavaPlugin {
             resetAnotherPlayerStats = getConfig().getString("permissions.resetAnotherPlayerStats");
             resetServerStats = getConfig().getString("permissions.resetServerStats");
             if (!(resetAnotherPlayerStats.equalsIgnoreCase("op") || resetAnotherPlayerStats.equalsIgnoreCase("user"))) {
-                getLogger().info("resetAnotherPlayerStats must either be \"op\" or \"user\", defaulting" +
+                getLogger().warning("resetAnotherPlayerStats must either be \"op\" or \"user\", defaulting" +
                         "to \"op\"");
                 resetAnotherPlayerStats = "op";
             }
             if (!(resetServerStats.equalsIgnoreCase("op") || resetServerStats.equalsIgnoreCase("user"))) {
-                getLogger().info("resetServerStats must either be \"op\" or \"user\", defaulting" +
+                getLogger().warning("resetServerStats must either be \"op\" or \"user\", defaulting" +
                         "to \"op\"");
                 resetServerStats = "op";
             }
 
-            // TODO: implement Disk writing and Backups
-            // Disk writing
+              /////////////////////
+             //   Disk writing  //
+            /////////////////////
             totalsUpdating = getConfig().getString("writingToDisk.totalsUpdating");
             totalsUpdatingMilliSec = parseTime(totalsUpdating);
 
             if (totalsUpdatingMilliSec == -1) {
                 totalsUpdatingEnabled = false;
-                getLogger().info("Totals Updating could not be enabled, \"" + totalsUpdating + "\" is invalid.");
+                getLogger().warning("Totals Updating could not be enabled, \"" + totalsUpdating + "\" is invalid.");
             }
 
             statsToDisk = getConfig().getString("writingToDisk.statsToDisk");
@@ -257,18 +271,64 @@ public class StatCraft extends JavaPlugin {
 
             if (statsToDiskMilliSec == -1) {
                 statsToDiskMilliSec = 30 * 1000;
-                getLogger().info("StatsToDisk could not be enabled correctly, \"" + statsToDisk + "\"" +
+                getLogger().warning("StatsToDisk could not be enabled correctly, \"" + statsToDisk + "\"" +
                         " is invalid. Defaulting to 30 seconds delay.");
             }
 
-
-            // Backups
-            // TODO: implement input checks for these values
+              ///////////////
+             //  Backups  //
+            ///////////////
             backupStats = getConfig().getBoolean("backups.backupStats");
-            backupStatsLocation = getConfig().getString("backups.backupStatsLocation");
-            backupStatsInterval = getConfig().getString("backups.backupStatsInterval");
-            backupStatsNumber = getConfig().getInt("backups.backupStatsNumber");
-            backupName = getConfig().getString("backups.backupName");
+            if (backupStats) {
+                backupStatsLocation = getConfig().getString("backups.backupStatsLocation");
+
+                backupName = getConfig().getString("backups.backupName");
+
+                backupStatsInterval = getConfig().getString("backups.backupStatsInterval");
+                backupMilliSec = parseTime(backupStatsInterval);
+
+                if (backupMilliSec == -1) {
+                    backupMilliSec = 24 * 60 * 60 * 1000;
+                    getLogger().warning("Backups could not be enabled correctly, \"" + backupStatsInterval + "\"" +
+                            " is invalid. Defaulting to once every 24 hours.");
+                }
+
+                backupStatsNumber = getConfig().getInt("backups.backupStatsNumber");
+
+                // get the current backup number
+                Scanner input = null;
+                try {
+                    File backupNumberFile = new File(getDataFolder(), "backup-number");
+                    input = new Scanner(backupNumberFile);
+                    backupNumber = input.nextInt();
+                } catch (FileNotFoundException e) {
+                    backupNumber = 1;
+                } finally {
+                    if (input != null)
+                        input.close();
+                }
+
+                // get the current backups from disk
+                File backupArray = new File(getDataFolder(), "backup-array");
+                if (backupArray.exists()) {
+                    ObjectInputStream ois = null;
+                    try {
+                        FileInputStream fis = new FileInputStream(backupArray);
+                        ois = new ObjectInputStream(fis);
+                        Object array = ois.readObject();
+                        backups = (ArrayList<String>) array;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+                            if (ois != null)
+                                ois.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
         }
 
         // make sure the stats directory exists
@@ -285,9 +345,10 @@ public class StatCraft extends JavaPlugin {
                     statsForPlayers = new HashMap<>();
                 }
             } catch (IOException e) {
-                getLogger().info("Something when wrong when trying to read the old stats." +
+                getLogger().warning("Something when wrong when trying to read the old stats." +
                         "Could not initialize.");
                 e.printStackTrace();
+                enabled = false;
             }
         } else if (!stat.exists()) {
             // the directory doesn't exist, so make a new one and create a new stat HashMap
@@ -295,19 +356,10 @@ public class StatCraft extends JavaPlugin {
             statsForPlayers = new HashMap<>();
         } else if (!stat.isDirectory()) {
             // the file exists, but it's not a directory, so warn the user
-            getLogger().info("Stats file in the plugin data folder is not a directory," +
+            getLogger().warning("Stats file in the plugin data folder is not a directory," +
                     "cannot initialize!");
             enabled = false;
         }
-
-        // set the time zone of the server
-        if (getConfig().getString("timezone").equalsIgnoreCase("auto")) {
-            TimeZone tz = Calendar.getInstance().getTimeZone();
-            timeZone = tz.getDisplayName(false, TimeZone.SHORT);
-        } else {
-            timeZone = getConfig().getString("timezone");
-        }
-
 
         if (enabled) {
             String statsEnabled = "";
@@ -426,6 +478,7 @@ public class StatCraft extends JavaPlugin {
             getCommand("printdata").setExecutor(printData);
             getCommand("updatetotals").setExecutor(updateTotals);
             getCommand("savestats").setExecutor(saveStats);
+            getCommand("forcebackup").setExecutor(forceBackup);
         }
 
         timedActivities = new TimedActivities(this);
@@ -436,6 +489,9 @@ public class StatCraft extends JavaPlugin {
         if (!saveStatsRealTime)
             getLogger().info("Successfully started delayed stat saving (" + statsToDisk + "): "
                     + timedActivities.startStatsToDisk(statsToDiskMilliSec));
+        if (backupStats)
+            getLogger().info("Successfully started backups (" + backupStatsInterval + "): "
+                    + timedActivities.startBackup(backupMilliSec));
     }
 
     @Override
@@ -447,6 +503,9 @@ public class StatCraft extends JavaPlugin {
 
         if (!timedActivities.statsToDiskNull())
             getLogger().info("Successfully stopped delayed stat saving: " + timedActivities.stopStatsToDisk());
+
+        if (!timedActivities.backupNull())
+            getLogger().info("Successfully stopped backups: " + timedActivities.stopBackup());
     }
 
     private static String readFile(String path, Charset encoding) throws IOException {
@@ -487,7 +546,7 @@ public class StatCraft extends JavaPlugin {
                             if (outputDir.mkdirs()) {
                                 out = new PrintWriter(outputDir.toString() + "/" + type);
                             } else {
-                                getLogger().info("Fatal error trying to create stat directory");
+                                getLogger().warning("Fatal error trying to create stat directory");
                                 break;
                             }
                         }
@@ -544,7 +603,7 @@ public class StatCraft extends JavaPlugin {
     }
 
     private int parseTime(String time) {
-        char timeUnit = 'a';
+        char timeUnit;
         if (time.endsWith("s")) {
             time = time.replace("s", "");
             timeUnit = 's';
@@ -623,4 +682,30 @@ public class StatCraft extends JavaPlugin {
     public boolean getJoins() { return joins; }
 
     public boolean getSaveStatsRealTime() { return saveStatsRealTime; }
+
+    public int getBackupStatsNumber() { return backupStatsNumber; }
+
+    public int getBackupNumber() { return backupNumber; }
+
+    public String getBackupStatsLocation() { return backupStatsLocation; }
+
+    public void incrementBackupNumber() {
+        backupNumber++;
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(getDataFolder().getPath() + "/backup-number");
+            out.println(backupNumber);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (out != null)
+                out.close();
+        }
+    }
+
+    @NotNull
+    public String getBackupName() { return backupName; }
+
+    @NotNull
+    public ArrayList<String> getBackups() { return backups; }
 }

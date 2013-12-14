@@ -34,7 +34,7 @@ public class ArrowsShot extends StatListener implements CommandExecutor {
             return false;
 
         for (String name : names) {
-            sender.getServer().broadcastMessage(name + " - Arrows Shot: " + getStat(name, StatTypes.ARROWS_SHOT.id));
+            sender.getServer().broadcastMessage(name + " - Arrows Shot: " + df.format(getStat(name, StatTypes.ARROWS_SHOT.id)));
         }
         return true;
     }

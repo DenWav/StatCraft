@@ -197,7 +197,7 @@ backups:
   #   2d    for 2 days
   #   36h   for 1.5 days (36 hours)
   #   1w    for 1 week
-  backupStatsInterval: 1h
+  backupStatsInterval: 1d
 
   # how many backups of the stats should the plugin keep?
   # once the number of backups on disk exceeds this number, the plugin will delete the oldest backup
