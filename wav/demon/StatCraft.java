@@ -11,7 +11,6 @@ import wav.demon.Listeners.*;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileLockInterruptionException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

@@ -1,6 +1,5 @@
 package wav.demon;
 
-import com.avaje.ebeaninternal.server.core.ServletContextListener;
 import com.google.gson.Gson;
 
 import java.io.*;

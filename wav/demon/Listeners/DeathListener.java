@@ -9,7 +9,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
-import javax.swing.text.html.HTMLDocument;
 import java.util.Iterator;
 import java.util.Map;
 
