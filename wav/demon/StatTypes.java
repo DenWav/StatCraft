@@ -45,7 +45,8 @@ public enum StatTypes {
     DAMAGE_DEALT     (37, "damage_dealt"),
     ITEMS_BREWED     (38, "items_brewed"),
     ITEMS_COOKED     (39, "items_cooked"),
-    FIRES_STARTED    (40, "fires_started");
+    FIRES_STARTED    (40, "fires_started"),
+    MINED_ORES       (41, "mined_ores");
 
     public final int id;
     public final String title;

@@ -93,6 +93,7 @@ public class StatCraft extends JavaPlugin {
     private boolean items_brewed;          /*37*/
     private boolean items_cooked;          /*39*/
     private boolean fires_started;         /*40*/
+    private boolean mined_ores;            /*41*/
 
     // permissions
     private boolean resetOwnStats;
@@ -153,6 +154,11 @@ public class StatCraft extends JavaPlugin {
 
             // blocks
             block = getConfig().getBoolean("stats.block");
+            mined_ores = getConfig().getBoolean("stats.mined_ores");
+            if (!block && mined_ores) {
+                getLogger().warning("mined_ores could not be enabled because block is false.");
+                mined_ores = false;
+            }
 
             // playtime
             last_join_time = getConfig().getBoolean("stats.last_join_time");
@@ -384,6 +390,11 @@ public class StatCraft extends JavaPlugin {
                 statsEnabled = statsEnabled + " block";
 
                 getCommand("blocks").setExecutor(blockListener);
+
+                if (mined_ores) {
+                    statsEnabled = statsEnabled + " mined_ores";
+                    getCommand("mined").setExecutor(blockListener);
+                }
             }
 
             if (play_time || last_join_time || last_leave_time || joins) {
@@ -684,6 +695,8 @@ public class StatCraft extends JavaPlugin {
     public boolean getJoins() { return joins; }
 
     public boolean getSaveStatsRealTime() { return saveStatsRealTime; }
+
+    public boolean getMined_ores() { return mined_ores; }
 
     public int getBackupStatsNumber() { return backupStatsNumber; }
 

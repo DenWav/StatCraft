@@ -82,9 +82,12 @@ commands:
     usgage: /<command> [player] or just /<command> to list death locations for yourself
   forcebackup:
     description: Forces a backup
-    uagge: /<command>
+    usage: /<command>
     permission: StatCraft.admin.*
     permission-message: You don't have <permission>
+  mined:
+    description: Lists mined ores
+    usage: /<command> [player] [type]
 
 permissions:
   admin.op:

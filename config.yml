@@ -12,6 +12,8 @@ stats:
 
   # record when a player breaks/places a block
   block: true
+  # record specific number of ores a player has mined
+  mined_ores: true
 
   # keep track of how long players are online
   # this last_join_time and last_leave_time must be true to enable this
