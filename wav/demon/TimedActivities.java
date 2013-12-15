@@ -145,11 +145,12 @@ public class TimedActivities extends Timer {
 
             // make sure the directory exists for us to write to
             File outputDir = new File(plugin.getDataFolder(), "stats/totals");
-            PrintWriter out;
+            PrintWriter out = null;
 
             // make sure the output directory exists
             if (!outputDir.exists())
-                outputDir.mkdir();
+                if (!outputDir.mkdirs())
+                    plugin.getLogger().severe("Fatal error when creating " + outputDir.toString() + ". Possibly a permissions issue?");
 
             // write to the file
             try {
@@ -157,10 +158,11 @@ public class TimedActivities extends Timer {
                 out = new PrintWriter(outputDir.toString() + "/" + type);
                 // write
                 out.println(json);
-                // close 'er up
-                out.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
+            } finally {
+                if (out != null)
+                    out.close();
             }
             it.remove();
         }
@@ -175,12 +177,13 @@ public class TimedActivities extends Timer {
         File dir = new File(path);
         if (!dir.exists())
             if (!dir.mkdirs())
-                plugin.getLogger().warning(path + " could not be created successfully, possibly a permissions issue?");
+                plugin.getLogger().severe(path + " could not be created successfully, possibly a permissions issue?");
 
+        ZipOutputStream out = null;
         try {
             File outputFile = new File(dir, name);
             FileOutputStream dest = new FileOutputStream(outputFile.getAbsoluteFile());
-            ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+            out = new ZipOutputStream(new BufferedOutputStream(dest));
 
             ArrayList<File> files = new ArrayList<>();
             files = getFiles(sourceFolder, files);
@@ -200,14 +203,19 @@ public class TimedActivities extends Timer {
                 }
                 origin.close();
             }
-            out.close();
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
+        } finally {
+            try {
+                if (out != null)
+                    out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         int backupNumber = plugin.getBackupStatsNumber();
@@ -216,7 +224,7 @@ public class TimedActivities extends Timer {
             while (backups.size() >= backupNumber) {
                 File file = new File(backups.get(0));
                 if (!file.delete())
-                    plugin.getLogger().info("Could not delete " + file.getPath() + ". Perhaps there is a permissions issue?");
+                    plugin.getLogger().warning("Could not delete " + file.getPath() + ". Perhaps there is a permissions issue?");
 
                 backups.remove(0);
             }
