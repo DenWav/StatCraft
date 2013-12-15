@@ -344,18 +344,23 @@ public class StatCraft extends JavaPlugin {
                     statsForPlayers = new HashMap<>();
                 }
             } catch (IOException e) {
-                getLogger().warning("Something when wrong when trying to read the old stats." +
+                getLogger().severe("Something when wrong when trying to read the old stats." +
                         "Could not initialize.");
                 e.printStackTrace();
                 enabled = false;
             }
         } else if (!stat.exists()) {
             // the directory doesn't exist, so make a new one and create a new stat HashMap
-            stat.mkdir();
-            statsForPlayers = new HashMap<>();
+            if (!stat.mkdirs()) {
+                getLogger().severe("Fatal error when trying to create " + stat.toString() + ". Possibly " +
+                        "a permissions issue?");
+                enabled = false;
+            } else {
+                statsForPlayers = new HashMap<>();
+            }
         } else if (!stat.isDirectory()) {
             // the file exists, but it's not a directory, so warn the user
-            getLogger().warning("Stats file in the plugin data folder is not a directory," +
+            getLogger().severe("Stats file in the plugin data folder is not a directory," +
                     "cannot initialize!");
             enabled = false;
         }
@@ -516,7 +521,6 @@ public class StatCraft extends JavaPlugin {
     public boolean saveStatFiles() {
         // we need this inside the asynchronous thread
         final File dataFolder = getDataFolder();
-        final StatCraft plugin = this;
         // set the first iterator
         Iterator baseIt = statsForPlayers.entrySet().iterator();
         while (baseIt.hasNext()) {
@@ -558,7 +562,6 @@ public class StatCraft extends JavaPlugin {
                             out.close();
                     }
                 }
-
             }
         }
         return true;
