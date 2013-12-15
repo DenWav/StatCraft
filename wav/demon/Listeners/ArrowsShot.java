@@ -10,6 +10,8 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.util.ArrayList;
+
 public class ArrowsShot extends StatListener implements CommandExecutor {
 
     public ArrowsShot(StatCraft plugin) {
@@ -29,12 +31,14 @@ public class ArrowsShot extends StatListener implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        String[] names = getPlayers(sender, args);
+        ArrayList<String> names = getPlayers(sender, args);
         if (names == null)
             return false;
 
         for (String name : names) {
-            sender.getServer().broadcastMessage(name + " - Arrows Shot: " + df.format(getStat(name, StatTypes.ARROWS_SHOT.id)));
+            String stat = df.format(getStat(name, StatTypes.ARROWS_SHOT.id));
+            String message = name + " - Arrows Shot: " + stat;
+            respondToCommand(message, args, sender);
         }
         return true;
     }

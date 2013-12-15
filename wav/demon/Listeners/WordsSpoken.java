@@ -9,6 +9,8 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.util.ArrayList;
+
 public class WordsSpoken extends StatListener implements CommandExecutor {
 
     public WordsSpoken(StatCraft plugin) {
@@ -37,24 +39,26 @@ public class WordsSpoken extends StatListener implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("wordsspoken")) {
             // list the number of words a player has spoken
-            String[] names = getPlayers(sender, args);
+            ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
 
             for (String name : names) {
-                sender.getServer().broadcastMessage(name + " - Words Spoken: " +
-                        df.format(getStat(name, StatTypes.WORDS_SPOKEN.id)));
+                String stat = df.format(getStat(name, StatTypes.WORDS_SPOKEN.id));
+                String message = name + " - Words Spoken: " + stat;
+                respondToCommand(message, args, sender);
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("messagesspoken")) {
             // list the number of messages a player has spoken
-            String[] names = getPlayers(sender, args);
+            ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
 
             for (String name : names) {
-                sender.getServer().broadcastMessage(name + " - Messages Spoken: " +
-                        df.format(getStat(name, StatTypes.MESSAGES_SPOKEN.id)));
+                String stat = df.format(getStat(name, StatTypes.MESSAGES_SPOKEN.id));
+                String message = name + " - Messages Spoken: " + stat;
+                respondToCommand(message, args, sender);
             }
             return true;
         }

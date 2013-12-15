@@ -69,7 +69,7 @@ public class StatListener implements Listener {
                 // check if the directory exists, if not, create it
                 if (!outputDir.exists())
                     if (!outputDir.mkdirs()) {
-                        plugin.getLogger().info("Fatal error occurred while trying to save stat files: Could not create directory");
+                        plugin.getLogger().severe("Fatal error occurred while trying to save stat files: Could not create directory");
                         return;
                     }
 
@@ -124,7 +124,7 @@ public class StatListener implements Listener {
                 // check if the directory exists, if not, create it
                 if (!outputDir.exists())
                     if (!outputDir.mkdirs()) {
-                        plugin.getLogger().info("Fatal error occurred while trying to save stat files: Could not create directory");
+                        plugin.getLogger().severe("Fatal error occurred while trying to save stat files: Could not create directory");
                         return;
                     }
 
@@ -221,7 +221,7 @@ public class StatListener implements Listener {
      * @return A String array of the players to run the command on
      */
     @Nullable
-    protected String[] getPlayers(CommandSender sender, String[] args) {
+    protected ArrayList<String> getPlayers(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
             // if this is run from the console, then a player name must be provided
             if (args.length == 0) {
@@ -231,11 +231,16 @@ public class StatListener implements Listener {
             }
         }
 
-        String[] names;
-        if (args.length == 0)
-            names = new String[] {sender.getName()};
-        else
-            names = args;
+        ArrayList<String> names = new ArrayList<>();
+        if (args.length == 0) {
+            names.add(sender.getName());
+        } else if (args.length == 1 && args[0].equals("-all")) {
+            names.add(sender.getName());
+        } else {
+            for (String arg : args)
+                if (!arg.equals("-all"))
+                    names.add(arg);
+        }
 
         return names;
     }
@@ -339,5 +344,25 @@ public class StatListener implements Listener {
         }
 
         return finalResult;
+    }
+
+    /**
+     * Respond to the command appropriately, either private or public based on the arguments given.
+     * The command will respond publicly if the "-all" argument is given, in all other cases the response will be private.
+     *
+     * @param message The message that the command outputs
+     * @param args The arguments for the command
+     * @param sender The CommandSender that was provided in the onCommand method
+     */
+    protected void respondToCommand(String message, String[] args, CommandSender sender) {
+        boolean publicCmd = false;
+        for (String arg : args)
+            if (arg.equals("-all"))
+                publicCmd = true;
+
+        if (publicCmd)
+            sender.getServer().broadcastMessage(message);
+        else
+            sender.sendMessage(message);
     }
 }

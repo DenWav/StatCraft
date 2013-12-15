@@ -11,9 +11,11 @@ import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 
+// FIXME: This is seriously broken
 public class SleepyTime extends StatListener implements CommandExecutor {
 
     public SleepyTime(StatCraft plugin) {
@@ -45,15 +47,14 @@ public class SleepyTime extends StatListener implements CommandExecutor {
         final int currentSleepTime = getStat(name, StatTypes.TIME_SLEPT.id);
         final int enterBed = getStat(name, StatTypes.ENTER_BED.id);
 
-        int playTime = (leaveBed - enterBed) + currentSleepTime;
-        return playTime;
+        return (leaveBed - enterBed) + currentSleepTime;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("timeslept")) {
             // determine who to list sleepy time for
-            String[] names = getPlayers(sender, args);
+            ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
 
@@ -70,14 +71,17 @@ public class SleepyTime extends StatListener implements CommandExecutor {
 
                 String message = transformTime(timeSlept);
 
-                if (message.equalsIgnoreCase(""))
-                    sender.getServer().broadcastMessage(name + " hasn't slept yet.");
-                else
-                    sender.getServer().broadcastMessage(name + " - Time Slept: " + message);
+                if (message.equalsIgnoreCase("")) {
+                    message = name + " hasn't slept yet.";
+                    respondToCommand(message, args, sender);
+                } else {
+                    message = name + " - Time Slept: " + message;
+                    respondToCommand(message, args, sender);
+                }
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("lastslept")) {
-            String[] names = getPlayers(sender, args);
+            ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
 
@@ -87,12 +91,14 @@ public class SleepyTime extends StatListener implements CommandExecutor {
                 } else {
                     long dateTime = (long) getStat(name, StatTypes.LEAVE_BED.id) * 1000;
                     if (dateTime == 0) {
-                        sender.getServer().broadcastMessage(name + " hasn't slept yet.");
+                        String message = name + " hasn't slept yet.";
+                        respondToCommand(message, args, sender);
                     } else {
                         Date date = new Date(dateTime);
                         SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd, hh:mm aa yyyy");
                         format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
-                        sender.getServer().broadcastMessage(name + " - Last Slept: " + format.format(date));
+                        String message = name + " - Last Slept: " + format.format(date);
+                        respondToCommand(message, args, sender);
                     }
                 }
             }

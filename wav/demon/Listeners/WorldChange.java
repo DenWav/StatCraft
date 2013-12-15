@@ -9,6 +9,8 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.util.ArrayList;
+
 public class WorldChange extends StatListener implements CommandExecutor {
 
     public WorldChange(StatCraft plugin) {
@@ -27,12 +29,14 @@ public class WorldChange extends StatListener implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // list the number of times a player has changed worlds
-        String[] names = getPlayers(sender, args);
+        ArrayList<String> names = getPlayers(sender, args);
         if (names == null)
             return false;
 
         for (String name : names) {
-            sender.getServer().broadcastMessage(name + " - World Changes: " + df.format(getStat(name, StatTypes.WORLD_CHANGE.id)));
+            String stat = df.format(getStat(name, StatTypes.WORLD_CHANGE.id));
+            String message = name + " - World Changes: " + stat;
+            respondToCommand(message, args, sender);
         }
         return true;
     }

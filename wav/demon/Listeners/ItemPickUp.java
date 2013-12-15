@@ -9,6 +9,8 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.util.ArrayList;
+
 public class ItemPickUp extends StatListener implements CommandExecutor {
 
     public ItemPickUp(StatCraft plugin) {
@@ -29,14 +31,14 @@ public class ItemPickUp extends StatListener implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        String[] names = getPlayers(sender, args);
+        ArrayList<String> names = getPlayers(sender, args);
         if (names == null)
             return false;
 
         for (String name : names) {
-            long itemsPickedUp = getStat(name, StatTypes.ITEM_PICKUPS.id);
-
-            sender.getServer().broadcastMessage(name + " - Items Picked Up: " + df.format(itemsPickedUp));
+            String itemsPickedUp = df.format(getStat(name, StatTypes.ITEM_PICKUPS.id));
+            String message = name + " - Items Picked Up: " + itemsPickedUp;
+            respondToCommand(message, args, sender);
         }
         return true;
     }

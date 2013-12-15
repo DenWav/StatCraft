@@ -9,6 +9,8 @@ import org.bukkit.event.player.PlayerItemBreakEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.util.ArrayList;
+
 public class ToolsBroken extends StatListener implements CommandExecutor {
 
     public ToolsBroken(StatCraft plugin) {
@@ -27,14 +29,14 @@ public class ToolsBroken extends StatListener implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        String[] names = getPlayers(sender, args);
+        ArrayList<String> names = getPlayers(sender, args);
         if (names == null)
             return false;
 
         for (String name : names) {
-            int toolsBroken = getStat(name, StatTypes.TOOLS_BROKEN.id);
-
-            sender.getServer().broadcastMessage(name + " - Tools Broken: " + df.format(toolsBroken));
+            String toolsBroken = df.format(getStat(name, StatTypes.TOOLS_BROKEN.id));
+            String message = name + " - Tools Broken: " + toolsBroken;
+            respondToCommand(message, args, sender);
         }
         return true;
     }

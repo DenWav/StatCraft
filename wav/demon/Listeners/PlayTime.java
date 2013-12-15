@@ -11,6 +11,7 @@ import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -55,7 +56,7 @@ public class PlayTime extends StatListener implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("playtime")) {
             // list the playtime for a player
-            String[] names = getPlayers(sender, args);
+            ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
 
@@ -72,14 +73,17 @@ public class PlayTime extends StatListener implements CommandExecutor {
 
                 String message = transformTime(playTime);
 
-                if (message.equalsIgnoreCase(""))
-                    sender.getServer().broadcastMessage(name + " doesn't have any logged playtime yet.");
-                else
-                    sender.getServer().broadcastMessage(name + " - Playtime: " + message);
+                if (message.equalsIgnoreCase("")) {
+                    message = name + " doesn't have any logged playtime yet.";
+                    respondToCommand(message, args, sender);
+                } else {
+                    message = name + " - Playtime: " + message;
+                    respondToCommand(message, args, sender);
+                }
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("lastseen")) {
-            String[] names = getPlayers(sender, args);
+            ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
 
@@ -89,25 +93,27 @@ public class PlayTime extends StatListener implements CommandExecutor {
                 } else {
                     long dateTime = (long) getStat(name, StatTypes.LAST_LEAVE_TIME.id) * 1000;
                     if (dateTime == 0) {
-                        sender.getServer().broadcastMessage(name + " hasn't been seen on the server yet.");
+                        String message = name + " hasn't been seen on the server yet.";
+                        respondToCommand(message, args, sender);
                     } else {
                         Date date = new Date(dateTime);
                         SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd, hh:mm aa yyyy");
                         format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
-                        sender.getServer().broadcastMessage(name + " - Last Seen: " + format.format(date));
+                        String message = name + " - Last Seen: " + format.format(date);
+                        respondToCommand(message, args, sender);
                     }
                 }
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("joins")) {
-            String[] names = getPlayers(sender, args);
+            ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
 
             for (String name : names) {
-                int joins = getStat(name, StatTypes.JOINS.id);
-
-                sender.getServer().broadcastMessage(name + " - Joins: " + df.format(joins));
+                String joins = df.format(getStat(name, StatTypes.JOINS.id));
+                String message = name + " - Joins: " + joins;
+                respondToCommand(message, args, sender);
             }
 
             return true;

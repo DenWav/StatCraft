@@ -9,6 +9,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -33,21 +34,21 @@ public class DeathListener extends StatListener implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("deaths")) {
             // list the number of recorded deaths for a player
-            String[] names = getPlayers(sender, args);
+            ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
 
-            int deaths;
             for (String name : names) {
-                deaths = getStat(name, StatTypes.DEATH.id);
+                String deaths = df.format(getStat(name, StatTypes.DEATH.id));
+                String message = name + " - Deaths: " + deaths;
 
                 // print out the results
-                sender.getServer().broadcastMessage(name + " - Deaths: " + df.format(deaths));
+                respondToCommand(message, args, sender);
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("deathlocations")) {
             // list the number of recorded deaths and their locations for a player
-            String[] names = getPlayers(sender, args);
+            ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
 
@@ -68,12 +69,14 @@ public class DeathListener extends StatListener implements CommandExecutor {
                                 message = message + worldName + ":" + df.format(deaths) + " ";
                             }
                         }
-                        sender.getServer().broadcastMessage(message);
+                        respondToCommand(message, args, sender);
                     } else {
-                        sender.getServer().broadcastMessage(name + " - Death Locations: 0");
+                        String message = name + " - Death Locations: 0";
+                        respondToCommand(message, args, sender);
                     }
                 } else {
-                    sender.getServer().broadcastMessage(name + " - Death Locations: 0");
+                    String message = name + " - Death Locations: 0";
+                    respondToCommand(message, args, sender);
                 }
             }
             return true;

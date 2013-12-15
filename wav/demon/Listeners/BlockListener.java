@@ -10,6 +10,8 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.util.ArrayList;
+
 public class BlockListener extends StatListener implements CommandExecutor {
 
     public BlockListener(StatCraft plugin) {
@@ -35,20 +37,18 @@ public class BlockListener extends StatListener implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // list the number of recorded deaths for a player
-        String[] names = getPlayers(sender, args);
+        ArrayList<String> names = getPlayers(sender, args);
         if (names == null)
             return false;
 
-        long blocksBroken;
-        long blocksPlaced;
-
         for (String name : names) {
-            blocksBroken = getStat(name, StatTypes.BLOCK_BREAK.id);
-            blocksPlaced = getStat(name, StatTypes.BLOCK_PLACE.id);
+            String blocksBroken = df.format(getStat(name, StatTypes.BLOCK_BREAK.id));
+            String blocksPlaced = df.format(getStat(name, StatTypes.BLOCK_PLACE.id));
+
+            String message = name + " - Blocks Broken: " + blocksBroken + " Blocks Placed: " + blocksPlaced;
 
             // print out the results
-            sender.getServer().broadcastMessage(name + " - Blocks Broken: " + df.format(blocksBroken) +
-                    " Blocks Placed: " + df.format(blocksPlaced));
+            respondToCommand(message, args, sender);
         }
         return true;
     }

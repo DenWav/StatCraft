@@ -9,6 +9,8 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.util.ArrayList;
+
 public class BucketFill extends StatListener implements CommandExecutor {
 
     public BucketFill(StatCraft plugin) {
@@ -25,12 +27,14 @@ public class BucketFill extends StatListener implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        String[] names = getPlayers(sender, args);
+        ArrayList<String> names = getPlayers(sender, args);
         if (names == null)
             return false;
 
         for (String name : names) {
-            sender.getServer().broadcastMessage(name + " - Buckets Filled: " + df.format(getStat(name, StatTypes.FILL_BUCKET.id)));
+            String stat = df.format(getStat(name, StatTypes.FILL_BUCKET.id));
+            String message = name + " - Buckets Filled: " + stat;
+            respondToCommand(message, args, sender);
         }
 
         return true;

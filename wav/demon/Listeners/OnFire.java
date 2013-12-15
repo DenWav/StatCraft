@@ -10,6 +10,8 @@ import org.bukkit.event.entity.EntityCombustEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.util.ArrayList;
+
 public class OnFire extends StatListener implements CommandExecutor {
 
     public OnFire(StatCraft plugin) {
@@ -37,13 +39,15 @@ public class OnFire extends StatListener implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        String[] names = getPlayers(sender, args);
+        ArrayList<String> names = getPlayers(sender, args);
         if (names == null)
             return false;
 
         //int fireTime;
         for (String name : names) {
-            sender.getServer().broadcastMessage(name + " - On Fire: " + df.format(getStat(name, StatTypes.ON_FIRE.id)));
+            String stat = df.format(getStat(name, StatTypes.ON_FIRE.id));
+            String message = name + " - On fire: " + stat;
+            respondToCommand(message, args, sender);
             // fireTime = getStat(name, StatTypes.ON_FIRE.id);
 
             // String message = transformTime(fireTime);
