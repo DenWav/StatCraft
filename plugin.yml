@@ -88,6 +88,15 @@ commands:
   mined:
     description: Lists mined ores
     usage: /<command> [player] [type]
+  damagetaken:
+    description: Shows damage taken by a player
+    usage: /<command> [player] or just /<command> to show damage taken by yourself
+  damagedealt:
+    description: Shows damage dealt by a player
+    usage: /<command> [player] or just /<command> to show damage dealt by yourself
+  fishcaught:
+    description: Shows the number of fish a player has caught
+    usage: /<command> [player] or just /<command> to show fish caught for yourself
 
 permissions:
   admin.op:

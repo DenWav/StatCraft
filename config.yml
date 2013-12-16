@@ -75,6 +75,9 @@ stats:
   # words_spken must be true to enable this
   specific_words_spken: true
 
+  # keep track of the number of attempted tab-completes a player does
+  tab_complete: true
+
   # keep track of the total damage a player has received
   damage_taken: true
 

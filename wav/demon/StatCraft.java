@@ -39,6 +39,9 @@ public class StatCraft extends JavaPlugin {
     private SleepyTime sleepyTime = new SleepyTime(this);
     private WorldChange worldChange = new WorldChange(this);
     private WordsSpoken wordsSpoken = new WordsSpoken(this);
+    private DamageTaken damageTaken = new DamageTaken(this);
+    private DamageDealt damageDealt = new DamageDealt(this);
+    private FishCaught fishCaught = new FishCaught(this);
 
     // commands
     private ListCommand listCommand = new ListCommand();
@@ -94,6 +97,7 @@ public class StatCraft extends JavaPlugin {
     private boolean items_cooked;          /*39*/
     private boolean fires_started;         /*40*/
     private boolean mined_ores;            /*41*/
+    private boolean tab_complete;          /*42*/
 
     // permissions
     private boolean resetOwnStats;
@@ -207,6 +211,8 @@ public class StatCraft extends JavaPlugin {
             if (specific_words_spoken && !words_spoken) {
                 getLogger().warning("specific_words_spoken could not be enabled because words_spoken is false.");
             }
+
+            tab_complete = getConfig().getBoolean("stats.tab_complete");
 
             // misc
             damage_taken = getConfig().getBoolean("stats.damage_taken");
@@ -484,6 +490,25 @@ public class StatCraft extends JavaPlugin {
                 if (messages_spoken)
                     getCommand("messagesspoken").setExecutor(wordsSpoken);
             }
+
+            if (damage_taken) {
+                getServer().getPluginManager().registerEvents(damageTaken, this);
+                statsEnabled = statsEnabled + " damage_taken";
+                getCommand("damagetaken").setExecutor(damageTaken);
+            }
+
+            if (damage_dealt) {
+                getServer().getPluginManager().registerEvents(damageDealt, this);
+                statsEnabled = statsEnabled + " damage_dealt";
+                getCommand("damagedealt").setExecutor(damageDealt);
+            }
+
+            if (fish_caught) {
+                getServer().getPluginManager().registerEvents(fishCaught, this);
+                statsEnabled = statsEnabled + " fish_caught";
+                getCommand("fishcaught").setExecutor(fishCaught);
+            }
+
 
             getLogger().info("Successfully enabled:" + statsEnabled);
 

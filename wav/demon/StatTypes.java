@@ -26,8 +26,8 @@ public enum StatTypes {
     TIME_SLEPT       (18, "time_slept"),      ///
     WORDS_SPOKEN     (19, "words_spoken"),    ///
     MESSAGES_SPOKEN  (20, "messages_spoken"), ///
-    DAMAGE_TAKEN     (21, "damage_taken"),
-    FISH_CAUGHT      (22, "fish_caught"),
+    DAMAGE_TAKEN     (21, "damage_taken"),    ///
+    FISH_CAUGHT      (22, "fish_caught"),     ///
     JOINS            (23, "joins"),           ///
     XP_GAINED        (24, "xp_gained"),
     MOVE             (25, "move"),
@@ -42,11 +42,14 @@ public enum StatTypes {
     TNT_DETONATED    (34, "tnt_detonated"),
     ENCHANTS_DONE    (35, "enchants_done"),
     HIGHEST_LEVEL    (36, "highest_level"),
-    DAMAGE_DEALT     (37, "damage_dealt"),
+    DAMAGE_DEALT     (37, "damage_dealt"),   ///
     ITEMS_BREWED     (38, "items_brewed"),
     ITEMS_COOKED     (39, "items_cooked"),
     FIRES_STARTED    (40, "fires_started"),
-    MINED_ORES       (41, "mined_ores");
+    MINED_ORES       (41, "mined_ores"),
+    TAB_COMPLETE     (42, "tab_complete"),
+    EATING           (43, "eating"),
+    SHEARING         (44, "shearing");
 
     public final int id;
     public final String title;

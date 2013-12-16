@@ -81,7 +81,7 @@ public class ItemsCrafted extends StatListener implements CommandExecutor {
             preInv[i] = preInv[i] != null ? preInv[i].clone() : null;
         }
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             @Override
             public void run() {
                 final ItemStack[] postInv = player.getInventory().getContents();
