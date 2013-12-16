@@ -34,36 +34,36 @@ public class BlockListener extends StatListener implements CommandExecutor {
         if (plugin.getMined_ores()) {
             Block block = event.getBlock();
             Material type = block.getType();
-            if (type == Material.COAL_ORE || type == Material.IRON_ORE || type == Material.GOLD_ORE || type == Material.DIAMOND_ORE
-                    || type == Material.REDSTONE_ORE || type == Material.LAPIS_ORE || type == Material.EMERALD_ORE) {
-                Collection<ItemStack> drops = block.getDrops(event.getPlayer().getItemInHand());
-                for (ItemStack stack : drops) {
-                    switch (type) {
-                        case COAL_ORE:
-                            message = Ores.COAL.id + "";
-                            break;
-                        case IRON_ORE:
-                            message = Ores.IRON.id + "";
-                            break;
-                        case GOLD_ORE:
-                            message = Ores.GOLD.id + "";
-                            break;
-                        case DIAMOND_ORE:
-                            message = Ores.DIAMOND.id + "";
-                            break;
-                        case REDSTONE_ORE:
-                            message = Ores.REDSTONE.id + "";
-                            break;
-                        case LAPIS_ORE:
-                            message = Ores.LAPIS.id + "";
-                            break;
-                        case EMERALD_ORE:
-                            message = Ores.EMERALD.id + "";
-                            break;
-                        default:
-                            break;
-                    }
+            Collection<ItemStack> drops = block.getDrops(event.getPlayer().getItemInHand());
+            for (ItemStack stack : drops) {
+                switch (type) {
+                    case COAL_ORE:
+                        message = Ores.COAL.id + "";
+                        break;
+                    case IRON_ORE:
+                        message = Ores.IRON.id + "";
+                        break;
+                    case GOLD_ORE:
+                        message = Ores.GOLD.id + "";
+                        break;
+                    case DIAMOND_ORE:
+                        message = Ores.DIAMOND.id + "";
+                        break;
+                    case REDSTONE_ORE:
+                        message = Ores.REDSTONE.id + "";
+                        break;
+                    case LAPIS_ORE:
+                        message = Ores.LAPIS.id + "";
+                        break;
+                    case EMERALD_ORE:
+                        message = Ores.EMERALD.id + "";
+                        break;
+                    default:
+                        message = "";
+                        break;
+                }
 
+                if (!message.equals("")) {
                     for (int x = 1; x <= stack.getAmount(); x++) {
                         incrementStat(StatTypes.MINED_ORES.id, name, message);
                     }

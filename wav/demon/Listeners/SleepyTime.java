@@ -26,7 +26,7 @@ public class SleepyTime extends StatListener implements CommandExecutor {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBedEnter(PlayerBedEnterEvent event) {
         final String name = event.getPlayer().getName();
-        final int currentTime = (int) (System.nanoTime() / 1000);
+        final int currentTime = (int) (System.currentTimeMillis() / 1000);
 
         addStat(StatTypes.ENTER_BED.id, name, currentTime);
     }
@@ -35,7 +35,7 @@ public class SleepyTime extends StatListener implements CommandExecutor {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBedLeave(PlayerBedLeaveEvent event) {
         final String name = event.getPlayer().getName();
-        final int currentTime = (int) (System.nanoTime() / 1000);
+        final int currentTime = (int) (System.currentTimeMillis() / 1000);
         addStat(StatTypes.LEAVE_BED.id, name, currentTime);
 
         addStat(StatTypes.TIME_SLEPT.id, name, calculateTimeInterval(name, currentTime));
@@ -63,7 +63,7 @@ public class SleepyTime extends StatListener implements CommandExecutor {
             for (String name : names) {
                 if (getStat(name, StatTypes.ENTER_BED.id) > getStat(name, StatTypes.LEAVE_BED.id)) {
                     final int startTime = (int) (System.currentTimeMillis() / 1000);
-                    final int currentTimeSlept = startTime - getStat(name, StatTypes.LEAVE_BED.id);
+                    final int currentTimeSlept = startTime - getStat(name, StatTypes.ENTER_BED.id);
                     timeSlept = currentTimeSlept + getStat(name, StatTypes.TIME_SLEPT.id);
                 } else {
                     timeSlept = getStat(name, StatTypes.TIME_SLEPT.id);
