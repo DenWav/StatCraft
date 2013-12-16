@@ -44,6 +44,7 @@ public class ResetCommand implements CommandExecutor {
                     plugin.playtime.addStatToPlayer(StatTypes.LAST_JOIN_TIME.id, player.getName(),
                             (int) (System.currentTimeMillis() / 1000));
                 }
+                commandSender.sendMessage("Stat reset completed with no errors.");
                 return true;
             } else {
                 commandSender.sendMessage("You don't have permission to do that.");
@@ -85,6 +86,7 @@ public class ResetCommand implements CommandExecutor {
                         }
                     }
                 });
+                commandSender.sendMessage("Stat reset completed with no errors.");
                 return true;
             } else {
                 commandSender.sendMessage("You don't have permission to do that.");
@@ -114,6 +116,7 @@ public class ResetCommand implements CommandExecutor {
                     }
                 });
 
+                commandSender.sendMessage("Stat reset completed with no errors.");
                 return true;
             } else {
                 commandSender.sendMessage("You don't have permission to do that.");
@@ -152,6 +155,7 @@ public class ResetCommand implements CommandExecutor {
                                 (int) (System.currentTimeMillis() / 1000));
                 }
 
+                commandSender.sendMessage("Stat reset completed with no errors.");
                 return true;
             } else {
                 commandSender.sendMessage("You don't have permission to do that.");

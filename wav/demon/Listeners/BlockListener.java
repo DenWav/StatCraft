@@ -14,7 +14,6 @@ import org.bukkit.inventory.ItemStack;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -36,38 +35,15 @@ public class BlockListener extends StatListener implements CommandExecutor {
             Material type = block.getType();
             Collection<ItemStack> drops = block.getDrops(event.getPlayer().getItemInHand());
             for (ItemStack stack : drops) {
-                switch (type) {
-                    case COAL_ORE:
-                        message = Ores.COAL.id + "";
-                        break;
-                    case IRON_ORE:
-                        message = Ores.IRON.id + "";
-                        break;
-                    case GOLD_ORE:
-                        message = Ores.GOLD.id + "";
-                        break;
-                    case DIAMOND_ORE:
-                        message = Ores.DIAMOND.id + "";
-                        break;
-                    case REDSTONE_ORE:
-                        message = Ores.REDSTONE.id + "";
-                        break;
-                    case LAPIS_ORE:
-                        message = Ores.LAPIS.id + "";
-                        break;
-                    case EMERALD_ORE:
-                        message = Ores.EMERALD.id + "";
-                        break;
-                    default:
-                        message = "";
-                        break;
-                }
 
-                if (!message.equals("")) {
+                message = type.toString();
+
+                if (message != null) {
                     for (int x = 1; x <= stack.getAmount(); x++) {
-                        incrementStat(StatTypes.MINED_ORES.id, name, message);
+                        incrementStat(StatTypes.MINED.id, name, message);
                     }
                 }
+
             }
         }
     }
@@ -100,18 +76,19 @@ public class BlockListener extends StatListener implements CommandExecutor {
             return true;
         } else if (cmd.getName().equalsIgnoreCase("mined")) {
             // list ores mined by a player
-            if (args.length > 3 && args.length < 1)
+            if (args.length > 3 || args.length <= 1)
                 return false;
 
             String name = args[0];
             String type = args[1];
             String message;
 
-            int stat = getStat(name, StatTypes.MINED_ORES.id, type);
+            int stat = getStat(name, StatTypes.MINED.id, type);
+            String material = type.replace("_", " ");
             if (stat != -1) {
-                message = name + " - " + WordUtils.capitalize(type) + " Mined: " + df.format(stat);
+                message = name + " - " + WordUtils.capitalizeFully(material) + " Mined: " + df.format(stat);
             } else {
-                message = name + " - " + WordUtils.capitalize(type) + " Mined: " + 0;
+                message = name + " - " + WordUtils.capitalizeFully(material) + " Mined: " + 0;
             }
 
             respondToCommand(message, args, sender);
@@ -122,14 +99,14 @@ public class BlockListener extends StatListener implements CommandExecutor {
         }
     }
 
-    protected int getStat(String name, int type, String ore) {
-        Ores oreType = Ores.getOreFromName(ore);
-        if (oreType != null) {
+    protected int getStat(String name, int type, String s) {
+        Material mat = Material.matchMaterial(s);
+        if (mat != null) {
             int stat;
             if (plugin.statsForPlayers.containsKey(name))
                 if (plugin.statsForPlayers.get(name).containsKey(type))
-                    if (plugin.statsForPlayers.get(name).get(type).containsKey(oreType.id + ""))
-                        stat = plugin.statsForPlayers.get(name).get(type).get(oreType.id + "");
+                    if (plugin.statsForPlayers.get(name).get(type).containsKey(mat.toString()))
+                        stat = plugin.statsForPlayers.get(name).get(type).get(mat.toString());
                     else
                         stat = 0;
                 else
@@ -145,15 +122,24 @@ public class BlockListener extends StatListener implements CommandExecutor {
     }
 }
 
-enum Ores {
+/**enum Ores {
 
-    COAL    (1, "coal"),
-    IRON    (2, "iron"),
-    GOLD    (3, "gold"),
-    DIAMOND (4, "diamond"),
-    REDSTONE(5, "redstone"),
-    LAPIS   (6, "lapis"),
-    EMERALD (7, "emerald");
+    COAL               (1, "coal"),
+    IRON               (2, "iron"),
+    GOLD               (3, "gold"),
+    DIAMOND            (4, "diamond"),
+    REDSTONE           (5, "redstone"),
+    LAPIS              (6, "lapis"),
+    EMERALD            (7, "emerald"),
+    ACTIVATOR_RAIL     (8, "activator_rail"),
+    ANVIL              (9, "anvil"),
+    APPLE              (10, "apple"),
+    ARROW              (11, "arrow"),
+    BAKED_POTATO       (12, "baked_potato"),
+    BEACON             (13, "beacon"),
+    BED                (14, "bed"),
+    BIRCH_WOOD_STAIRS  (15, "birch_wood_stairs"),
+    BLAZE_POWDER
 
     public final int id;
     public final String name;
@@ -178,4 +164,4 @@ enum Ores {
         return answer;
     }
 
-}
+}*/

@@ -46,7 +46,7 @@ public enum StatTypes {
     ITEMS_BREWED     (38, "items_brewed"),
     ITEMS_COOKED     (39, "items_cooked"),
     FIRES_STARTED    (40, "fires_started"),
-    MINED_ORES       (41, "mined_ores"),
+    MINED            (41, "mined"),
     TAB_COMPLETE     (42, "tab_complete"),
     EATING           (43, "eating"),
     SHEARING         (44, "shearing");

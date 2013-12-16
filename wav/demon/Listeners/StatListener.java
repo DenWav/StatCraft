@@ -361,7 +361,7 @@ public class StatListener implements Listener {
                 publicCmd = true;
 
         if (publicCmd)
-            sender.getServer().broadcastMessage(message);
+            sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + message);
         else
             sender.sendMessage(message);
     }

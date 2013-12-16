@@ -77,7 +77,10 @@ public class PlayTime extends StatListener implements CommandExecutor {
                     message = name + " doesn't have any logged playtime yet.";
                     respondToCommand(message, args, sender);
                 } else {
-                    message = name + " - Playtime: " + message;
+                    int thisSession = (int) (System.currentTimeMillis() / 1000) - getStat(name, StatTypes.LAST_JOIN_TIME.id);
+                    String thisSessionText = transformTime(thisSession);
+
+                    message = name + " - Playtime: " + message + " | This session: " + thisSessionText;
                     respondToCommand(message, args, sender);
                 }
             }
