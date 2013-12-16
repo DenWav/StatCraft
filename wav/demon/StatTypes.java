@@ -11,7 +11,7 @@ public enum StatTypes {
     BLOCK_PLACE      (3 , "block_place"),     ///
     PLAY_TIME        (4 , "play_time"),       ///
     ITEMS_CRAFTED    (5 , "items_crafted"),   ///
-    ON_FIRE          (6 , "on_fire"),         //x  can only count the number of times a player has been on fire, not how long
+    ON_FIRE          (6 , "on_fire"),         ///
     WORLD_CHANGE     (7 , "world_change"),    ///
     TOOLS_BROKEN     (8 , "tools_broken"),    ///
     ARROWS_SHOT      (9 , "arrows_shot"),     ///
@@ -21,9 +21,9 @@ public enum StatTypes {
     EMPTY_BUCKET     (13, "bucket_empty"),    ///
     ITEM_DROPS       (14, "item_drops"),      ///
     ITEM_PICKUPS     (15, "item_pickups"),    ///
-    ENTER_BED        (16, "enter_bed"),       //
-    LEAVE_BED        (17, "leave_bed"),       //
-    TIME_SLEPT       (18, "time_slept"),      //
+    ENTER_BED        (16, "enter_bed"),       ///
+    LEAVE_BED        (17, "leave_bed"),       ///
+    TIME_SLEPT       (18, "time_slept"),      ///
     WORDS_SPOKEN     (19, "words_spoken"),    ///
     MESSAGES_SPOKEN  (20, "messages_spoken"), ///
     DAMAGE_TAKEN     (21, "damage_taken"),
