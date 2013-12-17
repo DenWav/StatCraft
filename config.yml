@@ -40,6 +40,8 @@ stats:
 
   # record number of times a player is on fire
   on_fire: true
+  # announce to the server whenever a player is on fire
+  on_fire_announce: true
 
   # record number of times a player changes worlds
   world_change: true

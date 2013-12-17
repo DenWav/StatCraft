@@ -4,7 +4,6 @@ import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,7 +16,7 @@ import wav.demon.StatTypes;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class BlockListener extends StatListener implements CommandExecutor {
+public class BlockListener extends StatListener {
 
     public BlockListener(StatCraft plugin) {
         super(plugin);
@@ -68,7 +67,7 @@ public class BlockListener extends StatListener implements CommandExecutor {
                 String blocksBroken = df.format(super.getStat(name, StatTypes.BLOCK_BREAK.id));
                 String blocksPlaced = df.format(super.getStat(name, StatTypes.BLOCK_PLACE.id));
 
-                String message = name + " - Blocks Broken: " + blocksBroken + " Blocks Placed: " + blocksPlaced;
+                String message = "§c" + name + "§f - Blocks Broken: " + blocksBroken + " Blocks Placed: " + blocksPlaced;
 
                 // print out the results
                 respondToCommand(message, args, sender);
@@ -86,9 +85,9 @@ public class BlockListener extends StatListener implements CommandExecutor {
             int stat = getStat(name, StatTypes.MINED.id, type);
             String material = type.replace("_", " ");
             if (stat != -1) {
-                message = name + " - " + WordUtils.capitalizeFully(material) + " Mined: " + df.format(stat);
+                message = "§c" + name + "§f - " + WordUtils.capitalizeFully(material) + " Mined: " + df.format(stat);
             } else {
-                message = name + " - " + WordUtils.capitalizeFully(material) + " Mined: " + 0;
+                message = "§c" + name + "§f - " + WordUtils.capitalizeFully(material) + " Mined: " + 0;
             }
 
             respondToCommand(message, args, sender);
@@ -99,7 +98,7 @@ public class BlockListener extends StatListener implements CommandExecutor {
         }
     }
 
-    protected int getStat(String name, int type, String s) {
+    private int getStat(String name, int type, String s) {
         Material mat = Material.matchMaterial(s);
         if (mat != null) {
             int stat;
@@ -114,7 +113,6 @@ public class BlockListener extends StatListener implements CommandExecutor {
             else
                 stat = 0;
 
-            System.out.println(stat);
             return stat;
         } else {
             return -1;

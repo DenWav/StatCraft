@@ -18,6 +18,7 @@ public class PrintData implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         Gson gson = new Gson();
         plugin.getLogger().info(gson.toJson(plugin.statsForPlayers));
+
         return true;
     }
 }

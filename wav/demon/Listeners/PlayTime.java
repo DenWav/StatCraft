@@ -1,7 +1,6 @@
 package wav.demon.Listeners;
 
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -15,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class PlayTime extends StatListener implements CommandExecutor {
+public class PlayTime extends StatListener {
 
     public PlayTime(StatCraft plugin) {
         super(plugin);
@@ -30,6 +29,8 @@ public class PlayTime extends StatListener implements CommandExecutor {
             addStat(StatTypes.LAST_JOIN_TIME.id, name, currentTime);
         if (plugin.getJoins())
             addStat(StatTypes.JOINS.id, name, getStat(name, StatTypes.JOINS.id) + 1);
+
+        plugin.highestLevel.updateHighestLevel(event.getPlayer());
     }
 
     @SuppressWarnings("unused")
@@ -74,13 +75,13 @@ public class PlayTime extends StatListener implements CommandExecutor {
                 String message = transformTime(playTime);
 
                 if (message.equalsIgnoreCase("")) {
-                    message = name + " doesn't have any logged playtime yet.";
+                    message = "§c" + name + "§f doesn't have any logged playtime yet.";
                     respondToCommand(message, args, sender);
                 } else {
                     int thisSession = (int) (System.currentTimeMillis() / 1000) - getStat(name, StatTypes.LAST_JOIN_TIME.id);
                     String thisSessionText = transformTime(thisSession);
 
-                    message = name + " - Playtime: " + message + " | This session: " + thisSessionText;
+                    message = "§c" + name + "§f - Playtime: " + message + " | This session: " + thisSessionText;
                     respondToCommand(message, args, sender);
                 }
             }
@@ -96,13 +97,13 @@ public class PlayTime extends StatListener implements CommandExecutor {
                 } else {
                     long dateTime = (long) getStat(name, StatTypes.LAST_LEAVE_TIME.id) * 1000;
                     if (dateTime == 0) {
-                        String message = name + " hasn't been seen on the server yet.";
+                        String message = "§c" + name + "§f hasn't been seen on the server yet.";
                         respondToCommand(message, args, sender);
                     } else {
                         Date date = new Date(dateTime);
                         SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd, hh:mm aa yyyy");
                         format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
-                        String message = name + " - Last Seen: " + format.format(date);
+                        String message = "§c" + name + "§f - Last Seen: " + format.format(date);
                         respondToCommand(message, args, sender);
                     }
                 }
@@ -115,7 +116,7 @@ public class PlayTime extends StatListener implements CommandExecutor {
 
             for (String name : names) {
                 String joins = df.format(getStat(name, StatTypes.JOINS.id));
-                String message = name + " - Joins: " + joins;
+                String message = "§c" + name + "§f - Joins: " + joins;
                 respondToCommand(message, args, sender);
             }
 

@@ -17,7 +17,7 @@ public class ListCommand implements CommandExecutor{
                 playerList = playerList + ", " + player.getName();
 
         if (playerList.equalsIgnoreCase("")) {
-            sender.getServer().broadcastMessage("There aren't currently any players online!");
+            sender.getServer().broadcastMessage("There aren't any players online!");
         } else {
             sender.getServer().broadcastMessage(playerList);
         }

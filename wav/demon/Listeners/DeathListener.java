@@ -1,7 +1,6 @@
 package wav.demon.Listeners;
 
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
-public class DeathListener extends StatListener implements CommandExecutor {
+public class DeathListener extends StatListener {
 
     public DeathListener(StatCraft plugin) {
         super(plugin);
@@ -40,7 +39,7 @@ public class DeathListener extends StatListener implements CommandExecutor {
 
             for (String name : names) {
                 String deaths = df.format(getStat(name, StatTypes.DEATH.id));
-                String message = name + " - Deaths: " + deaths;
+                String message = "§c" + name + "§f - Deaths: " + deaths;
 
                 // print out the results
                 respondToCommand(message, args, sender);
@@ -57,7 +56,7 @@ public class DeathListener extends StatListener implements CommandExecutor {
                     if (plugin.statsForPlayers.get(name).containsKey(StatTypes.DEATH_LOCATIONS.id)) {
                         Iterator it = plugin.statsForPlayers.get(name).get(StatTypes.DEATH_LOCATIONS.id).entrySet().iterator();
 
-                        String message = name + " - Death Locations: ";
+                        String message = "§c" + name + "§f - Death Locations: ";
                         while (it.hasNext()) {
                             Map.Entry pairs = (Map.Entry) it.next();
 
@@ -71,11 +70,11 @@ public class DeathListener extends StatListener implements CommandExecutor {
                         }
                         respondToCommand(message, args, sender);
                     } else {
-                        String message = name + " - Death Locations: 0";
+                        String message = "§c" + name + "§f - Death Locations: 0";
                         respondToCommand(message, args, sender);
                     }
                 } else {
-                    String message = name + " - Death Locations: 0";
+                    String message = "§c" + name + "§f - Death Locations: 0";
                     respondToCommand(message, args, sender);
                 }
             }

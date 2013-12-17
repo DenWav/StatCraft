@@ -19,10 +19,12 @@ import java.util.*;
 
 public class StatCraft extends JavaPlugin {
 
-    public volatile Map<String, Map<Integer, Map<String, Integer>>> statsForPlayers;
+    public volatile HashMap<String, HashMap<Integer, HashMap<String, Integer>>> statsForPlayers;
     private TimedActivities timedActivities;
 
     private String timeZone;
+
+    private HashMap<String, Integer> lastFireTime = new HashMap<>();
 
     // listeners
     public PlayTime playtime = new PlayTime(this);
@@ -42,6 +44,9 @@ public class StatCraft extends JavaPlugin {
     private DamageTaken damageTaken = new DamageTaken(this);
     private DamageDealt damageDealt = new DamageDealt(this);
     private FishCaught fishCaught = new FishCaught(this);
+    private XpGained xpGained = new XpGained(this);
+    private KillListener killListener = new KillListener(this);
+    public  HighestLevel highestLevel = new HighestLevel(this);
 
     // commands
     private ListCommand listCommand = new ListCommand();
@@ -66,6 +71,7 @@ public class StatCraft extends JavaPlugin {
     private boolean joins;                 /* 7*/
     private boolean items_crafted;         /* 8*/
     private boolean on_fire;               /* 9*/
+    private boolean on_fire_announce;
     private boolean world_change;          /*10*/
     private boolean tools_broken;          /*11*/
     private boolean arrows_shot;           /*12*/
@@ -185,6 +191,7 @@ public class StatCraft extends JavaPlugin {
 
             // misc
             on_fire = getConfig().getBoolean("stats.on_fire");
+            on_fire_announce = getConfig().getBoolean("stats.on_fire_announce");
             world_change = getConfig().getBoolean("stats.world_change");
             tools_broken = getConfig().getBoolean("stats.tools_broken");
             arrows_shot = getConfig().getBoolean("stats.arrows_shot");
@@ -509,6 +516,23 @@ public class StatCraft extends JavaPlugin {
                 getCommand("fishcaught").setExecutor(fishCaught);
             }
 
+            if (xp_gained) {
+                getServer().getPluginManager().registerEvents(xpGained, this);
+                statsEnabled = statsEnabled + " xp_gained";
+                getCommand("xpgained").setExecutor(xpGained);
+            }
+
+            if (kills) {
+                getServer().getPluginManager().registerEvents(killListener, this);
+                statsEnabled = statsEnabled + " kills";
+                getCommand("kills").setExecutor(killListener);
+            }
+
+            if (highest_level) {
+                getServer().getPluginManager().registerEvents(highestLevel, this);
+                statsEnabled = statsEnabled + " highest_level";
+                getCommand("highestlevel").setExecutor(highestLevel);
+            }
 
             getLogger().info("Successfully enabled:" + statsEnabled);
 
@@ -553,6 +577,8 @@ public class StatCraft extends JavaPlugin {
         return encoding.decode(ByteBuffer.wrap(encoded)).toString();
     }
 
+    // ALWAYS call this method in a separate thread from the main thread
+    // UNLESS statsToDiskMilliSec is 0, so there is no delay
     @SuppressWarnings("unchecked")
     public boolean saveStatFiles() {
         // we need this inside the asynchronous thread
@@ -564,7 +590,7 @@ public class StatCraft extends JavaPlugin {
             Map.Entry pairs = (Map.Entry) baseIt.next();
             String name = (String) pairs.getKey();
             if (!name.equalsIgnoreCase("total")) {
-                Map<Integer, Map<String, Long>> secondaryMap = (Map<Integer, Map<String, Long>>) pairs.getValue();
+                HashMap<Integer, HashMap<String, Integer>> secondaryMap = (HashMap<Integer, HashMap<String, Integer>>) pairs.getValue();
                 // set the second iterator off of the second map
                 Iterator secondaryIt = secondaryMap.entrySet().iterator();
                 while (secondaryIt.hasNext()) {
@@ -577,20 +603,22 @@ public class StatCraft extends JavaPlugin {
 
                     PrintWriter out = null;
                     try {
-                        // make sure the directory exists for us to write to
-                        File outputDir = new File(dataFolder, "stats/" + name);
-                        if (outputDir.exists()) {
-                            out = new PrintWriter(outputDir.toString() + "/" + type);
-                        } else {
-                            if (outputDir.mkdirs()) {
+                        synchronized (StatCraft.class) {
+                            // make sure the directory exists for us to write to
+                            File outputDir = new File(dataFolder, "stats/" + name);
+                            if (outputDir.exists()) {
                                 out = new PrintWriter(outputDir.toString() + "/" + type);
                             } else {
-                                getLogger().warning("Fatal error trying to create stat directory");
-                                break;
+                                if (outputDir.mkdirs()) {
+                                    out = new PrintWriter(outputDir.toString() + "/" + type);
+                                } else {
+                                    getLogger().warning("Fatal error trying to create stat directory");
+                                    break;
+                                }
                             }
+                            // write the json to the file
+                            out.println(json);
                         }
-                        // write the json to the file
-                        out.println(json);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     } finally {
@@ -618,15 +646,15 @@ public class StatCraft extends JavaPlugin {
                     if (!name.equalsIgnoreCase("totals")) {
                         getLogger().info("" + name + " found at: " + player.getPath());
                         // put player's name into map, now we need to get the stats themselves
-                        statsForPlayers.put(name, new HashMap<Integer, Map<String, Integer>>());
+                        statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
                         for (File type : player.listFiles()) {
                             // grab the statType
                             String statType = type.getName();
                             // set Token type and gson
                             Gson gson = new Gson();
-                            Type tokenType = new TypeToken<Map<String, Integer>>(){}.getType();
+                            Type tokenType = new TypeToken<HashMap<String, Integer>>(){}.getType();
                             // insert the stats into the map
-                            statsForPlayers.get(name).put(Integer.parseInt(statType), (Map<String, Integer>)
+                            statsForPlayers.get(name).put(Integer.parseInt(statType), (HashMap<String, Integer>)
                                     gson.fromJson(readFile(type.getPath(), StandardCharsets.UTF_8), tokenType));
                         }
                     }
@@ -748,4 +776,13 @@ public class StatCraft extends JavaPlugin {
 
     @NotNull
     public ArrayList<String> getBackups() { return backups; }
+
+    public int getLastFireTime(String name) {
+        Integer time = lastFireTime.get(name);
+        return time == null ? 0 : time;
+    }
+
+    public void setLastFireTime(String name, int time) { lastFireTime.put(name, time); }
+
+    public boolean getOn_fire_announce() { return on_fire_announce; }
 }

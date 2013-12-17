@@ -5,27 +5,29 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
 import java.util.ArrayList;
 
-public class ArrowsShot extends StatListener {
+public class KillListener extends StatListener {
 
-    public ArrowsShot(StatCraft plugin) {
+    public KillListener(StatCraft plugin) {
         super(plugin);
     }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onArrowShot(EntityShootBowEvent event) {
-        if (event.getEntity() instanceof Player) {
-            final String name = ((Player) event.getEntity()).getName();
-
-            addStat(StatTypes.ARROWS_SHOT.id, name, getStat(name, StatTypes.ARROWS_SHOT.id) + 1);
+    public void onKill(EntityDeathEvent event) {
+        if (event.getEntity().getKiller() != null) {
+            String name = event.getEntity().getKiller().getName();
+            if (event.getEntity() instanceof Player) {
+                incrementStat(StatTypes.KILLS.id, name, ((Player) event.getEntity()).getName());
+            } else {
+                incrementStat(StatTypes.KILLS.id, name, event.getEntity().getType().toString());
+            }
         }
-
     }
 
     @Override
@@ -35,10 +37,11 @@ public class ArrowsShot extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.ARROWS_SHOT.id));
-            String message = "§c" + name + "§f - Arrows Shot: " + stat;
+            String stat = df.format(getStat(name, StatTypes.KILLS.id));
+            String message = "§c" + name + "§f - Kills: " + stat;
             respondToCommand(message, args, sender);
         }
+
         return true;
     }
 }

@@ -1,7 +1,6 @@
 package wav.demon.Listeners;
 
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -11,7 +10,7 @@ import wav.demon.StatTypes;
 
 import java.util.ArrayList;
 
-public class WordsSpoken extends StatListener implements CommandExecutor {
+public class WordsSpoken extends StatListener {
 
     public WordsSpoken(StatCraft plugin) {
         super(plugin);
@@ -45,7 +44,7 @@ public class WordsSpoken extends StatListener implements CommandExecutor {
 
             for (String name : names) {
                 String stat = df.format(getStat(name, StatTypes.WORDS_SPOKEN.id));
-                String message = name + " - Words Spoken: " + stat;
+                String message = "§c" + name + "§f - Words Spoken: " + stat;
                 respondToCommand(message, args, sender);
             }
             return true;
@@ -57,7 +56,7 @@ public class WordsSpoken extends StatListener implements CommandExecutor {
 
             for (String name : names) {
                 String stat = df.format(getStat(name, StatTypes.MESSAGES_SPOKEN.id));
-                String message = name + " - Messages Spoken: " + stat;
+                String message = "§c" + name + "§f - Messages Spoken: " + stat;
                 respondToCommand(message, args, sender);
             }
             return true;

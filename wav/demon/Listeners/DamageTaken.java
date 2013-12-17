@@ -1,7 +1,6 @@
 package wav.demon.Listeners;
 
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -13,7 +12,7 @@ import wav.demon.StatTypes;
 
 import java.util.ArrayList;
 
-public class DamageTaken extends StatListener implements CommandExecutor {
+public class DamageTaken extends StatListener {
 
     public DamageTaken(StatCraft plugin) {
         super(plugin);
@@ -37,7 +36,7 @@ public class DamageTaken extends StatListener implements CommandExecutor {
 
         for (String name : names) {
             String stat = df.format(getStat(name, StatTypes.DAMAGE_TAKEN.id));
-            String message = name + " - Damage Taken: " + stat;
+            String message = "§c" + name + "§f - Damage Taken: " + stat;
             respondToCommand(message, args, sender);
         }
         return true;

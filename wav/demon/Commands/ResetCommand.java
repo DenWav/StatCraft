@@ -108,7 +108,7 @@ public class ResetCommand implements CommandExecutor {
                             e.printStackTrace();
                         } finally {
                             if (plugin.statsForPlayers.containsKey(name))
-                                plugin.statsForPlayers.put(name, new HashMap<Integer, Map<String, Integer>>());
+                                plugin.statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
 
                             plugin.playtime.addStatToPlayer(StatTypes.LAST_JOIN_TIME.id, name,
                                     (int) (System.currentTimeMillis() / 1000));

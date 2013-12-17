@@ -15,7 +15,11 @@ public class UpdateTotals implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        plugin.getTimedActivities().forceTotalUpdate();
+        if (!plugin.getTimedActivities().totalUpdateNull()) {
+            plugin.getTimedActivities().forceTotalUpdate();
+        } else {
+            commandSender.sendMessage("Totals updating is disabled.");
+        }
         return true;
     }
 }

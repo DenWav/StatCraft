@@ -1,7 +1,6 @@
 package wav.demon.Listeners;
 
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -11,7 +10,7 @@ import wav.demon.StatTypes;
 
 import java.util.ArrayList;
 
-public class BucketEmpty extends StatListener implements CommandExecutor {
+public class BucketEmpty extends StatListener {
 
     public BucketEmpty(StatCraft plugin) {
         super(plugin);
@@ -33,7 +32,7 @@ public class BucketEmpty extends StatListener implements CommandExecutor {
 
         for (String name : names) {
             String stat = df.format(getStat(name, StatTypes.EMPTY_BUCKET.id));
-            String message = name + " - Buckets Emptied: " + stat;
+            String message = "§c" + name + "§f - Buckets Emptied: " + stat;
             respondToCommand(message, args, sender);
         }
 

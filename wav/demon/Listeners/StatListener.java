@@ -2,10 +2,13 @@ package wav.demon.Listeners;
 
 import com.avaje.ebean.validation.NotNull;
 import com.google.gson.Gson;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import wav.demon.StatCraft;
+import wav.demon.StatTypes;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -14,7 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StatListener implements Listener {
+public abstract class StatListener implements Listener, CommandExecutor {
 
     protected StatCraft plugin;
     // look, I don't know how big these number are gonna be
@@ -34,11 +37,11 @@ public class StatListener implements Listener {
 
     // Synchronized method to increment stats on players, this method will be run in a separate
     // asynchronous thread.
-    private synchronized void incrementStatToPlayer(int type, String name, String message) {
+    private void incrementStatToPlayer(int type, String name, String message) {
 
         // check if they have any stats yet, if not, make one
         if (!plugin.statsForPlayers.containsKey(name))
-            plugin.statsForPlayers.put(name, new HashMap<Integer, Map<String, Integer>>());
+            plugin.statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
 
         // check if they have any stats for this event yet, if not, make one
         if (!plugin.statsForPlayers.get(name).containsKey(type))
@@ -57,32 +60,34 @@ public class StatListener implements Listener {
             plugin.statsForPlayers.get(name).get(type).put("total", plugin.statsForPlayers.get(name).get(type).get("total") + 1);
 
         if (plugin.getSaveStatsRealTime()) {
-            PrintWriter out = null;
-            try {
-                // declare the gson for writing the json
-                Gson gson = new Gson();
-                String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
+            synchronized (StatListener.class) {
+                PrintWriter out = null;
+                try {
+                    // declare the gson for writing the json
+                    Gson gson = new Gson();
+                    String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
 
-                // ensure the output directory exists
-                File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
+                    // ensure the output directory exists
+                    File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
 
-                // check if the directory exists, if not, create it
-                if (!outputDir.exists())
-                    if (!outputDir.mkdirs()) {
-                        plugin.getLogger().severe("Fatal error occurred while trying to save stat files: Could not create directory");
-                        return;
-                    }
+                    // check if the directory exists, if not, create it
+                    if (!outputDir.exists())
+                        if (!outputDir.mkdirs()) {
+                            plugin.getLogger().severe("Fatal error occurred while trying to save stat files: Could not create directory");
+                            return;
+                        }
 
-                // set the PrintWriter to the file we are going to write to
-                out = new PrintWriter(outputDir.toString() + "/" + type);
+                    // set the PrintWriter to the file we are going to write to
+                    out = new PrintWriter(outputDir.toString() + "/" + type);
 
-                // write the json to the file
-                out.println(json);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } finally {
-                if (out != null)
-                    out.close();
+                    // write the json to the file
+                    out.println(json);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (out != null)
+                        out.close();
+                }
             }
         }
     }
@@ -98,11 +103,11 @@ public class StatListener implements Listener {
      * @param name Name of the player to add stat to
      * @param data Whatever number to be added to the player's stat
      */
-    public synchronized void addStatToPlayer(int type, String name, int data) {
+    public void addStatToPlayer(int type, String name, int data) {
 
         // check if they have any stats yet, if not, make one
         if (!plugin.statsForPlayers.containsKey(name))
-            plugin.statsForPlayers.put(name, new HashMap<Integer, Map<String, Integer>>());
+            plugin.statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
 
         // check if they have any stats for this event yet, if not, make one
         if (!plugin.statsForPlayers.get(name).containsKey(type))
@@ -112,33 +117,35 @@ public class StatListener implements Listener {
         plugin.statsForPlayers.get(name).get(type).put("total", data);
 
         if (plugin.getSaveStatsRealTime()) {
-            PrintWriter out = null;
-            try {
-                // declare the gson for writing the json
-                Gson gson = new Gson();
-                String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
+            synchronized (StatListener.class) {
+                PrintWriter out = null;
+                try {
+                    // declare the gson for writing the json
+                    Gson gson = new Gson();
+                    String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
 
-                // ensure the output directory exists
-                File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
+                    // ensure the output directory exists
+                    File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
 
-                // check if the directory exists, if not, create it
-                if (!outputDir.exists())
-                    if (!outputDir.mkdirs()) {
-                        plugin.getLogger().severe("Fatal error occurred while trying to save stat files: Could not create directory");
-                        return;
-                    }
+                    // check if the directory exists, if not, create it
+                    if (!outputDir.exists())
+                        if (!outputDir.mkdirs()) {
+                            plugin.getLogger().severe("Fatal error occurred while trying to save stat files: Could not create directory");
+                            return;
+                        }
 
-                // set the PrintWriter to the file we are going to write to
-                out = new PrintWriter(outputDir.toString() + "/" + type);
+                    // set the PrintWriter to the file we are going to write to
+                    out = new PrintWriter(outputDir.toString() + "/" + type);
 
-                // write the json to the file
-                out.println(json);
-                out.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } finally {
-                if (out != null)
+                    // write the json to the file
+                    out.println(json);
                     out.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (out != null)
+                        out.close();
+                }
             }
         }
     }
@@ -198,19 +205,21 @@ public class StatListener implements Listener {
      * @return "total" value of specified type
      */
     protected int getStat(String name, int type) {
-        int stat;
-        if (plugin.statsForPlayers.containsKey(name))
-            if (plugin.statsForPlayers.get(name).containsKey(type))
-                if (plugin.statsForPlayers.get(name).get(type).containsKey("total"))
-                    stat = plugin.statsForPlayers.get(name).get(type).get("total");
-                else
-                    stat = 0;
-            else
-                stat = 0;
-        else
-            stat = 0;
-
-        return stat;
+        // This is method of getting stats takes about half as many look-ups
+        // I could do a little better, but then I'd have to catch NullPointedExceptions,
+        // and I would rather not catch RuntimeExceptions if possible
+        HashMap<Integer, HashMap<String, Integer>> firstMap = plugin.statsForPlayers.get(name);
+        if (firstMap == null) {
+           return 0;
+        } else {
+            HashMap<String, Integer> secondMap = firstMap.get(type);
+            if (secondMap == null) {
+                return 0;
+            } else {
+                Integer stat = secondMap.get("total");
+                return stat == null ? 0 : stat;
+            }
+        }
     }
 
     /**
@@ -365,4 +374,7 @@ public class StatListener implements Listener {
         else
             sender.sendMessage(message);
     }
+
+    @Override
+    public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
 }

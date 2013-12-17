@@ -1,7 +1,6 @@
 package wav.demon.Listeners;
 
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,7 +15,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 // FIXME: This is seriously broken
-public class SleepyTime extends StatListener implements CommandExecutor {
+public class SleepyTime extends StatListener {
 
     public SleepyTime(StatCraft plugin) {
         super(plugin);
@@ -72,10 +71,10 @@ public class SleepyTime extends StatListener implements CommandExecutor {
                 String message = transformTime(timeSlept);
 
                 if (message.equalsIgnoreCase("")) {
-                    message = name + " hasn't slept yet.";
+                    message = "§c" + name + "§f hasn't slept yet.";
                     respondToCommand(message, args, sender);
                 } else {
-                    message = name + " - Time Slept: " + message;
+                    message = "§c" + name + "§f - Time Slept: " + message;
                     respondToCommand(message, args, sender);
                 }
             }
@@ -87,17 +86,18 @@ public class SleepyTime extends StatListener implements CommandExecutor {
 
             for (String name : names) {
                 if (getStat(name, StatTypes.ENTER_BED.id) > getStat(name, StatTypes.LEAVE_BED.id)) {
-                    sender.getServer().broadcastMessage(name + " is sleeping now!");
+                    String message = "§c" + name + "§f is sleeping now!";
+                    respondToCommand(message, args, sender);
                 } else {
                     long dateTime = (long) getStat(name, StatTypes.LEAVE_BED.id) * 1000;
                     if (dateTime == 0) {
-                        String message = name + " hasn't slept yet.";
+                        String message = "§c" +  name + "§f hasn't slept yet.";
                         respondToCommand(message, args, sender);
                     } else {
                         Date date = new Date(dateTime);
                         SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd, hh:mm aa yyyy");
                         format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
-                        String message = name + " - Last Slept: " + format.format(date);
+                        String message = "§c" + name + "§f - Last Slept: " + format.format(date);
                         respondToCommand(message, args, sender);
                     }
                 }

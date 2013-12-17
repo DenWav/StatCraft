@@ -36,8 +36,13 @@ public class TimedActivities extends Timer {
         return totalsUpdate.cancel();
     }
 
-    public boolean forceTotalUpdate() {
-        return updateTotals();
+    public void forceTotalUpdate() {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+            @Override
+            public void run() {
+                updateTotals();
+            }
+        });
     }
 
     public boolean totalUpdateNull() {
@@ -59,8 +64,13 @@ public class TimedActivities extends Timer {
         return toDisk.cancel();
     }
 
-    public boolean forceStatsToDisk() {
-        return plugin.saveStatFiles();
+    public void forceStatsToDisk() {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+            @Override
+            public void run() {
+                plugin.saveStatFiles();
+            }
+        });
     }
 
     public boolean statsToDiskNull() {
@@ -82,8 +92,13 @@ public class TimedActivities extends Timer {
         return backups.cancel();
     }
 
-    public boolean forceBackup() {
-        return zipBackup(getBackupName());
+    public void forceBackup() {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+            @Override
+            public void run() {
+                zipBackup(getBackupName());
+            }
+        });
     }
 
     public boolean backupNull() {

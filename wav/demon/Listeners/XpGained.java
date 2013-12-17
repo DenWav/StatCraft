@@ -2,28 +2,28 @@ package wav.demon.Listeners;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
 import java.util.ArrayList;
 
-public class ArrowsShot extends StatListener {
+public class XpGained extends StatListener {
 
-    public ArrowsShot(StatCraft plugin) {
+    public XpGained(StatCraft plugin) {
         super(plugin);
     }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onArrowShot(EntityShootBowEvent event) {
-        if (event.getEntity() instanceof Player) {
-            final String name = ((Player) event.getEntity()).getName();
-
-            addStat(StatTypes.ARROWS_SHOT.id, name, getStat(name, StatTypes.ARROWS_SHOT.id) + 1);
+    public void onXpGain(PlayerExpChangeEvent event) {
+        // I don't know if this is called when a player dies and loses exp or not
+        int amount = event.getAmount();
+        if (amount > 0) {
+            String name = event.getPlayer().getName();
+            addStat(StatTypes.XP_GAINED.id, name, getStat(name, StatTypes.XP_GAINED.id) + amount);
         }
 
     }
@@ -35,10 +35,11 @@ public class ArrowsShot extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.ARROWS_SHOT.id));
-            String message = "§c" + name + "§f - Arrows Shot: " + stat;
+            String stat = df.format(getStat(name, StatTypes.XP_GAINED.id));
+            String message = "§c" + name + "§f - Exp Gained: " + stat;
             respondToCommand(message, args, sender);
         }
+
         return true;
     }
 }

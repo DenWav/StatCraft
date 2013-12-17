@@ -29,9 +29,9 @@ public enum StatTypes {
     DAMAGE_TAKEN     (21, "damage_taken"),    ///
     FISH_CAUGHT      (22, "fish_caught"),     ///
     JOINS            (23, "joins"),           ///
-    XP_GAINED        (24, "xp_gained"),
+    XP_GAINED        (24, "xp_gained"),       ///
     MOVE             (25, "move"),
-    KILLS            (26, "kills"),
+    KILLS            (26, "kills"),           ///
     JUMPS            (27, "jumps"),
     FALLEN           (28, "fallen"),
     DEATH_LOCATIONS  (29, "death_locations"), ///
@@ -41,7 +41,7 @@ public enum StatTypes {
     ANIMALS_BRED     (33, "animals_bred"),
     TNT_DETONATED    (34, "tnt_detonated"),
     ENCHANTS_DONE    (35, "enchants_done"),
-    HIGHEST_LEVEL    (36, "highest_level"),
+    HIGHEST_LEVEL    (36, "highest_level"),  ///
     DAMAGE_DEALT     (37, "damage_dealt"),   ///
     ITEMS_BREWED     (38, "items_brewed"),
     ITEMS_COOKED     (39, "items_cooked"),

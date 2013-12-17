@@ -1,7 +1,6 @@
 package wav.demon.Listeners;
 
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -11,7 +10,7 @@ import wav.demon.StatTypes;
 
 import java.util.ArrayList;
 
-public class WorldChange extends StatListener implements CommandExecutor {
+public class WorldChange extends StatListener {
 
     public WorldChange(StatCraft plugin) {
         super(plugin);
@@ -35,7 +34,7 @@ public class WorldChange extends StatListener implements CommandExecutor {
 
         for (String name : names) {
             String stat = df.format(getStat(name, StatTypes.WORLD_CHANGE.id));
-            String message = name + " - World Changes: " + stat;
+            String message = "§c" +  name + "§f - World Changes: " + stat;
             respondToCommand(message, args, sender);
         }
         return true;

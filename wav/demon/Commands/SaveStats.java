@@ -15,7 +15,11 @@ public class SaveStats implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        plugin.getTimedActivities().forceStatsToDisk();
+        if (!plugin.getTimedActivities().statsToDiskNull()) {
+            plugin.getTimedActivities().forceStatsToDisk();
+        } else {
+            commandSender.sendMessage("Delayed stat saving is disabled, stats are saved in real-time.");
+        }
         return true;
     }
 }

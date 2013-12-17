@@ -15,7 +15,11 @@ public class ForceBackup implements CommandExecutor{
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        plugin.getTimedActivities().forceBackup();
+        if (!plugin.getTimedActivities().backupNull()) {
+            plugin.getTimedActivities().forceBackup();
+        } else {
+            commandSender.sendMessage("Backups are disabled.");
+        }
         return true;
     }
 }

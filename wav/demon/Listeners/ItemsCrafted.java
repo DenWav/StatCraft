@@ -1,9 +1,7 @@
 package wav.demon.Listeners;
 
 import com.google.common.base.Objects;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
@@ -18,7 +16,7 @@ import java.util.ArrayList;
 /** BIG THANKS to Comphenix and Digi for figuring out a way to do this, I'm glad I didn't
  * have to figure this out myself.
  * https://forums.bukkit.org/threads/cant-get-amount-of-shift-click-craft-item.79090/ */
-public class ItemsCrafted extends StatListener implements CommandExecutor {
+public class ItemsCrafted extends StatListener {
 
     public ItemsCrafted(StatCraft plugin) {
         super(plugin);
@@ -61,7 +59,7 @@ public class ItemsCrafted extends StatListener implements CommandExecutor {
 
         for (String name : names) {
             String itemsCrafted = df.format(getStat(name, StatTypes.ITEMS_CRAFTED.id));
-            String message = name + " - Items Crafted: " + itemsCrafted;
+            String message = "§c" + name + "§f - Items Crafted: " + itemsCrafted;
             respondToCommand(message, args, sender);
         }
 
