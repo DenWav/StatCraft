@@ -1,6 +1,6 @@
 name: StatCraft
 main: wav.demon.StatCraft
-version: 1.2.1
+version: 1.2.2
 author: DemonWav
 commands:
   list:

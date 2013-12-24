@@ -582,17 +582,15 @@ public class StatCraft extends JavaPlugin {
         // we need this inside the asynchronous thread
         final File dataFolder = getDataFolder();
         // set the first iterator
-        for (Object o : statsForPlayers.entrySet()) {
+        for (Map.Entry<String, HashMap<Integer, HashMap<String, Integer>>> pairs : statsForPlayers.entrySet()) {
             // grab the first pair, then the name and the second map
-            Map.Entry pairs = (Map.Entry) o;
-            String name = (String) pairs.getKey();
+            String name = pairs.getKey();
             if (!name.equalsIgnoreCase("total")) {
-                Map<Integer, Map<String, Integer>> secondaryMap = (Map<Integer, Map<String, Integer>>) pairs.getValue();
+                HashMap<Integer, HashMap<String, Integer>> secondaryMap = pairs.getValue();
                 // set the second iterator off of the second map
-                for (Object o1 : secondaryMap.entrySet()) {
+                for (Map.Entry<Integer, HashMap<String, Integer>> secondPairs : secondaryMap.entrySet()) {
                     // grab the second pair and the type
-                    Map.Entry secondPairs = (Map.Entry) o1;
-                    int type = (Integer) secondPairs.getKey();
+                    int type = secondPairs.getKey();
                     // set gson and grab the json text out of the second map's "value" area
                     Gson gson = new Gson();
                     String json = gson.toJson(secondPairs.getValue());
