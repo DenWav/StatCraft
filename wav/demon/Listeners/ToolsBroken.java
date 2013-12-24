@@ -35,8 +35,18 @@ public class ToolsBroken extends StatListener {
         for (String name : names) {
             String toolsBroken = df.format(getStat(name, StatTypes.TOOLS_BROKEN.id));
             String message = "§c" + name + "§f - Tools Broken: " + toolsBroken;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.TOOLS_BROKEN);
         }
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Tools Broken";
     }
 }

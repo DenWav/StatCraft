@@ -37,9 +37,19 @@ public class DamageTaken extends StatListener {
         for (String name : names) {
             String stat = df.format(getStat(name, StatTypes.DAMAGE_TAKEN.id));
             String message = "§c" + name + "§f - Damage Taken: " + stat;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.DAMAGE_TAKEN);
         }
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Damage Taken";
     }
 
     private void scheduleHeathDetection(final HumanEntity player, final String name) {

@@ -1,6 +1,8 @@
 package wav.demon.Listeners;
 
 import com.avaje.ebean.validation.NotNull;
+import com.google.common.base.Functions;
+import com.google.common.collect.Ordering;
 import com.google.gson.Gson;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,11 +13,11 @@ import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class StatListener implements Listener, CommandExecutor {
 
@@ -243,13 +245,14 @@ public abstract class StatListener implements Listener, CommandExecutor {
         ArrayList<String> names = new ArrayList<>();
         if (args.length == 0) {
             names.add(sender.getName());
-        } else if (args.length == 1 && args[0].equals("-all")) {
-            names.add(sender.getName());
         } else {
             for (String arg : args)
-                if (!arg.equals("-all"))
+                if ((!arg.equals("-all")) && (!arg.startsWith("-top")))
                     names.add(arg);
         }
+
+        if (names.size() == 0)
+            names.add(sender.getName());
 
         return names;
     }
@@ -358,23 +361,109 @@ public abstract class StatListener implements Listener, CommandExecutor {
     /**
      * Respond to the command appropriately, either private or public based on the arguments given.
      * The command will respond publicly if the "-all" argument is given, in all other cases the response will be private.
+     * The command will list the totals of players if the "-top#" argument is given
      *
      * @param message The message that the command outputs
      * @param args The arguments for the command
      * @param sender The CommandSender that was provided in the onCommand method
      */
-    protected void respondToCommand(String message, String[] args, CommandSender sender) {
+    @SuppressWarnings("unchecked")
+    protected void respondToCommand(String message, String[] args, CommandSender sender, StatTypes type) {
         boolean publicCmd = false;
-        for (String arg : args)
+        boolean top = false;
+        int topNumber = 0;
+
+        for (String arg : args) {
             if (arg.equals("-all"))
                 publicCmd = true;
 
-        if (publicCmd)
-            sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + message);
-        else
-            sender.sendMessage(message);
+            if (arg.startsWith("-top")) {
+                top = true;
+                try {
+                    topNumber = Integer.valueOf(arg.replace("-top", ""));
+                } catch (NumberFormatException e) {
+                    sender.sendMessage("Not a valid \"-top\" value. Please use \"-top#\" with # being an integer.");
+                    return;
+                }
+            }
+        }
+
+        if (!top) {
+            if (publicCmd)
+                sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + message);
+            else
+                sender.sendMessage(message);
+        } else {
+            Map<String, Integer> sortableMap = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
+
+            for (Map.Entry<String, HashMap<Integer, HashMap<String, Integer>>> pairs : plugin.statsForPlayers.entrySet()) {
+                String name = pairs.getKey();
+                if (!name.equalsIgnoreCase("total")) {
+                    HashMap<Integer, HashMap<String, Integer>> playerMap = pairs.getValue();
+                    Map<String, Integer> typeMap = playerMap.get(type.id);
+                    if (typeMap != null) {
+                        Integer total = typeMap.get("total");
+                        if (total != null) {
+                            sortableMap.put(name, total);
+                        }
+                    }
+                }
+            }
+
+            String output = typeLabel(type) + " - ";
+            Iterator iterator = sortableMap.entrySet().iterator();
+            for (int i = 1; i <= topNumber; i++) {
+                if (iterator.hasNext()) {
+                    Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) iterator.next();
+
+                    String name = sortedMapEntry.getKey();
+                    Integer value = sortedMapEntry.getValue();
+
+                    output = output + "§6" + i + ". §c" + name + "§f: " + typeFormat(value, type) + " ";
+                } else {
+                    break;
+                }
+            }
+
+            if (publicCmd)
+                sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + output);
+            else
+                sender.sendMessage(output);
+
+        }
     }
 
     @Override
     public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
+
+    protected abstract String typeFormat(int value, StatTypes type);
+
+    protected abstract String typeLabel(StatTypes type);
+}
+
+// This is just awesome, huge thanks to Stephen for this: http://stackoverflow.com/a/3420912
+class ValueComparableMap<K extends Comparable<K>,V> extends TreeMap<K,V> {
+    //A map for doing look-ups on the keys for comparison so we don't get infinite loops
+    private final Map<K, V> valueMap;
+
+    ValueComparableMap(final Ordering<? super V> partialValueOrdering) {
+        this(partialValueOrdering, new HashMap<K,V>());
+    }
+
+    private ValueComparableMap(Ordering<? super V> partialValueOrdering, HashMap<K, V> valueMap) {
+        super(partialValueOrdering                       //Apply the value ordering
+                .onResultOf(Functions.forMap(valueMap))  //On the result of getting the value for the key from the map
+                .compound(Ordering.natural()));          //as well as ensuring that the keys don't get clobbered
+        this.valueMap = valueMap;
+    }
+
+    @Override
+    public V put(K k, V v) {
+        if (valueMap.containsKey(k)){
+            //remove the key in the sorted set before adding the key again
+            remove(k);
+        }
+        valueMap.put(k,v);      //To get "real" unsorted values for the comparator
+        return super.put(k, v); //Put it in value order
+    }
 }

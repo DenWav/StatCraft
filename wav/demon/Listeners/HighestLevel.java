@@ -41,11 +41,21 @@ public class HighestLevel extends StatListener {
 
             String message = "§c" + name + "§f - Highest Level: " + df.format(stat);
 
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.HIGHEST_LEVEL);
 
         }
 
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Highest Level";
     }
 
     public void updateHighestLevel(Player player) {

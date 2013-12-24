@@ -39,9 +39,19 @@ public class KillListener extends StatListener {
         for (String name : names) {
             String stat = df.format(getStat(name, StatTypes.KILLS.id));
             String message = "§c" + name + "§f - Kills: " + stat;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.KILLS);
         }
 
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Kills";
     }
 }

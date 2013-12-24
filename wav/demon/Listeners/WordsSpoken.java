@@ -45,7 +45,7 @@ public class WordsSpoken extends StatListener {
             for (String name : names) {
                 String stat = df.format(getStat(name, StatTypes.WORDS_SPOKEN.id));
                 String message = "§c" + name + "§f - Words Spoken: " + stat;
-                respondToCommand(message, args, sender);
+                respondToCommand(message, args, sender, StatTypes.WORDS_SPOKEN);
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("messagesspoken")) {
@@ -57,10 +57,23 @@ public class WordsSpoken extends StatListener {
             for (String name : names) {
                 String stat = df.format(getStat(name, StatTypes.MESSAGES_SPOKEN.id));
                 String message = "§c" + name + "§f - Messages Spoken: " + stat;
-                respondToCommand(message, args, sender);
+                respondToCommand(message, args, sender, StatTypes.MESSAGES_SPOKEN);
             }
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        if (type == StatTypes.WORDS_SPOKEN)
+            return "Words Spoken";
+        else
+            return "Messages Spoken";
     }
 }

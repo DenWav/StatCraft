@@ -79,10 +79,20 @@ public class FishCaught extends StatListener {
             String treasureCaught = df.format(getStat(name, StatTypes.FISH_CAUGHT.id, "treasure"));
             String message = "§c" + name + "§f - Fish Caught: " + fishCaught + " | Treasure Caught: " + treasureCaught +
                     " | Junk Caught: " + junkCaught;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.FISH_CAUGHT);
         }
 
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Fish Caught";
     }
 
     private int getStat(String name, int type, String s) {

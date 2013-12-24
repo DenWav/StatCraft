@@ -33,9 +33,19 @@ public class BucketEmpty extends StatListener {
         for (String name : names) {
             String stat = df.format(getStat(name, StatTypes.EMPTY_BUCKET.id));
             String message = "§c" + name + "§f - Buckets Emptied: " + stat;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.EMPTY_BUCKET);
         }
 
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Buckets Emptied";
     }
 }

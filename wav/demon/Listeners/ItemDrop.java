@@ -37,8 +37,18 @@ public class ItemDrop extends StatListener {
         for (String name : names) {
             String itemsDropped = df.format(getStat(name, StatTypes.ITEM_DROPS.id));
             String message = "§c" + name + "§f - Items Dropped: " + itemsDropped;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.ITEM_DROPS);
         }
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Items Dropped";
     }
 }

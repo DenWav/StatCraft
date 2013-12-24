@@ -37,9 +37,19 @@ public class XpGained extends StatListener {
         for (String name : names) {
             String stat = df.format(getStat(name, StatTypes.XP_GAINED.id));
             String message = "§c" + name + "§f - Exp Gained: " + stat;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.XP_GAINED);
         }
 
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Xp Gained";
     }
 }

@@ -60,10 +60,20 @@ public class ItemsCrafted extends StatListener {
         for (String name : names) {
             String itemsCrafted = df.format(getStat(name, StatTypes.ITEMS_CRAFTED.id));
             String message = "§c" + name + "§f - Items Crafted: " + itemsCrafted;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.ITEMS_CRAFTED);
         }
 
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Items Crafted";
     }
 
     /** From here down is Comphenix's code */

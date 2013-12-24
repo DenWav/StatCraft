@@ -109,23 +109,21 @@ public class TimedActivities extends Timer {
     private boolean updateTotals() {
         // set the tempMap
         Map<Integer, Map<String, Long>> tempMap =
-                new HashMap<Integer, Map<String, Long>>();
+                new HashMap<>();
 
         // set the first iterator
-        Iterator baseIt = plugin.statsForPlayers.entrySet().iterator();
-        while (baseIt.hasNext()) {
+        for (Object o : plugin.statsForPlayers.entrySet()) {
             // grab the first pair, then the name and the second map
-            Map.Entry pairs = (Map.Entry) baseIt.next();
+            Map.Entry pairs = (Map.Entry) o;
             String name = (String) pairs.getKey();
             if (!name.equalsIgnoreCase("total")) {
 
                 Map<Integer, Map<String, Long>> secondaryMap =
                         (Map<Integer, Map<String, Long>>) pairs.getValue();
                 // set the second iterator off of the second map
-                Iterator secondaryIt = secondaryMap.entrySet().iterator();
-                while (secondaryIt.hasNext()) {
+                for (Object o1 : secondaryMap.entrySet()) {
                     // grab the second pair and the type
-                    Map.Entry secondPairs = (Map.Entry) secondaryIt.next();
+                    Map.Entry secondPairs = (Map.Entry) o1;
                     int type = (Integer) secondPairs.getKey();
                     if (!tempMap.containsKey(type))
                         tempMap.put(type, new HashMap<String, Long>());

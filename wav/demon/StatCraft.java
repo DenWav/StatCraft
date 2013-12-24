@@ -577,25 +577,21 @@ public class StatCraft extends JavaPlugin {
         return encoding.decode(ByteBuffer.wrap(encoded)).toString();
     }
 
-    // ALWAYS call this method in a separate thread from the main thread
-    // UNLESS statsToDiskMilliSec is 0, so there is no delay
     @SuppressWarnings("unchecked")
     public boolean saveStatFiles() {
         // we need this inside the asynchronous thread
         final File dataFolder = getDataFolder();
         // set the first iterator
-        Iterator baseIt = statsForPlayers.entrySet().iterator();
-        while (baseIt.hasNext()) {
+        for (Object o : statsForPlayers.entrySet()) {
             // grab the first pair, then the name and the second map
-            Map.Entry pairs = (Map.Entry) baseIt.next();
+            Map.Entry pairs = (Map.Entry) o;
             String name = (String) pairs.getKey();
             if (!name.equalsIgnoreCase("total")) {
-                HashMap<Integer, HashMap<String, Integer>> secondaryMap = (HashMap<Integer, HashMap<String, Integer>>) pairs.getValue();
+                Map<Integer, Map<String, Integer>> secondaryMap = (Map<Integer, Map<String, Integer>>) pairs.getValue();
                 // set the second iterator off of the second map
-                Iterator secondaryIt = secondaryMap.entrySet().iterator();
-                while (secondaryIt.hasNext()) {
+                for (Object o1 : secondaryMap.entrySet()) {
                     // grab the second pair and the type
-                    Map.Entry secondPairs = (Map.Entry) secondaryIt.next();
+                    Map.Entry secondPairs = (Map.Entry) o1;
                     int type = (Integer) secondPairs.getKey();
                     // set gson and grab the json text out of the second map's "value" area
                     Gson gson = new Gson();

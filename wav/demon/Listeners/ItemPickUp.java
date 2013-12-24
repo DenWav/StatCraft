@@ -37,8 +37,18 @@ public class ItemPickUp extends StatListener {
         for (String name : names) {
             String itemsPickedUp = df.format(getStat(name, StatTypes.ITEM_PICKUPS.id));
             String message = "§c" + name + "§f - Items Picked Up: " + itemsPickedUp;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.ITEM_PICKUPS);
         }
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Items Picked Up";
     }
 }

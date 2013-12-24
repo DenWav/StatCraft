@@ -37,8 +37,18 @@ public class ArrowsShot extends StatListener {
         for (String name : names) {
             String stat = df.format(getStat(name, StatTypes.ARROWS_SHOT.id));
             String message = "§c" + name + "§f - Arrows Shot: " + stat;
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.ARROWS_SHOT);
         }
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Arrows Shot";
     }
 }

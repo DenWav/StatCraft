@@ -42,7 +42,7 @@ public class DeathListener extends StatListener {
                 String message = "§c" + name + "§f - Deaths: " + deaths;
 
                 // print out the results
-                respondToCommand(message, args, sender);
+                respondToCommand(message, args, sender, StatTypes.DEATH);
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("deathlocations")) {
@@ -50,6 +50,14 @@ public class DeathListener extends StatListener {
             ArrayList<String> names = getPlayers(sender, args);
             if (names == null)
                 return false;
+
+            for (String arg : args) {
+                if (arg.startsWith("-top")) {
+                    sender.sendMessage("\"-top\" is not allowed with the deathlocations command.");
+
+                    return true;
+                }
+            }
 
             for (String name : names) {
                 if (plugin.statsForPlayers.containsKey(name)) {
@@ -65,22 +73,32 @@ public class DeathListener extends StatListener {
                                 int deaths = (int) pairs.getValue();
 
                                 // TODO: implement world aliases
-                                message = message + worldName + ":" + df.format(deaths) + " ";
+                                message = message + worldName + ":§6" + df.format(deaths) + "§f ";
                             }
                         }
-                        respondToCommand(message, args, sender);
+                        respondToCommand(message, args, sender, null);
                     } else {
                         String message = "§c" + name + "§f - Death Locations: 0";
-                        respondToCommand(message, args, sender);
+                        respondToCommand(message, args, sender, null);
                     }
                 } else {
                     String message = "§c" + name + "§f - Death Locations: 0";
-                    respondToCommand(message, args, sender);
+                    respondToCommand(message, args, sender, null);
                 }
             }
             return true;
         } else {
             return false;
         }
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return value + "";
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "Deaths";
     }
 }

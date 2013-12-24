@@ -60,9 +60,19 @@ public class OnFire extends StatListener {
             else
                 message = name + " - On fire: " + timeOnFire;
 
-            respondToCommand(message, args, sender);
+            respondToCommand(message, args, sender, StatTypes.ON_FIRE);
         }
 
         return true;
+    }
+
+    @Override
+    protected String typeFormat(int value, StatTypes type) {
+        return transformTime(value);
+    }
+
+    @Override
+    protected String typeLabel(StatTypes type) {
+        return "On Fire";
     }
 }
