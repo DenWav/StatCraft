@@ -450,10 +450,11 @@ class ValueComparableMap<K extends Comparable<K>,V> extends TreeMap<K,V> {
         this(partialValueOrdering, new HashMap<K,V>());
     }
 
+    @SuppressWarnings("unchecked")
     private ValueComparableMap(Ordering<? super V> partialValueOrdering, HashMap<K, V> valueMap) {
-        super(partialValueOrdering                       //Apply the value ordering
-                .onResultOf(Functions.forMap(valueMap))  //On the result of getting the value for the key from the map
-                .compound(Ordering.natural()));          //as well as ensuring that the keys don't get clobbered
+        super((Comparator<? super K>) partialValueOrdering   //Apply the value ordering
+                .onResultOf(Functions.forMap(valueMap))      //On the result of getting the value for the key from the map
+                .compound((Comparator)Ordering.natural()));  //as well as ensuring that the keys don't get clobbered
         this.valueMap = valueMap;
     }
 
