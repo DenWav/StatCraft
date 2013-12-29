@@ -137,7 +137,7 @@ public class PlayTime extends StatListener {
     @Override
     protected String typeFormat(int value, StatTypes type) {
         if (type == StatTypes.JOINS)
-            return value + "";
+            return df.format(value);
         else
             return transformTime(value);
     }

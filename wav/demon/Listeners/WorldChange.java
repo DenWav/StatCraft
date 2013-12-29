@@ -42,7 +42,7 @@ public class WorldChange extends StatListener {
 
     @Override
     protected String typeFormat(int value, StatTypes type) {
-        return value + "";
+        return df.format(value);
     }
 
     @Override
