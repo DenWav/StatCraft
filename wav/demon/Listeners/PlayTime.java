@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -180,19 +181,24 @@ public class PlayTime extends StatListener {
         } else {
             Map<String, Integer> sortableMap = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
 
-            for (Map.Entry<String, HashMap<Integer, HashMap<String, Integer>>> pairs : plugin.statsForPlayers.entrySet()) {
-                String name = pairs.getKey();
-                if (!name.equalsIgnoreCase("total")) {
-                    HashMap<Integer, HashMap<String, Integer>> playerMap = pairs.getValue();
-                    Map<String, Integer> typeMap = playerMap.get(type.id);
-                    if (typeMap != null) {
-                        Integer total = typeMap.get("total");
-                        if (total != null) {
-                            sortableMap.put(name, total);
+            File statsDir = new File(plugin.getDataFolder(), "stats");
+            File[] files = statsDir.listFiles();
+
+            if (files != null) {
+                for (File name : files) {
+                    if (!name.getName().equalsIgnoreCase("total")) {
+                        File typeFile = new File(name, type.id + "");
+                        Map<String, Integer> typeMap = getMapFromFile(typeFile);
+                        if (typeMap != null) {
+                            Integer total = typeMap.get("total");
+                            if (total != null) {
+                                sortableMap.put(name.getName(), total);
+                            }
                         }
                     }
                 }
             }
+
 
             for (Player player : plugin.getServer().getOnlinePlayers()) {
                 int playTime;

@@ -107,6 +107,9 @@ commands:
   highestlevel:
     description: Shows the highest level a player has achieved
     usage: /<command> [player] or just /<command>
+  tabcompletes:
+    description: Shows how many times a player has used tab complete
+    usage: /<command> [player] or just /<command>
 
 permissions:
   admin.op:

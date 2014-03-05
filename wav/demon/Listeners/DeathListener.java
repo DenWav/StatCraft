@@ -1,5 +1,6 @@
 package wav.demon.Listeners;
 
+import com.google.gson.Gson;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
@@ -8,7 +9,9 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -60,36 +63,57 @@ public class DeathListener extends StatListener {
             }
 
             for (String name : names) {
-                if (plugin.statsForPlayers.containsKey(name)) {
-                    if (plugin.statsForPlayers.get(name).containsKey(StatTypes.DEATH_LOCATIONS.id)) {
-                        Iterator it = plugin.statsForPlayers.get(name).get(StatTypes.DEATH_LOCATIONS.id).entrySet().iterator();
+                if (!plugin.getSaveStatsRealTime()) {
+                    if (plugin.statsForPlayers.containsKey(name)) {
+                        if (plugin.statsForPlayers.get(name).containsKey(StatTypes.DEATH_LOCATIONS.id)) {
+                            respondToDeathLocations(plugin.statsForPlayers.get(name).get(StatTypes.DEATH_LOCATIONS.id), name, sender, args);
+                        } else {
+                            File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + 29);
+                            HashMap<String, Integer> map = getMapFromFile(statFile);
 
-                        String message = "§c" + name + "§f - Death Locations: ";
-                        while (it.hasNext()) {
-                            Map.Entry pairs = (Map.Entry) it.next();
-
-                            String worldName = (String) pairs.getKey();
-                            if (!worldName.equalsIgnoreCase("total")) {
-                                int deaths = (int) pairs.getValue();
-
-                                // TODO: implement world aliases
-                                message = message + worldName + ":§6" + df.format(deaths) + "§f ";
-                            }
+                            respondToDeathLocations(map, name, sender, args);
                         }
-                        respondToCommand(message, args, sender, null);
                     } else {
-                        String message = "§c" + name + "§f - Death Locations: 0";
-                        respondToCommand(message, args, sender, null);
+                        File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + 29);
+                        HashMap<String, Integer> map = getMapFromFile(statFile);
+
+                        respondToDeathLocations(map, name, sender, args);
                     }
                 } else {
-                    String message = "§c" + name + "§f - Death Locations: 0";
-                    respondToCommand(message, args, sender, null);
+                    File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + 29);
+                    HashMap<String, Integer> map = getMapFromFile(statFile);
+
+                    respondToDeathLocations(map, name, sender, args);
                 }
             }
             return true;
         } else {
             return false;
         }
+    }
+
+    private void respondToDeathLocations(HashMap<String, Integer> map, String name, CommandSender sender, String[] args) {
+        if (map == null) {
+            String message = "§c" + name + "§f - Death Locations: 0";
+            respondToCommand(message, args, sender, null);
+            return;
+        }
+
+        Iterator it = map.entrySet().iterator();
+
+        String message = "§c" + name + "§f - Death Locations: ";
+        while (it.hasNext()) {
+            Map.Entry pairs = (Map.Entry) it.next();
+
+            String worldName = (String) pairs.getKey();
+            if (!worldName.equalsIgnoreCase("total")) {
+                int deaths = (int) pairs.getValue();
+
+                // TODO: implement world aliases
+                message = message + worldName + ":§6" + df.format(deaths) + "§f ";
+            }
+        }
+        respondToCommand(message, args, sender, null);
     }
 
     @Override

@@ -27,7 +27,8 @@ public class DamageDealt extends StatListener {
         if (damager instanceof Player) {
             final String name = ((Player) damager).getName();
 
-            scheduleHeathDetection((LivingEntity) damagee, name);
+            if (damagee instanceof LivingEntity)
+                scheduleHeathDetection((LivingEntity) damagee, name);
         }
     }
 

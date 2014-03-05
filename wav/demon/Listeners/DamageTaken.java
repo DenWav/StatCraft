@@ -25,6 +25,21 @@ public class DamageTaken extends StatListener {
             final String name = ((Player) event.getEntity()).getName();
 
             scheduleHeathDetection((HumanEntity) event.getEntity(), name);
+
+            if (plugin.getDrowning_announce())
+            if (event.getCause().equals(EntityDamageEvent.DamageCause.DROWNING)) {
+                if ((System.currentTimeMillis() / 1000) - plugin.getLastDrownTime(name) > 10) {
+                    event.getEntity().getServer().broadcastMessage("§9" + name + " is drowning! Oh no!");
+                    plugin.setLastDrowningTime(name, (int) (System.currentTimeMillis() / 1000));
+                }
+            }
+            if (plugin.getPoison_announce())
+            if (event.getCause().equals(EntityDamageEvent.DamageCause.POISON)) {
+                if ((System.currentTimeMillis() / 1000) - plugin.getLastPoisonTime(name) > 14) {
+                    event.getEntity().getServer().broadcastMessage("§2" + name + " is Poisoned! Oh no!");
+                    plugin.setLastPoisonTime(name, (int) (System.currentTimeMillis() / 1000));
+                }
+            }
         }
     }
 

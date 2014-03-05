@@ -16,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StatCraft extends JavaPlugin {
 
@@ -25,6 +27,8 @@ public class StatCraft extends JavaPlugin {
     private String timeZone;
 
     private HashMap<String, Integer> lastFireTime = new HashMap<>();
+    private HashMap<String, Integer> lastDrownTime = new HashMap<>();
+    private HashMap<String, Integer> lastPoisonTime = new HashMap<>();
 
     // listeners
     public PlayTime playtime = new PlayTime(this);
@@ -47,6 +51,7 @@ public class StatCraft extends JavaPlugin {
     private XpGained xpGained = new XpGained(this);
     private KillListener killListener = new KillListener(this);
     public  HighestLevel highestLevel = new HighestLevel(this);
+    private TabComplete tabComplete = new TabComplete(this);
 
     // commands
     private ListCommand listCommand = new ListCommand();
@@ -84,6 +89,8 @@ public class StatCraft extends JavaPlugin {
     private boolean words_spoken;          /*19*/
     private boolean specific_words_spoken; /*20*/
     private boolean damage_taken;          /*21*/
+    private boolean drowning_announce;
+    private boolean poison_announce;
     private boolean fish_caught;           /*22*/
     private boolean xp_gained;             /*23*/
     private boolean move;                  /*24*/
@@ -223,6 +230,8 @@ public class StatCraft extends JavaPlugin {
 
             // misc
             damage_taken = getConfig().getBoolean("stats.damage_taken");
+            drowning_announce = getConfig().getBoolean("stats.drowning_announce");
+            poison_announce = getConfig().getBoolean("stats.poison_announce");
             fish_caught = getConfig().getBoolean("stats.fish_caught");
             xp_gained = getConfig().getBoolean("stats.xp_gained");
 
@@ -354,17 +363,17 @@ public class StatCraft extends JavaPlugin {
         if (stat.exists() && stat.isDirectory()) {
             // it exists and it is a directory, so load up the old stats
             // try to reload the stats, if possible
+            statsForPlayers = new HashMap<>();
             try {
-                if (reloadStatFiles()) {
+                if (checkStatFiles()) {
                     // yay, it worked
-                    getLogger().info("Old stats loaded successfully.");
+                    getLogger().info("Old stats checked successfully.");
                 } else {
-                    // something isn't quite right, so start from scratch
-                    statsForPlayers = new HashMap<>();
+                    // something went wrong, but I don't know exactly what happened
+                    getLogger().warning("There was an error when checking old stats.");
                 }
             } catch (IOException e) {
-                getLogger().severe("Something when wrong when trying to read the old stats." +
-                        "Could not initialize.");
+                getLogger().severe("Something when wrong when trying to read the old stats.");
                 e.printStackTrace();
                 enabled = false;
             }
@@ -534,6 +543,12 @@ public class StatCraft extends JavaPlugin {
                 getCommand("highestlevel").setExecutor(highestLevel);
             }
 
+            if (tab_complete) {
+                getServer().getPluginManager().registerEvents(tabComplete, this);
+                statsEnabled = statsEnabled + " tab_complete";
+                getCommand("tabcompletes").setExecutor(tabComplete);
+            }
+
             getLogger().info("Successfully enabled:" + statsEnabled);
 
             // load up commands
@@ -560,7 +575,8 @@ public class StatCraft extends JavaPlugin {
 
     @Override
     final public void onDisable() {
-        saveStatFiles();
+        if (!getSaveStatsRealTime())
+            saveStatFiles();
 
         if (!timedActivities.totalUpdateNull())
             getLogger().info("Successfully stopped totals updating: " + timedActivities.stopTotalsUpdating());
@@ -572,11 +588,34 @@ public class StatCraft extends JavaPlugin {
             getLogger().info("Successfully stopped backups: " + timedActivities.stopBackup());
     }
 
-    private static String readFile(String path, Charset encoding) throws IOException {
+    /**
+     * Reads the text from a file and returns it as a String
+     *
+     * @param path The path to the file as a String
+     * @param encoding The encoding of the file
+     * @return The contents of the file as a String
+     * @throws IOException
+     */
+    public static String readFile(String path, Charset encoding) throws IOException {
         byte[] encoded = Files.readAllBytes(Paths.get(path));
         return encoding.decode(ByteBuffer.wrap(encoded)).toString();
     }
 
+    /**
+     * Saves all of the stats saved in memory to the disk.
+     * <p>
+     * The stats are only saved as single JSON files by the top-level HashMap of statsForPlayers. With the structure of
+     * statsForPlayers as: HashMap&lt;String, HashMap&lt;Integer, HashMap&lt;String, Integer&gt;&gt;&gt;, the first String key of the
+     * primary HashMap is the name of the player, and is saved as a directory by the player name.
+     * <p>
+     * In the directory, the data is now stored as a HashMap with structure: HashMap&lt;Integer, HashMap&lt;String, Integer&gt;&gt;.
+     * The integer value of the new primary HashMap is the stat type, and is saved as a text file with that integer value
+     * as the name. Inside the text file is the HashMap&lt;String, Integer&gt;, saved in a JSON format.
+     *
+     * @return Whether the saving is successful or not
+     *
+     * @see java.util.HashMap
+     */
     @SuppressWarnings("unchecked")
     public boolean saveStatFiles() {
         // we need this inside the asynchronous thread
@@ -625,9 +664,19 @@ public class StatCraft extends JavaPlugin {
         return true;
     }
 
-    @SuppressWarnings("unchecked")
-    public boolean reloadStatFiles() throws IOException {
-        statsForPlayers = new HashMap<>();
+    /**
+     * verifies the stat files from the disk are valid
+     * <p>
+     * The exact format of the stats saved on the disk is discussed in the documentation for
+     * {@link #saveStatFiles() saveStatFiles()}.
+     *
+     * @return Whether the check was successful or not
+     * @throws IOException
+     *
+     * @see java.util.HashMap
+     * @see #saveStatFiles()
+     */
+    public boolean checkStatFiles() throws IOException {
         if (getDataFolder().exists()) {
             // check the root stats directory
             File statsDir = new File(getDataFolder(), "stats");
@@ -639,17 +688,24 @@ public class StatCraft extends JavaPlugin {
                     String name = player.getName();
                     if (!name.equalsIgnoreCase("totals")) {
                         getLogger().info("" + name + " found at: " + player.getPath());
-                        // put player's name into map, now we need to get the stats themselves
-                        statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
                         for (File type : player.listFiles()) {
                             // grab the statType
                             String statType = type.getName();
                             // set Token type and gson
                             Gson gson = new Gson();
                             Type tokenType = new TypeToken<HashMap<String, Integer>>(){}.getType();
-                            // insert the stats into the map
-                            statsForPlayers.get(name).put(Integer.parseInt(statType), (HashMap<String, Integer>)
-                                    gson.fromJson(readFile(type.getPath(), StandardCharsets.UTF_8), tokenType));
+                            // insert the stats into the map to verify it works
+                            try {
+                                Integer.parseInt(statType);
+                                HashMap<String, Integer> map = gson.fromJson(removeDuplicateFields(
+                                        readFile(type.getPath(), StandardCharsets.UTF_8), statType, name),
+                                        tokenType);
+                                map.clear();
+                            } catch (Exception e) {
+                                getLogger().severe(type + " stat for " + name + " could not be loaded successfully, deleting " + type + ".");
+                                e.printStackTrace();
+                                type.delete();
+                            }
                         }
                     }
                 }
@@ -662,7 +718,85 @@ public class StatCraft extends JavaPlugin {
         }
     }
 
-    private int parseTime(String time) {
+    /**
+     * Remove duplicate entries from a simple JSON format.
+     * The input must only be a simple String:Integer JSON format, this method does not handle anything more complicated.
+     * <p>
+     * For example, this would work: {"One":1,"Two":2,"One":3}
+     * <p>
+     * This method would return: {"Two":2,"One":3}, as it only keeps the highest value for each duplicate key.
+     * It does this because after a lot of testing I came to determine that whenever a duplicate key did pop up, it was
+     * always an outlier and did not actually contribute to the total value.
+     * <p>
+     * If a more complicated input were to be given, with values holding strings, or arrays, or anything else besides
+     * something like the example given, the method would not work correctly.
+     *
+     * @param in The input JSON, which must be a simple String:Integer set
+     * @param type The type of stat, used only for logging
+     * @param name The name of the player the stat belongs to, used only for logging
+     * @return The input JSON, but with only the highest value of each duplicate key kept. If no duplicate keys were
+     * found, then it returns exactly what was input.
+     */
+    private String removeDuplicateFields(String in, String type, String name) {
+        // for the use of this method in this plugin, there will never be
+        // a more complex JSON format than simply keys and values
+        in = in.replaceAll("[\\{}]", "");
+        ArrayList<String> sets = new ArrayList<>(Arrays.asList(in.split(",")));
+        HashMap<String, Integer> counter = new HashMap<>();
+
+        // grab each id
+        Pattern p = Pattern.compile("\"([^\"]*)\"");
+        Matcher m = p.matcher(in);
+
+        // count each id occurrence
+        while (m.find()) {
+            String found = m.group(1);
+            Integer value = counter.get(found);
+            counter.put(found, value == null ? 1 : value + 1);
+        }
+
+        // loop through the occurrence map
+        for (Map.Entry<String, Integer> pair : counter.entrySet()) {
+            if (pair.getValue() > 1) {
+                // we have a duplicate key, so keep only the key with the larger value
+                int max = 0;
+                for (int i = 0; i < pair.getValue(); i++) {
+                    // find the duplicates
+                    for (int j = sets.size() - 1; j >= 0; j--) {
+                        if (sets.get(j).startsWith("\"" + pair.getKey() + "\"")) {
+                            int entry = Integer.parseInt(sets.get(j).substring(sets.get(j).lastIndexOf(":") + 1));
+                            // only keep the largest value
+                            if (entry > max) max = entry;
+                            sets.remove(j);
+                        }
+                    }
+                }
+                // put the largest value back in
+                sets.add("\"" + pair.getKey() + "\":" + max);
+                getLogger().warning("Removed duplicate key: " + pair.getKey() + " in " + type + " for " + name);
+            }
+        }
+
+        String result = "";
+        for (String s : sets) {
+            result = result + s + ",";
+        }
+        result = "{" + result.substring(0, result.length() - 1) + "}";
+
+        return result;
+    }
+
+    /**
+     * Returns the amount of time given in milliseconds. The syntax for the input must contain only an integer followed
+     * by only one of 5 lowercase letters: s, m, h, d, w
+     * <p>
+     * The integer is the value of the time, and the letter is the unit. The letters stand for seconds, minutes, hours,
+     * days, and weeks, respectively.
+     *
+     * @param time The string entry of exactly one integer followed immediately by s, m, h, d, or w
+     * @return the amount of time given in milliseconds
+     */
+    private static int parseTime(String time) {
         char timeUnit;
         if (time.endsWith("s")) {
             time = time.replace("s", "");
@@ -713,44 +847,138 @@ public class StatCraft extends JavaPlugin {
         return timeMilliSec;
     }
 
+    /**
+     * Returns the TimedActivities object
+     *
+     * @return The TimedActivities object used by this plugin
+     */
     @NotNull
     public TimedActivities getTimedActivities() { return timedActivities; }
 
+    /**
+     * Returns the time zone.
+     * <p>
+     * The time zone was either set explicitly by the admin in the config file, or was determined automatically by
+     * the plugin.
+     *
+     * @return The time zone the plugin is using for the displayed times
+     * @see java.util.TimeZone
+     */
     @NotNull
     public String getTimeZone() { return timeZone; }
 
+    /**
+     * Returns whether or not the config file allows users to reset their own stats
+     *
+     * @return Whether a user can reset their own stats
+     */
     public boolean getResetOwnStats(){ return resetOwnStats; }
 
+    /**
+     * Returns the admin level required for a player to reset another player's stats
+     *
+     * @return Admin level necessary to reset another player's stats
+     */
     @NotNull
     public String getResetAnotherPlayerStats() { return resetAnotherPlayerStats; }
 
+    /**
+     * Returns the admin level required for a player to reset the entire server's stats
+     *
+     * @return Admin level necessary to rest another player's stats
+     */
     @NotNull
     public String getResetServerStats() { return resetServerStats; }
 
+    /**
+     * Returns whether death locations are being logged
+     *
+     * @return Whether or not death location stats are being saved
+     */
     public boolean getDeath_locations() { return death_locations; }
 
+    /**
+     * Returns whether total time played is being logged
+     *
+     * @return Whether or not time played stats are being saved
+     */
     public boolean getPlay_time() { return play_time; }
 
+    /**
+     * Returns whether last join time is being logged
+     *
+     * @return Whether or not last joined stats are being saved
+     */
     public boolean getLast_join_time() { return last_join_time; }
 
+    /**
+     * Returns whether last leave time is being logged
+     *
+     * @return Whether or not last leave time stats are being saved
+     */
     public boolean getLast_leave_time() { return last_leave_time; }
 
+    /**
+     * Returns whether specific words spoken is being logged
+     *
+     * @return Whether or not the specific words that player speak is being saved
+     */
     public boolean getSpecific_words_spoken() { return specific_words_spoken; }
 
+    /**
+     * Returns whether words spoken is being logged
+     *
+     * @return Whether or not words spoken stats are being saved
+     */
     public boolean getWords_spoken() { return words_spoken; }
 
+    /**
+     * Returns whether joins are being logged
+     *
+     * @return Whether or not number of joins stats are being saved
+     */
     public boolean getJoins() { return joins; }
 
+    /**
+     * Returns whether the plugin should save the stats to disk in real-time
+     *
+     * @return Whether or not the plugin should write stats to disk in real-time
+     */
     public boolean getSaveStatsRealTime() { return saveStatsRealTime; }
 
+    /**
+     * Returns whether mined ores is being logged
+     *
+     * @return Whether or not mined ores stats are being saved
+     */
     public boolean getMined_ores() { return mined_ores; }
 
+    /**
+     * Returns the total backups the plugin should keep
+     *
+     * @return The total backups the plugin should keep
+     */
     public int getBackupStatsNumber() { return backupStatsNumber; }
 
+    /**
+     * Return the current backup the plugin is on
+     *
+     * @return The current backup the plugin is on
+     */
     public int getBackupNumber() { return backupNumber; }
 
+    /**
+     * Returns the backup stats location
+     *
+     * @return The location on the disk where the plugin should save the backups
+     */
     public String getBackupStatsLocation() { return backupStatsLocation; }
 
+    /**
+     * Increase the backup number by one
+     * <p>
+     * This includes increase the backupNumber variable, and incrementing the value held on the disk by one as well
+     */
     public void incrementBackupNumber() {
         backupNumber++;
         PrintWriter out = null;
@@ -765,18 +993,116 @@ public class StatCraft extends JavaPlugin {
         }
     }
 
+    /**
+     * Returns the naming scheme used to name backups
+     *
+     * @return The naming scheme used to name backups
+     *
+     * @see java.text.SimpleDateFormat
+     */
     @NotNull
     public String getBackupName() { return backupName; }
 
+    /**
+     * Returns a list of the backups currently on the disk, but only those that the plugin knows of.
+     * <p>
+     * To prevent the deletion of other files or folders that the user does not mean to get deleted, the plugin will
+     * keep it's own list of backups, and attempt ot make sure it stays correct. The plugin will only delete old backups
+     * as it sees need from it's own internal list.
+     *
+     * @return A list of the backups currently on the disk
+     */
     @NotNull
     public ArrayList<String> getBackups() { return backups; }
 
+    /**
+     * Returns the last time a player was on fire
+     *
+     * @param name The name of the player that was on fire
+     * @return The time that the player was last on fire
+     */
     public int getLastFireTime(String name) {
         Integer time = lastFireTime.get(name);
         return time == null ? 0 : time;
     }
 
+    /**
+     * Returns the last time a player was drowning
+     *
+     * @param name The name of the player that was drowning
+     * @return The time that the player was last drowning
+     */
+    public int getLastDrownTime(String name) {
+        Integer time = lastDrownTime.get(name);
+        return time == null ? 0 : time;
+    }
+
+    /**
+     * Returns the last time a player was poisoned
+     *
+     * @param name The name of the player that was poisoned
+     * @return The time that the player was last poisoned
+     */
+    public int getLastPoisonTime(String name) {
+        Integer time = lastPoisonTime.get(name);
+        return time == null ? 0 : time;
+    }
+
+    /**
+     * Sets the last time a player is on fire
+     *
+     * @param name The name of the player that is on fire
+     * @param time The time the player was on fire
+     */
     public void setLastFireTime(String name, int time) { lastFireTime.put(name, time); }
 
+    /**
+     * Sets the last time a player is drowning
+     *
+     * @param name The name of the player that is drowning
+     * @param time The time the player was drowning
+     */
+    public void setLastDrowningTime(String name, int time) { lastDrownTime.put(name, time); }
+
+    /**
+     * Sets the last time a player is poisoned
+     *
+     * @param name The name of the player that is poisoned
+     * @param time The time the player was poisoned
+     */
+    public void setLastPoisonTime(String name, int time) { lastPoisonTime.put(name, time); }
+
+    /**
+     * Returns whether the plugin should announce if someone is on fire
+     *
+     * @return Whether or not the plugin should announce when someone catches on fire
+     */
     public boolean getOn_fire_announce() { return on_fire_announce; }
+
+    /**
+     * Returns whether the plugin should announce if someone is drowning
+     *
+     * @return Whether or not the plugin should announce when someone starts to drown
+     */
+    public boolean getDrowning_announce() { return drowning_announce; }
+
+    /**
+     * Returns whether the plugin should announce if someone is poisoned
+     *
+     * @return Whether or not the plugin should announce when someone gets poisoned
+     */
+    public boolean getPoison_announce() { return poison_announce; }
+
+    /**
+     * Recusrively deletes a folder, even if it's full
+     *
+     * @param f The directory that needs to be deleted
+     */
+    public static void deleteFolder(File f) {
+        if (f.isDirectory()) {
+            for (File c : f.listFiles())
+                deleteFolder(c);
+        }
+        f.delete();
+    }
 }

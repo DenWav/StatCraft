@@ -54,6 +54,7 @@ public class TimedActivities extends Timer {
             @Override
             public void run() {
                 plugin.saveStatFiles();
+                plugin.statsForPlayers.clear();
             }
         };
         schedule(toDisk, 1, milliSec);
@@ -69,6 +70,7 @@ public class TimedActivities extends Timer {
             @Override
             public void run() {
                 plugin.saveStatFiles();
+                plugin.statsForPlayers.clear();
             }
         });
     }

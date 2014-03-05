@@ -4,6 +4,7 @@ import com.avaje.ebean.validation.NotNull;
 import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,7 +16,11 @@ import wav.demon.StatTypes;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.NoSuchFileException;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -39,35 +44,49 @@ public abstract class StatListener implements Listener, CommandExecutor {
 
     // Synchronized method to increment stats on players, this method will be run in a separate
     // asynchronous thread.
+    @SuppressWarnings("unchecked")
     private void incrementStatToPlayer(int type, String name, String message) {
-
-        // check if they have any stats yet, if not, make one
-        if (!plugin.statsForPlayers.containsKey(name))
-            plugin.statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
-
-        // check if they have any stats for this event yet, if not, make one
-        if (!plugin.statsForPlayers.get(name).containsKey(type))
-            plugin.statsForPlayers.get(name).put(type, new HashMap<String, Integer>());
-
-        // check if they have this particular event yet, if not, set to one. If so, increment it
-        if (!plugin.statsForPlayers.get(name).get(type).containsKey(message))
-            plugin.statsForPlayers.get(name).get(type).put(message, 1);
-        else
-            plugin.statsForPlayers.get(name).get(type).put(message, plugin.statsForPlayers.get(name).get(type).get(message) + 1);
-
-        // check to see if they have a total yet. If so, increment it; if not, set to 1
-        if (!plugin.statsForPlayers.get(name).get(type).containsKey("total"))
-            plugin.statsForPlayers.get(name).get(type).put("total", 1);
-        else
-            plugin.statsForPlayers.get(name).get(type).put("total", plugin.statsForPlayers.get(name).get(type).get("total") + 1);
 
         if (plugin.getSaveStatsRealTime()) {
             synchronized (StatListener.class) {
                 PrintWriter out = null;
                 try {
+                    // load up the json into a map, do the increment, then save the json back to the file
                     // declare the gson for writing the json
                     Gson gson = new Gson();
-                    String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
+
+                    File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+                    String json;
+                    HashMap<String, Integer> map;
+                    if (statFile.exists() && !statFile.isDirectory()) {
+                        map = getMapFromFile(statFile);
+
+                        if (map == null)
+                            map = new HashMap<>();
+
+                        if (!map.containsKey(message))
+                            map.put(message, 1);
+                        else
+                            map.put(message, map.get(message) + 1);
+
+                        if (!map.containsKey("total"))
+                            map.put("total", 1);
+                        else
+                            map.put("total", map.get("total") + 1);
+                    } else if (statFile.exists() && statFile.isDirectory()) {
+                        plugin.getLogger().warning(statFile.getPath() + " is a directory, deleting.");
+                        StatCraft.deleteFolder(statFile);
+                        map = new HashMap<>();
+                        map.put(message, 1);
+                        map.put("total", 1);
+                        plugin.getLogger().info(gson.toJson(map));
+                    } else {
+                        map = new HashMap<>();
+                        map.put(message, 1);
+                        map.put("total", 1);
+                    }
+
+                    json = gson.toJson(map);
 
                     // ensure the output directory exists
                     File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
@@ -91,6 +110,31 @@ public abstract class StatListener implements Listener, CommandExecutor {
                         out.close();
                 }
             }
+        } else {
+            // check if they have any stats yet, if not, make one
+            if (!plugin.statsForPlayers.containsKey(name))
+                plugin.statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
+
+            // check if they have any stats for this event yet, if not, make one
+            if (!plugin.statsForPlayers.get(name).containsKey(type)) {
+                File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+                HashMap<String, Integer> map = getMapFromFile(statFile);
+
+                plugin.statsForPlayers.get(name).put(type, map == null ? new HashMap<String, Integer>() : map);
+            }
+
+            // check if they have this particular event yet, if not, set to one. If so, increment it
+            if (!plugin.statsForPlayers.get(name).get(type).containsKey(message))
+                plugin.statsForPlayers.get(name).get(type).put(message, 1);
+            else
+                plugin.statsForPlayers.get(name).get(type).put(message, plugin.statsForPlayers.get(name).get(type).get(message) + 1);
+
+            // check to see if they have a total yet. If so, increment it; if not, set to 1
+            if (!plugin.statsForPlayers.get(name).get(type).containsKey("total"))
+                plugin.statsForPlayers.get(name).get(type).put("total", 1);
+            else
+                plugin.statsForPlayers.get(name).get(type).put("total", plugin.statsForPlayers.get(name).get(type).get("total") + 1);
+
         }
     }
 
@@ -105,26 +149,38 @@ public abstract class StatListener implements Listener, CommandExecutor {
      * @param name Name of the player to add stat to
      * @param data Whatever number to be added to the player's stat
      */
+    @SuppressWarnings("unchecked")
     public void addStatToPlayer(int type, String name, int data) {
-
-        // check if they have any stats yet, if not, make one
-        if (!plugin.statsForPlayers.containsKey(name))
-            plugin.statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
-
-        // check if they have any stats for this event yet, if not, make one
-        if (!plugin.statsForPlayers.get(name).containsKey(type))
-            plugin.statsForPlayers.get(name).put(type, new HashMap<String, Integer>());
-
-        // add the stat to the total
-        plugin.statsForPlayers.get(name).get(type).put("total", data);
 
         if (plugin.getSaveStatsRealTime()) {
             synchronized (StatListener.class) {
                 PrintWriter out = null;
                 try {
+                    // load up the json into a map, do the increment, then save the json back to the file
                     // declare the gson for writing the json
                     Gson gson = new Gson();
-                    String json = gson.toJson(plugin.statsForPlayers.get(name).get(type));
+
+                    File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+                    String json;
+                    HashMap<String, Integer> map;
+                    if (statFile.exists() && !statFile.isDirectory()) {
+                        map = getMapFromFile(statFile);
+
+                        if (map == null)
+                            map = new HashMap<>();
+
+                        map.put("total", data);
+                    } else if (statFile.exists() && statFile.isDirectory()) {
+                        plugin.getLogger().warning(statFile.getPath() + " is a directory, deleting.");
+                        StatCraft.deleteFolder(statFile);
+                        map = new HashMap<>();
+                        map.put("total", data);
+                    } else {
+                        map = new HashMap<>();
+                        map.put("total", data);
+                    }
+
+                    json = gson.toJson(map);
 
                     // ensure the output directory exists
                     File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
@@ -149,6 +205,21 @@ public abstract class StatListener implements Listener, CommandExecutor {
                         out.close();
                 }
             }
+        } else {
+            // check if they have any stats yet, if not, make one
+            if (!plugin.statsForPlayers.containsKey(name))
+                plugin.statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
+
+            // check if they have any stats for this event yet, if not, make one
+            if (!plugin.statsForPlayers.get(name).containsKey(type)) {
+                File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+                HashMap<String, Integer> map = getMapFromFile(statFile);
+
+                plugin.statsForPlayers.get(name).put(type, map == null ? new HashMap<String, Integer>() : map);
+            }
+
+            // add the stat to the total
+            plugin.statsForPlayers.get(name).get(type).put("total", data);
         }
     }
 
@@ -209,19 +280,48 @@ public abstract class StatListener implements Listener, CommandExecutor {
     protected int getStat(String name, int type) {
         // This is method of getting stats takes about half as many look-ups
         // I could do a little better, but then I'd have to catch NullPointedExceptions,
-        // and I would rather not catch RuntimeExceptions if possible
-        HashMap<Integer, HashMap<String, Integer>> firstMap = plugin.statsForPlayers.get(name);
-        if (firstMap == null) {
-           return 0;
+        // and I would rather not catch a RuntimeException if possible
+        if (plugin.getSaveStatsRealTime()) {
+            Integer i = getStatFromFile(name, type);
+            return i == null ? 0 : i;
         } else {
-            HashMap<String, Integer> secondMap = firstMap.get(type);
-            if (secondMap == null) {
-                return 0;
+            HashMap<Integer, HashMap<String, Integer>> firstMap = plugin.statsForPlayers.get(name);
+            if (firstMap == null) {
+                Integer i = getStatFromFile(name, type);
+                return i == null ? 0 : i;
             } else {
-                Integer stat = secondMap.get("total");
-                return stat == null ? 0 : stat;
+                HashMap<String, Integer> secondMap = firstMap.get(type);
+                if (secondMap == null) {
+                    Integer i = getStatFromFile(name, type);
+                    return i == null ? 0 : i;
+                } else {
+                    Integer stat = secondMap.get("total");
+                    return stat == null ? 0 : stat;
+                }
             }
         }
+    }
+
+    /**
+     * Return a certain stat on a player without trying to reference a key that doesn't exist.
+     * This method is used by the command parts of the subclasses. The returned value is the "total"
+     * value of the specified stat.
+     * <p>
+     * This method looks for the stats only on the disk and should not be used solely as the stat-lookup
+     *
+     * @param name Name of the player to get stats from
+     * @param type StatType.id int of whatever stat you want to get
+     * @return "total" value of specified type, but as an Integer so it is null if nothing is found
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    protected Integer getStatFromFile(String name, int type) {
+
+        File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+
+        HashMap<String, Integer> map = getMapFromFile(statFile);
+
+        return map == null ? null : map.containsKey("total") ? map.get("total") : null;
     }
 
     /**
@@ -327,7 +427,7 @@ public abstract class StatListener implements Listener, CommandExecutor {
         else
             secondString = remainingSeconds + " seconds";
 
-        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<String> results = new ArrayList<>();
         results.add(weekString);
         results.add(dayString);
         results.add(hourString);
@@ -395,40 +495,44 @@ public abstract class StatListener implements Listener, CommandExecutor {
                 sender.sendMessage(message);
         } else {
             Map<String, Integer> sortableMap = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
-
-            for (Map.Entry<String, HashMap<Integer, HashMap<String, Integer>>> pairs : plugin.statsForPlayers.entrySet()) {
-                String name = pairs.getKey();
-                if (!name.equalsIgnoreCase("total")) {
-                    HashMap<Integer, HashMap<String, Integer>> playerMap = pairs.getValue();
-                    Map<String, Integer> typeMap = playerMap.get(type.id);
-                    if (typeMap != null) {
-                        Integer total = typeMap.get("total");
-                        if (total != null) {
-                            sortableMap.put(name, total);
+            File statsDir = new File(plugin.getDataFolder(), "stats");
+            File[] files = statsDir.listFiles();
+            if (files != null) {
+                for (File name : files) {
+                    if (!name.getName().equalsIgnoreCase("total")) {
+                        File typeFile = new File(name, type.id + "");
+                        HashMap<String, Integer> map = getMapFromFile(typeFile);
+                        if (map != null) {
+                            Integer total = map.get("total");
+                            if (total != null) {
+                                sortableMap.put(name.getName(), total);
+                            }
                         }
                     }
                 }
-            }
 
-            String output = typeLabel(type) + " - ";
-            Iterator iterator = sortableMap.entrySet().iterator();
-            for (int i = 1; i <= topNumber; i++) {
-                if (iterator.hasNext()) {
-                    Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) iterator.next();
+                String output = typeLabel(type) + " - ";
+                Iterator iterator = sortableMap.entrySet().iterator();
+                for (int i = 1; i <= topNumber; i++) {
+                    if (iterator.hasNext()) {
+                        Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) iterator.next();
 
-                    String name = sortedMapEntry.getKey();
-                    Integer value = sortedMapEntry.getValue();
+                        String name = sortedMapEntry.getKey();
+                        Integer value = sortedMapEntry.getValue();
 
-                    output = output + "§6" + i + ". §c" + name + "§f: " + typeFormat(value, type) + " ";
-                } else {
-                    break;
+                        output = output + "§6" + i + ". §c" + name + "§f: " + typeFormat(value, type) + " ";
+                    } else {
+                        break;
+                    }
                 }
-            }
 
-            if (publicCmd)
-                sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + output);
-            else
-                sender.sendMessage(output);
+                if (publicCmd)
+                    sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + output);
+                else
+                    sender.sendMessage(output);
+            } else {
+                sender.sendMessage("There was an error processing that command.");
+            }
 
         }
     }
@@ -439,6 +543,26 @@ public abstract class StatListener implements Listener, CommandExecutor {
     protected abstract String typeFormat(int value, StatTypes type);
 
     protected abstract String typeLabel(StatTypes type);
+
+    @Nullable
+    protected HashMap<String, Integer> getMapFromFile(File f) {
+
+        String json;
+        try {
+            json = StatCraft.readFile(f.getPath(), StandardCharsets.UTF_8);
+        } catch (NoSuchFileException e) {
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        Gson gson = new Gson();
+        Type tokenType = new TypeToken<HashMap<String, Integer>>(){}.getType();
+
+        return gson.fromJson(json, tokenType);
+
+    }
 }
 
 // This is just awesome, huge thanks to Stephen for this: http://stackoverflow.com/a/3420912

@@ -11,9 +11,12 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import javax.annotation.Nullable;
+import java.io.File;
 import java.util.*;
 
 public class BlockListener extends StatListener {
@@ -82,7 +85,7 @@ public class BlockListener extends StatListener {
             String type = args[1];
             String message;
 
-            int stat = getStat(name, StatTypes.MINED.id, type);
+            int stat = getStat(name, StatTypes.BLOCK_BREAK.id, type);
             String material = type.replace("_", " ");
             if (stat != -1) {
                 message = "§c" + name + "§f - " + WordUtils.capitalizeFully(material) + " Mined: " + df.format(stat);
@@ -111,25 +114,44 @@ public class BlockListener extends StatListener {
             return "Blocks Placed";
     }
 
+    @SuppressWarnings("deprecation")
     private int getStat(String name, int type, String s) {
         Material mat = Material.matchMaterial(s);
         if (mat != null) {
-            int stat;
-            if (plugin.statsForPlayers.containsKey(name))
-                if (plugin.statsForPlayers.get(name).containsKey(type))
-                    if (plugin.statsForPlayers.get(name).get(type).containsKey(mat.toString()))
-                        stat = plugin.statsForPlayers.get(name).get(type).get(mat.toString());
-                    else
-                        stat = 0;
-                else
-                    stat = 0;
-            else
-                stat = 0;
-
-            return stat;
+            MaterialData data = new MaterialData(mat);
+            if (plugin.getSaveStatsRealTime()) {
+                Integer i = getStatFromFile(name, type, mat.getId() + ":" + data.getData());
+                return i == null ? 0 : i;
+            } else {
+                HashMap<Integer, HashMap<String, Integer>> firstMap = plugin.statsForPlayers.get(name);
+                if (firstMap == null) {
+                    Integer i = getStatFromFile(name, type, mat.getId() + ":" + data.getData());
+                    return i == null ? 0 : i;
+                } else {
+                    HashMap<String, Integer> secondMap = firstMap.get(type);
+                    if (secondMap == null) {
+                        Integer i = getStatFromFile(name, type, mat.getId() + ":" + data.getData());
+                        return i == null ? 0 : i;
+                    } else {
+                        Integer stat = secondMap.get(mat.getId() + ":" + data.getData());
+                        return stat == null ? 0 : stat;
+                    }
+                }
+            }
         } else {
             return -1;
         }
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    protected Integer getStatFromFile(String name, int type, String stat) {
+
+        File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+
+        HashMap<String, Integer> map = getMapFromFile(statFile);
+
+        return map == null ? null : map.containsKey(stat) ? map.get(stat) : null;
     }
 
     @Override
@@ -163,28 +185,34 @@ public class BlockListener extends StatListener {
             Map<String, Integer> sortableBlocksPlaced = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
             Map<String, Integer> sortableBlocksBroken = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
 
-            for (Map.Entry<String, HashMap<Integer, HashMap<String, Integer>>> pairs : plugin.statsForPlayers.entrySet()) {
-                String name = pairs.getKey();
-                if (!name.equalsIgnoreCase("total")) {
-                    HashMap<Integer, HashMap<String, Integer>> playerMap = pairs.getValue();
-                    Map<String, Integer> blocksPlacedMap = playerMap.get(StatTypes.BLOCK_PLACE.id);
-                    Map<String, Integer> blocksBrokenMap = playerMap.get(StatTypes.BLOCK_BREAK.id);
+            File statsDir = new File(plugin.getDataFolder(), "stats");
+            File[] files = statsDir.listFiles();
 
-                    if (blocksPlacedMap != null) {
-                        Integer total = blocksPlacedMap.get("total");
-                        if (total != null) {
-                            sortableBlocksPlaced.put(name, total);
+            if (files != null) {
+                for (File name : files) {
+                    if (!name.getName().equalsIgnoreCase("total")) {
+                        File placeFile = new File(name, StatTypes.BLOCK_PLACE.id + "");
+                        File breakFile = new File(name, StatTypes.BLOCK_BREAK.id + "");
+                        Map<String, Integer> blocksPlacedMap = getMapFromFile(placeFile);
+                        Map<String, Integer> blocksBrokenMap = getMapFromFile(breakFile);
+
+                        if (blocksPlacedMap != null) {
+                            Integer total = blocksPlacedMap.get("total");
+                            if (total != null) {
+                                sortableBlocksPlaced.put(name.getName(), total);
+                            }
                         }
-                    }
 
-                    if (blocksBrokenMap != null) {
-                        Integer total = blocksBrokenMap.get("total");
-                        if (total != null) {
-                            sortableBlocksBroken.put(name, total);
+                        if (blocksBrokenMap != null) {
+                            Integer total = blocksBrokenMap.get("total");
+                            if (total != null) {
+                                sortableBlocksBroken.put(name.getName(), total);
+                            }
                         }
                     }
                 }
             }
+
 
             String blocksBrokenOutput = typeLabel(StatTypes.BLOCK_BREAK) + " - ";
             Iterator brokenIt = sortableBlocksBroken.entrySet().iterator();

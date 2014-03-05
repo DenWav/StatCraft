@@ -72,7 +72,7 @@ public class ResetCommand implements CommandExecutor {
                             e.printStackTrace();
                         } finally {
                             try {
-                                plugin.reloadStatFiles();
+                                plugin.checkStatFiles();
                             } catch (IOException e) {
                                 plugin.getLogger().info("StatCraft: Fatal Error occurred while trying to reload stats.");
                                 e.printStackTrace();

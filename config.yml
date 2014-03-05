@@ -82,6 +82,10 @@ stats:
 
   # keep track of the total damage a player has received
   damage_taken: true
+  # announce to the server whenever a player is drowning
+  drowning_announce: true
+  # announce to the server whenever a player is poisoned
+  poison_announce: true
 
   # record when a player catches a fish
   fish_caught: true
