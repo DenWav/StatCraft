@@ -1,0 +1,117 @@
+name: StatCraft
+main: wav.demon.StatCraft
+version: 1.2.2
+author: DemonWav
+commands:
+  list:
+    description: Lists all online players.
+    usage: /<command>
+  deaths:
+    description: Lists total deaths logged of a player
+    usage: /<command> [player] or just /<command>
+  blocks:
+    description: Lists total blocks broken and placed by a player
+    usage: /<command> [player] or just /<command>
+  resetstats:
+    description: Resets the server stats
+    usage: /<command> force-all [type] or /<command> force [player] [type]
+  printdata:
+    description: Prints the data held in statsForPlayers
+    usage: /<command>
+    permission: StatCraft.admin.*
+    permission-message: You don't have <permission>
+  updateTotals:
+    description: Updates the totals
+    usage: /<command>
+    permission: StatCraft.admin.*
+    permission-message: You don't have <permission>
+  playtime:
+    description: Lists a player's playtime
+    usage: /<command> [player] or just /<command>
+  lastseen:
+    description: Lists the time a player was last seen on the server
+    usage: /<command> [player]
+  itempickups:
+    description: Lists the number of items a player has picked up
+    usage: /<command> [player] or just /<command>
+  itemdrops:
+    description: Lists the number of items a player has dropped
+    usage: /<command> [player] or just /<command>
+  itemscrafted:
+    description: Lists  the number of items a player has crafted
+    usage: /<command> [player] or just /<command>
+  onfire:
+    description: Lists how long a player has been on fire
+    usage: /<command> [player] or just /<command>
+  toolsbroken:
+    description: Lists how many tools a player has broken
+    usage: /<command> [player] or just /<command>
+  arrowsshot:
+    description: Lists how many arrows a player has shot
+    usage: /<command> [player] or just /<command>
+  bucketsfilled:
+    description: Lists how many buckets a player has filled
+    usage: /<command> [player] or just /<command>
+  bucketsemptied:
+    description: Lists how many buckets a player has emptied
+    usage: /<command> [player] or just /<command>
+  lastslept:
+    description: Lists the last time a player slept
+    usage: /<command> [player] or just /<command>
+  timeslept:
+    description: Lists how long a player has slept
+    usage: /<command> [player] or just /<command>
+  worldchanges:
+    description: Lists the number of times a player has changed worlds
+    usage: /<command> [player] or just /<command>
+  wordsspoken:
+    description: Lists the number of words a player has spoken
+    usage: /<command> [player] or just /<command>
+  messagesspoken:
+    description: Lists the number of a messages a player has spoken
+    usage: /<command> [player] or just /<command>
+  joins:
+    description: Lists the number of times a player has joined the server
+    usage: /<command> [player] or just /<command>
+  savestats:
+    description: Saves the stats that are in memory to the disk
+    usage: /<command>
+    permission: StatCraft.admin.*
+    permission-message: You don't have <permission>
+  deathlocations:
+    description: Lists the number of deaths and their locations of a player
+    usgage: /<command> [player] or just /<command>
+  forcebackup:
+    description: Forces a backup
+    usage: /<command>
+    permission: StatCraft.admin.*
+    permission-message: You don't have <permission>
+  mined:
+    description: Lists mined ores
+    usage: /<command> [player] [type]
+  damagetaken:
+    description: Shows damage taken by a player
+    usage: /<command> [player] or just /<command>
+  damagedealt:
+    description: Shows damage dealt by a player
+    usage: /<command> [player] or just /<command>
+  fishcaught:
+    description: Shows the number of fish a player has caught
+    usage: /<command> [player] or just /<command>
+  kills:
+    description: Shows how many entities a player has killed
+    usage: /<command> [player] or just /<command>
+  xpgained:
+    description: Shows how much xp a player has gained
+    usage: /<command> [player] or just /<command>
+  highestlevel:
+    description: Shows the highest level a player has achieved
+    usage: /<command> [player] or just /<command>
+  tabcompletes:
+    description: Shows how many times a player has used tab complete
+    usage: /<command> [player] or just /<command>
+
+permissions:
+  admin.op:
+    description: Basically OP
+    default: op
