@@ -1099,10 +1099,10 @@ public class StatCraft extends JavaPlugin {
      * @param f The directory that needs to be deleted
      */
     public static void deleteFolder(File f) {
-        if (f.isDirectory()) {
-            for (File c : f.listFiles())
-                deleteFolder(c);
-        }
+        if (f.isDirectory())
+            if (f.listFiles() != null)
+                for (File c : f.listFiles())
+                    deleteFolder(c);
         f.delete();
     }
 }
