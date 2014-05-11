@@ -63,7 +63,9 @@ Compiling
 ### Need Maven? [Get Maven Here](http://maven.apache.org/download.cgi)
 
 Make sure you are in StatCraft's root directory and run the command:
+
 `mvm clean package`
+
 When that is finished, look in the `target/` folder, and it will have the compiled .jar file.
 
 Further Info
@@ -71,6 +73,8 @@ Further Info
 
 This project is still very much a work-in-progress, and it is not very close to release. However, if you have any questions
 or want to contact me for any reason, you can find me in IRC:
+
 `irc.esper.net`
-I am usually in *#bukkit* and *#bukkitdev*, but you can always just message me.
+
+I am usually in *#bukkit* and *#bukkitdev*, but you can always just message me, username is DemonWav.
 
