@@ -146,6 +146,7 @@ public class StatCraft extends JavaPlugin {
     @Override
     @SuppressWarnings("unchecked")
     final public void onEnable() {
+
         // See if the config file exists
         File config = new File(getDataFolder(), "config.yml");
         if (!config.exists()) {
