@@ -469,68 +469,99 @@ public abstract class StatListener implements Listener, CommandExecutor {
      */
     @SuppressWarnings("unchecked")
     protected void respondToCommand(String message, String[] args, CommandSender sender, StatTypes type) {
+        // control variables
         boolean publicCmd = false;
         boolean top = false;
+        // if top == true, this is how many to display
         int topNumber = 0;
 
+        // look for -all and -top# arguments
         for (String arg : args) {
+            // if we find a -all argument then set top to true, regardless of how many we find or where it's located
             if (arg.equals("-all"))
                 publicCmd = true;
 
+            // if we find a top argument, set it to true, but later check to see if it's valid
             if (arg.startsWith("-top")) {
                 top = true;
+                // check if it is valid, first, remove -top from the front and then check for integers
                 try {
                     topNumber = Integer.valueOf(arg.replace("-top", ""));
+                    // this was successful, so nothing more needs to be done
                 } catch (NumberFormatException e) {
+                    // the argument was invalid, so show and error and exit
                     sender.sendMessage("Not a valid \"-top\" value. Please use \"-top#\" with # being an integer.");
                     return;
                 }
             }
         }
 
+        // show a normal command if we aren't listing the top #
         if (!top) {
+            // if the -all argument was not given, output the command as a private message
             if (publicCmd)
                 sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + message);
             else
                 sender.sendMessage(message);
         } else {
+            // this is a -top command, so get the list of the top people for the stats
+            // create a ValueComparableMap to sort in reverse order, so the largest numbers are on top
             Map<String, Integer> sortableMap = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
+            // parse through the stats directory to find the individual stats
             File statsDir = new File(plugin.getDataFolder(), "stats");
+            // get the list of directories in the stats/ directory, these will be player directories
             File[] files = statsDir.listFiles();
+            // make sure the directory list isn't null for some reason
             if (files != null) {
+                // loop through each player directory looking for the specific stat
                 for (File name : files) {
+                    // there is a "total" directory here, ignore it
                     if (!name.getName().equalsIgnoreCase("total")) {
+                        // find the stat file that matches the specified stat type
                         File typeFile = new File(name, type.id + "");
+                        // create a map of the json file of the specified type
                         HashMap<String, Integer> map = getMapFromFile(typeFile);
+                        // make sure the map isn't null
                         if (map != null) {
+                            // find the "total" value in the stat
                             Integer total = map.get("total");
+                            // make sure the total value isn't null
                             if (total != null) {
+                                // place the value of "total" in the ValueComparableMap
                                 sortableMap.put(name.getName(), total);
                             }
                         }
                     }
                 }
 
+                // get the name of the type, typeLabel will be implemented by the subclass
                 String output = typeLabel(type) + " - ";
+                // iterate over the ValueComparableMap
                 Iterator iterator = sortableMap.entrySet().iterator();
                 for (int i = 1; i <= topNumber; i++) {
                     if (iterator.hasNext()) {
+                        // get the next entry from the map
                         Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) iterator.next();
 
+                        // get the name and the value for each entry
                         String name = sortedMapEntry.getKey();
                         Integer value = sortedMapEntry.getValue();
 
+                        // append the output with the next entry
                         output = output + "§6" + i + ". §c" + name + "§f: " + typeFormat(value, type) + " ";
                     } else {
                         break;
                     }
                 }
 
+                // if the -all argument was not given, output the command as a private message
                 if (publicCmd)
                     sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + output);
                 else
                     sender.sendMessage(output);
             } else {
+                // if the player directory listing returns null, then something went wrong in the command
+                // the issue is more than likely a permissions issue and out of the control of this plugin
                 sender.sendMessage("There was an error processing that command.");
             }
 

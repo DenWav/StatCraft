@@ -1,8 +1,11 @@
 package wav.demon;
 
 import com.avaje.ebean.validation.NotNull;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import wav.demon.Commands.*;
@@ -22,6 +25,8 @@ import java.util.regex.Pattern;
 public class StatCraft extends JavaPlugin {
 
     public volatile HashMap<String, HashMap<Integer, HashMap<String, Integer>>> statsForPlayers;
+    public volatile UniqueHashMap<String, UUID> players;
+
     private TimedActivities timedActivities;
 
     private String timeZone;
@@ -145,6 +150,42 @@ public class StatCraft extends JavaPlugin {
         File config = new File(getDataFolder(), "config.yml");
         if (!config.exists()) {
             saveDefaultConfig();
+        }
+
+        // See if the players file exists
+        File playersFile = new File(getDataFolder(), "players.json");
+        if (playersFile.exists()) {
+            String json;
+            try {
+                json = StatCraft.readFile(playersFile.getPath(), StandardCharsets.UTF_8);
+
+                Gson gson = new Gson();
+                Type tokenType = new TypeToken<HashMap<String, UUID>>(){}.getType();
+                HashMap<String, UUID> tempPlayers = gson.fromJson(json, tokenType);
+                createPlayersUniqueMap(tempPlayers);
+            } catch (IOException e) {
+                getLogger().severe("Fatal: Cannot parse players.json, perhaps a permission issue?");
+                e.printStackTrace();
+                enabled = false;
+            }
+        }
+
+        // we are going to see if there are any people online
+        // if there are people online, compare them to the players HashMap
+        // we want to make sure the UUIDs and player names all match up correctly
+        // If there are any players that are not in the players HashMap, we will add them and
+        // write it to the players.json
+        for (Player p : getServer().getOnlinePlayers()) {
+            if (players.containsValue(p.getUniqueId()) && !players.containsKey(p.getName())) {
+                players.removeValue(p.getUniqueId());
+            }
+            try {
+                if (!players.containsKey(p.getName()) || !players.containsValue(p.getUniqueId()))
+                    players.put(p.getName(), p.getUniqueId());
+            } catch (ValueNotUniqueException e) {
+                getLogger().warning(e.getMessage());
+                e.printStackTrace();
+            }
         }
 
         // set the time zone of the server
@@ -1104,5 +1145,25 @@ public class StatCraft extends JavaPlugin {
                 for (File c : f.listFiles())
                     deleteFolder(c);
         f.delete();
+    }
+
+    /**
+     * Take the HashMap generated from the json using Gson and add to the UniqueHashMap of the player names and their
+     * UUIDs. If a ValueNotUniqueException is thrown, nothing will be done, as this should absolutely
+     * never happen, and if it does on the next players.json write it will be fixed.
+     *
+     * @param t the HashMap from the players.json
+     */
+    private void createPlayersUniqueMap(HashMap<String, UUID> t) {
+        if (t != null) {
+            for (Map.Entry<String, UUID> pair : t.entrySet()) {
+                try {
+                    players.put(pair.getKey(), pair.getValue());
+                } catch (ValueNotUniqueException e) {
+                    getLogger().warning(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

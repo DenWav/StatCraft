@@ -25,7 +25,6 @@ public class ArrowsShot extends StatListener {
 
             addStat(StatTypes.ARROWS_SHOT.id, name, getStat(name, StatTypes.ARROWS_SHOT.id) + 1);
         }
-
     }
 
     @Override
