@@ -10,52 +10,52 @@ added in the future to access the most specific stats.
 Statistics Supported
 --------------------
 
-|                  Stat Name                      |                       Status                    |
-|-------------------------------------------------|-------------------------------------------------|
-| Player Deaths                                   | Implemented                                     |
-| Blocks Broken                                   | Implemented                                     |
-| Blocks Placed                                   | Implemented                                     |
-| Time Played                                     | Implemented In Progress - Will Use Server Stats |
-| Items Crafted                                   | Implemented                                     |
-| Time On Fire                                    | Implemented                                     |
-| World Changes (Nether Portal, End Portal, etc.) | Implemented                                     |
-| Tools Broken                                    | Implemented                                     |
-| Arrows Shot                                     | Implemented                                     |
-| Last Time Joined                                | Implemented                                     |
-| Last Time Left                                  | Implemented                                     |
-| Buckets Filled                                  | Implemented                                     |
-| Buckets Emptied                                 | Implemented                                     |
-| Items Dropped                                   | Implemented                                     |
-| Items Picked Up                                 | Implemented                                     |
-| Beds Entered                                    | Implemented                                     |
-| Beds Left                                       | Implemented                                     |
-| Time Slept                                      | Implemented                                     |
-| Words Spoken                                    | Implemented                                     |
-| Messages Spoken                                 | Implemented                                     |
-| Damage Taken                                    | Implemented                                     |
-| Fish Caught                                     | Implemented                                     |
-| Number Of Joins                                 | Implemented                                     |
-| XP Gained                                       | Implemented                                     |
-| Distance Traveled                               | Unimplemented - Will Use Server Stats           |
-| Number Of Kills                                 | Implemented                                     |
-| Number Of Times Jumped                          | Unimplemented                                   |
-| Distance Fallen                                 | Unimplemented - Will Use Server Stats           |
-| Number Of Deaths In Each World                  | Implemented                                     |
-| Eggs Thrown                                     | Unimplemented                                   |
-| Chickens Hatched                                | Unimplemented                                   |
-| Ender Pearls Thrown                             | Unimplemented                                   |
-| Animals Bred                                    | Unimplemented                                   |
-| TNT Detonated                                   | Unimplemented                                   |
-| Enchants Done                                   | Unimplemented                                   |
-| Highest Level Achieved                          | Implemented                                     |
-| Damage Dealt                                    | Implemented                                     |
-| Items Brewed                                    | Unimplemented                                   |
-| Items Cooked                                    | Unimplemented                                   |
-| Fires Started                                   | Unimplemented                                   |
-| Ore Mined                                       | Implementation In Progress                      |
-| Number Of Tab Completes Used                    | Implemented                                     |
-| Number Of Times A Player Has Eaten              | Unimplemented                                   |
-| Number Of Times A Player Has Sheared            | Unimplemented                                   |
+|                  Stat Name                      |                         Status                     |
+|-------------------------------------------------|----------------------------------------------------|
+| Player Deaths                                   | Implemented                                        |
+| Blocks Broken                                   | Implemented                                        |
+| Blocks Placed                                   | Implemented                                        |
+| Time Played                                     | Implementation In Progress - Will Use Server Stats |
+| Items Crafted                                   | Implemented                                        |
+| Time On Fire                                    | Implemented                                        |
+| World Changes (Nether Portal, End Portal, etc.) | Implemented                                        |
+| Tools Broken                                    | Implemented                                        |
+| Arrows Shot                                     | Implemented                                        |
+| Last Time Joined                                | Implemented                                        |
+| Last Time Left                                  | Implemented                                        |
+| Buckets Filled                                  | Implemented                                        |
+| Buckets Emptied                                 | Implemented                                        |
+| Items Dropped                                   | Implemented                                        |
+| Items Picked Up                                 | Implemented                                        |
+| Beds Entered                                    | Implemented                                        |
+| Beds Left                                       | Implemented                                        |
+| Time Slept                                      | Implemented                                        |
+| Words Spoken                                    | Implemented                                        |
+| Messages Spoken                                 | Implemented                                        |
+| Damage Taken                                    | Implemented                                        |
+| Fish Caught                                     | Implemented                                        |
+| Number Of Joins                                 | Implemented                                        |
+| XP Gained                                       | Implemented                                        |
+| Distance Traveled                               | Unimplemented - Will Use Server Stats              |
+| Number Of Kills                                 | Implemented                                        |
+| Number Of Times Jumped                          | Unimplemented                                      |
+| Distance Fallen                                 | Unimplemented - Will Use Server Stats              |
+| Number Of Deaths In Each World                  | Implemented                                        |
+| Eggs Thrown                                     | Unimplemented                                      |
+| Chickens Hatched                                | Unimplemented                                      |
+| Ender Pearls Thrown                             | Unimplemented                                      |
+| Animals Bred                                    | Unimplemented                                      |
+| TNT Detonated                                   | Unimplemented                                      |
+| Enchants Done                                   | Unimplemented                                      |
+| Highest Level Achieved                          | Implemented                                        |
+| Damage Dealt                                    | Implemented                                        |
+| Items Brewed                                    | Unimplemented                                      |
+| Items Cooked                                    | Unimplemented                                      |
+| Fires Started                                   | Unimplemented                                      |
+| Ore Mined                                       | Implementation In Progress                         |
+| Number Of Tab Completes Used                    | Implemented                                        |
+| Number Of Times A Player Has Eaten              | Unimplemented                                      |
+| Number Of Times A Player Has Sheared            | Unimplemented                                      |
 
 Compiling
 ---------
