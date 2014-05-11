@@ -707,7 +707,7 @@ public class StatCraft extends JavaPlugin {
     }
 
     /**
-     * verifies the stat files from the disk are valid
+     * Verifies the stat files from the disk are valid
      * <p>
      * The exact format of the stats saved on the disk is discussed in the documentation for
      * {@link #saveStatFiles() saveStatFiles()}.
