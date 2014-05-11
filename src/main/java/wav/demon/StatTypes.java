@@ -41,13 +41,13 @@ public enum StatTypes {
     ANIMALS_BRED     (33, "animals_bred"),
     TNT_DETONATED    (34, "tnt_detonated"),
     ENCHANTS_DONE    (35, "enchants_done"),
-    HIGHEST_LEVEL    (36, "highest_level"),  ///
-    DAMAGE_DEALT     (37, "damage_dealt"),   ///
+    HIGHEST_LEVEL    (36, "highest_level"),   ///
+    DAMAGE_DEALT     (37, "damage_dealt"),    ///
     ITEMS_BREWED     (38, "items_brewed"),
     ITEMS_COOKED     (39, "items_cooked"),
     FIRES_STARTED    (40, "fires_started"),
-    MINED            (41, "mined"),          //
-    TAB_COMPLETE     (42, "tab_complete"),   ///
+    MINED            (41, "mined"),           //
+    TAB_COMPLETE     (42, "tab_complete"),    ///
     EATING           (43, "eating"),
     SHEARING         (44, "shearing");
 
