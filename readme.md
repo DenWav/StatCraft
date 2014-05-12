@@ -64,7 +64,7 @@ Compiling
 
 Make sure you are in StatCraft's root directory and run the command:
 
-`mvm clean compile assembly:single`
+`mvn clean compile assembly:single`
 
 When that is finished, look in the `target/` folder, and it will have the compiled .jar file.
 
