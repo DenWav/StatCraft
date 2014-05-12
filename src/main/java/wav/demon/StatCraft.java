@@ -1156,6 +1156,7 @@ public class StatCraft extends JavaPlugin {
      * @param t the HashMap from the players.json
      */
     private void createPlayersUniqueMap(HashMap<String, UUID> t) {
+        players = UniqueHashMap.create(String.class, UUID.class);
         if (t != null) {
             for (Map.Entry<String, UUID> pair : t.entrySet()) {
                 try {

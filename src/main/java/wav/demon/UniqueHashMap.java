@@ -39,7 +39,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
      *
      * @return a UniqueHashMap&lt;K, V&gt;
      */
-    public static <K, V> UniqueHashMap create(Class<K> keyType, Class<V> valueType) {
+    public static <K, V> UniqueHashMap<K, V> create(Class<K> keyType, Class<V> valueType) {
         return new UniqueHashMap<>(keyType, valueType);
     }
 
@@ -57,7 +57,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
      *
      * @return a UniqueHashMap&lt;K, V&gt; with fields copied from m
      */
-    public static <K, V> UniqueHashMap create(Class<K> keyType, Class<V> valueType, Map<K, V> m) {
+    public static <K, V> UniqueHashMap<K, V> create(Class<K> keyType, Class<V> valueType, Map<K, V> m) {
         UniqueHashMap<K, V> umap = new UniqueHashMap<>(keyType, valueType);
         umap.putAll(m);
         return umap;
