@@ -44,6 +44,27 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
     }
 
     /**
+     * Use this method to create a UniqueHashMap, so that the types for the key and value are stored. This is for type-
+     * checks later. This has a third field where a map can be given, where the fields of the Map will be copied into
+     * the UniqueHashMap.
+     *
+     * @param keyType the type of Object to be used for the key, so String.class, for example, is valid.
+     * @param valueType the type of Object to be used for the value.
+     * @param m the map whose fields should be copied into the UniqueHashMap
+     *
+     * @param <K> The type of the key.
+     * @param <V> The type of the value.
+     *
+     * @return a UniqueHashMap&lt;K, V&gt; with fields copied from m
+     */
+    public static <K, V> UniqueHashMap create(Class<K> keyType, Class<V> valueType, Map<K, V> m) {
+        UniqueHashMap<K, V> umap = new UniqueHashMap<>(keyType, valueType);
+        umap.putAll(m);
+        return umap;
+    }
+
+
+    /**
      * Private constructor to prevent use.
      */
     private UniqueHashMap(){}
@@ -391,34 +412,6 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
         }
 
         return result;
-    }
-
-    /**
-     * Compares the specified object with this map for equality. Returns true if the given object is also a map and the
-     * two maps represent the same mappings. More formally, two maps m1 and m2 represent the same mappings if
-     * m1.entrySet().equals(m2.entrySet()). This method does not work across different implementations of the Map
-     * interface, only UniqueHashMaps. This is because of the unique structure of the UniqueHashMap being a wrapper-class
-     * of two sub-HashMaps.
-     * <p>
-     * The equality check checks if the specified object is this map, if it is, then it returns true. If it isn't then
-     * it checks three things:
-     * <ul>
-     *     <li>If the specified object is a UniqueHashMap</li>
-     *     <li>If the keyMap from the specified object equals this keyMap</li>
-     *     <li>If the valueMap from the specified object equals this valueMap</li>
-     * </ul>
-     * All three must be true for this to return true, if the first check is false.
-     *
-     * @param o the UniqueHashMap to test equality on.
-     *
-     * @return true if the specified object is a UniqueHashMap and it passes the equality test.
-     */
-    @Override
-    public boolean equals(Object o) {
-        return (o == this) ||
-               ((o instanceof UniqueHashMap) &&
-               ((UniqueHashMap) o).getKeyMap().equals(keyMap) &&
-               ((UniqueHashMap) o).getValueMap().equals(valueMap));
     }
 }
 
