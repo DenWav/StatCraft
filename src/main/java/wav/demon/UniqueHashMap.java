@@ -63,7 +63,6 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
         return umap;
     }
 
-
     /**
      * Private constructor to prevent use.
      */
