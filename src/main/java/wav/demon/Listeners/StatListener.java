@@ -44,18 +44,29 @@ public abstract class StatListener implements Listener, CommandExecutor {
 
     // Synchronized method to increment stats on players, this method will be run in a separate
     // asynchronous thread.
-    @SuppressWarnings("unchecked")
-    private void incrementStatToPlayer(int type, String name, String message) {
+    @SuppressWarnings({"unchecked", "ConstantConditions", "ResultOfMethodCallIgnored"})
+    private void incrementStatToPlayer(int type, String uuid, String message) {
 
         if (plugin.getSaveStatsRealTime()) {
-            synchronized (StatListener.class) {
+            synchronized (plugin.getThreadLock()) {
                 PrintWriter out = null;
                 try {
                     // load up the json into a map, do the increment, then save the json back to the file
                     // declare the gson for writing the json
                     Gson gson = new Gson();
 
-                    File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+                    // check if the directory needs to be renamed to the UUID
+                    File playerStatDir = new File(plugin.getStatsDir(), uuid);
+                    if (!playerStatDir.exists()) {
+                        if (plugin.getStatsDir().listFiles() != null)
+                            for (File f : plugin.getStatsDir().listFiles()) {
+                                if (plugin.getPlayers().containsKey(f.getName())) {
+                                    f.renameTo(new File(plugin.getPlayers().getValueFromKey(f.getName()).toString()));
+                                }
+                            }
+                    }
+
+                    File statFile = new File(plugin.getDataFolder(), "stats/" + uuid + "/" + type);
                     String json;
                     HashMap<String, Integer> map;
                     if (statFile.exists() && !statFile.isDirectory()) {
@@ -89,7 +100,7 @@ public abstract class StatListener implements Listener, CommandExecutor {
                     json = gson.toJson(map);
 
                     // ensure the output directory exists
-                    File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
+                    File outputDir = new File(plugin.getStatsDir(), uuid);
 
                     // check if the directory exists, if not, create it
                     if (!outputDir.exists())
@@ -112,28 +123,28 @@ public abstract class StatListener implements Listener, CommandExecutor {
             }
         } else {
             // check if they have any stats yet, if not, make one
-            if (!plugin.statsForPlayers.containsKey(name))
-                plugin.statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
+            if (!plugin.statsForPlayers.containsKey(uuid))
+                plugin.statsForPlayers.put(uuid, new HashMap<Integer, HashMap<String, Integer>>());
 
             // check if they have any stats for this event yet, if not, make one
-            if (!plugin.statsForPlayers.get(name).containsKey(type)) {
-                File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+            if (!plugin.statsForPlayers.get(uuid).containsKey(type)) {
+                File statFile = new File(plugin.getDataFolder(), "stats/" + uuid + "/" + type);
                 HashMap<String, Integer> map = getMapFromFile(statFile);
 
-                plugin.statsForPlayers.get(name).put(type, map == null ? new HashMap<String, Integer>() : map);
+                plugin.statsForPlayers.get(uuid).put(type, map == null ? new HashMap<String, Integer>() : map);
             }
 
             // check if they have this particular event yet, if not, set to one. If so, increment it
-            if (!plugin.statsForPlayers.get(name).get(type).containsKey(message))
-                plugin.statsForPlayers.get(name).get(type).put(message, 1);
+            if (!plugin.statsForPlayers.get(uuid).get(type).containsKey(message))
+                plugin.statsForPlayers.get(uuid).get(type).put(message, 1);
             else
-                plugin.statsForPlayers.get(name).get(type).put(message, plugin.statsForPlayers.get(name).get(type).get(message) + 1);
+                plugin.statsForPlayers.get(uuid).get(type).put(message, plugin.statsForPlayers.get(uuid).get(type).get(message) + 1);
 
             // check to see if they have a total yet. If so, increment it; if not, set to 1
-            if (!plugin.statsForPlayers.get(name).get(type).containsKey("total"))
-                plugin.statsForPlayers.get(name).get(type).put("total", 1);
+            if (!plugin.statsForPlayers.get(uuid).get(type).containsKey("total"))
+                plugin.statsForPlayers.get(uuid).get(type).put("total", 1);
             else
-                plugin.statsForPlayers.get(name).get(type).put("total", plugin.statsForPlayers.get(name).get(type).get("total") + 1);
+                plugin.statsForPlayers.get(uuid).get(type).put("total", plugin.statsForPlayers.get(uuid).get(type).get("total") + 1);
 
         }
     }
@@ -146,21 +157,32 @@ public abstract class StatListener implements Listener, CommandExecutor {
      * asynchronous thread.
      *
      * @param type StatType.id int of whatever stat you want to add
-     * @param name Name of the player to add stat to
+     * @param uuid UUID of the player to add stat to
      * @param data Whatever number to be added to the player's stat
      */
-    @SuppressWarnings("unchecked")
-    public void addStatToPlayer(int type, String name, int data) {
+    @SuppressWarnings({"unchecked", "ConstantConditions", "ResultOfMethodCallIgnored"})
+    public void addStatToPlayer(int type, String uuid, int data) {
 
         if (plugin.getSaveStatsRealTime()) {
-            synchronized (StatListener.class) {
+            synchronized (plugin.getThreadLock()) {
                 PrintWriter out = null;
                 try {
                     // load up the json into a map, do the increment, then save the json back to the file
                     // declare the gson for writing the json
                     Gson gson = new Gson();
 
-                    File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+                    // check if the directory needs to be renamed to the UUID
+                    File playerStatDir = new File(plugin.getStatsDir(), uuid);
+                    if (!playerStatDir.exists()) {
+                        if (plugin.getStatsDir().listFiles() != null)
+                            for (File f : plugin.getStatsDir().listFiles()) {
+                                if (plugin.getPlayers().containsKey(f.getName())) {
+                                    f.renameTo(new File(plugin.getPlayers().getValueFromKey(f.getName()).toString()));
+                                }
+                            }
+                    }
+
+                    File statFile = new File(plugin.getStatsDir(), uuid + "/" + type);
                     String json;
                     HashMap<String, Integer> map;
                     if (statFile.exists() && !statFile.isDirectory()) {
@@ -183,7 +205,7 @@ public abstract class StatListener implements Listener, CommandExecutor {
                     json = gson.toJson(map);
 
                     // ensure the output directory exists
-                    File outputDir = new File(plugin.getDataFolder(), "stats/" + name);
+                    File outputDir = new File(plugin.getStatsDir(), uuid);
 
                     // check if the directory exists, if not, create it
                     if (!outputDir.exists())
@@ -207,19 +229,19 @@ public abstract class StatListener implements Listener, CommandExecutor {
             }
         } else {
             // check if they have any stats yet, if not, make one
-            if (!plugin.statsForPlayers.containsKey(name))
-                plugin.statsForPlayers.put(name, new HashMap<Integer, HashMap<String, Integer>>());
+            if (!plugin.statsForPlayers.containsKey(uuid))
+                plugin.statsForPlayers.put(uuid, new HashMap<Integer, HashMap<String, Integer>>());
 
             // check if they have any stats for this event yet, if not, make one
-            if (!plugin.statsForPlayers.get(name).containsKey(type)) {
-                File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+            if (!plugin.statsForPlayers.get(uuid).containsKey(type)) {
+                File statFile = new File(plugin.getDataFolder(), "stats/" + uuid + "/" + type);
                 HashMap<String, Integer> map = getMapFromFile(statFile);
 
-                plugin.statsForPlayers.get(name).put(type, map == null ? new HashMap<String, Integer>() : map);
+                plugin.statsForPlayers.get(uuid).put(type, map == null ? new HashMap<String, Integer>() : map);
             }
 
             // add the stat to the total
-            plugin.statsForPlayers.get(name).get(type).put("total", data);
+            plugin.statsForPlayers.get(uuid).get(type).put("total", data);
         }
     }
 
@@ -232,14 +254,14 @@ public abstract class StatListener implements Listener, CommandExecutor {
      * server as files will be written in the process
      *
      * @param type StatType.id int of whatever stat you want to increment
-     * @param name name of the player to increment stat
+     * @param uuid UUID of the player to increment stat
      * @param message Specific stat to increment
      */
-    protected void incrementStat(final int type, final String name, final String message) {
+    protected void incrementStat(final int type, final String uuid, final String message) {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
             public void run() {
-                incrementStatToPlayer(type, name, message);
+                incrementStatToPlayer(type, uuid, message);
             }
         });
     }
@@ -256,14 +278,14 @@ public abstract class StatListener implements Listener, CommandExecutor {
      * addStatToPlayer method is only public because of a special case in the ResetStats command
      *
      * @param type StatType.id int of whatever stat you want to add
-     * @param name name of the player to add stat
+     * @param uuid UUID of the player to add stat
      * @param data Whatever number to be added to the player's stat
      */
-    protected void addStat(final int type, final String name, final int data) {
+    protected void addStat(final int type, final String uuid, final int data) {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
             public void run() {
-                addStatToPlayer(type, name, data);
+                addStatToPlayer(type, uuid, data);
             }
         });
     }
@@ -591,7 +613,7 @@ public abstract class StatListener implements Listener, CommandExecutor {
         Gson gson = new Gson();
         Type tokenType = new TypeToken<HashMap<String, Integer>>(){}.getType();
 
-        return gson.fromJson(json, tokenType);
+        return gson.fromJson(plugin.removeDuplicateFields(json, f.getName(), f.getParentFile().getName()), tokenType);
 
     }
 }

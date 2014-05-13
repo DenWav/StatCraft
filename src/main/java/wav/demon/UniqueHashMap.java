@@ -21,10 +21,27 @@ import java.util.*;
  */
 public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
 
+    /**
+     * The HashMap that will store the Key, Value pairs in the order that they are declared in the UniqueHasHMap. This is
+     * all that is required to make sure there are no duplicate Keys in the UniqueHashMap.
+     */
     private HashMap<K, V> keyMap = new HashMap<>();
+
+    /**
+     * The HashMap that will store the Value, Key pairs in the opposite order they are declared in the UniqueHashMap. This
+     * will allow the UniqueHashMap to check for duplicate Values, and quickly return a Key when a specific Value is given.
+     */
     private HashMap<V, K> valueMap = new HashMap<>();
 
+    /**
+     * This is the Type of the specified K (key) class. This is to allow for type checks on methods that accept Objects
+     * as inputs.
+     */
     private Class<K> keyType;
+
+    /**
+     * This is the Type of the specified V (value) class. This is to allow for type checks on methods that accept Objects.
+     */
     private Class<V> valueType;
 
     /**

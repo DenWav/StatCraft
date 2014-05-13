@@ -25,7 +25,12 @@ import java.util.regex.Pattern;
 public class StatCraft extends JavaPlugin {
 
     public volatile HashMap<String, HashMap<Integer, HashMap<String, Integer>>> statsForPlayers;
-    public volatile UniqueHashMap<String, UUID> players;
+    private volatile UniqueHashMap<String, UUID> players;
+
+    private Object threadLock = new Object();
+
+    private File playersFile = new File(getDataFolder(), "players.json");
+    private File statsDir = new File(getDataFolder(), "stats");
 
     private TimedActivities timedActivities;
 
@@ -153,23 +158,15 @@ public class StatCraft extends JavaPlugin {
             saveDefaultConfig();
         }
 
-        // See if the players file exists
-        File playersFile = new File(getDataFolder(), "players.json");
-        if (playersFile.exists()) {
-            String json;
-            try {
-                json = StatCraft.readFile(playersFile.getPath(), StandardCharsets.UTF_8);
-
-                Gson gson = new Gson();
-                Type tokenType = new TypeToken<HashMap<String, UUID>>(){}.getType();
-                HashMap<String, UUID> tempPlayers = gson.fromJson(json, tokenType);
-                createPlayersUniqueMap(tempPlayers);
-            } catch (IOException e) {
-                getLogger().severe("Fatal: Cannot parse players.json, perhaps a permission issue?");
-                e.printStackTrace();
-                enabled = false;
-            }
-        }
+        // Get what info we can from the players.json file in the plugin directory. If it doesn't exist, it is assumed
+        // that this plugin was either just installed or is updated from a pre-UUID version, so nothing needs to be done.
+        // A new players.json file will be created from the players that are online, and it will be re-written whenever
+        // a new player joins that isn't already in the players.json file. Whenever a player joins (or is found from the
+        // players that are already online immediately after this) and they are still using their nickname as the stats
+        // file identifier, the plugin will convert it to their UUID. The plugin simply keeps a log of the players'
+        // nicknames and UUIDs so commands and command outputs can still use nicknames, while still storing the stats
+        // under the player's UUID.
+        readPlayersFile();
 
         // we are going to see if there are any people online
         // if there are people online, compare them to the players HashMap
@@ -184,10 +181,20 @@ public class StatCraft extends JavaPlugin {
                 if (!players.containsKey(p.getName()) || !players.containsValue(p.getUniqueId()))
                     players.put(p.getName(), p.getUniqueId());
             } catch (ValueNotUniqueException e) {
-                getLogger().warning(e.getMessage());
                 e.printStackTrace();
             }
         }
+
+        // Now we will write to the players.json file any added or changed nickname-UUID pairs. If a nickname-UUID pair
+        // is changed, and the stats-directory is already changed to the UUID of the player, then nothing needs to be
+        // done to the player's stats directory. If a nickname-UUID pair is added, and the player's stats directory still
+        // uses their nickname, then the stats directory will need to be renamed to their UUID. If a nickname-UUID pair
+        // is changed, and their old nickname is on file, but their stats directory still uses their old nickname, we
+        // will need to rename it to the UUID. If a nickname-UUID pair is changed, and we do not have the old nickname
+        // on file, then there is nothing we can do, since there is no way of knowing exactly which nickname should be
+        // assigned to the player, so the plugin will assume it is a new player, and will assign a new stat-directory
+        // based on their UUID.
+        writePlayersFile();
 
         // set the time zone of the server
         if (getConfig().getString("timezone").equalsIgnoreCase("auto")) {
@@ -261,6 +268,7 @@ public class StatCraft extends JavaPlugin {
                     + timedActivities.startBackup(backupMilliSec));
     }
 
+    @SuppressWarnings("unchecked")
     private void getConfigSettings() {
         // death stuff
         death = getConfig().getBoolean("stats.death");
@@ -689,9 +697,9 @@ public class StatCraft extends JavaPlugin {
 
                     PrintWriter out = null;
                     try {
-                        synchronized (StatCraft.class) {
+                        synchronized (getThreadLock()) {
                             // make sure the directory exists for us to write to
-                            File outputDir = new File(dataFolder, "stats/" + name);
+                            File outputDir = new File(getStatsDir(), name);
                             if (outputDir.exists()) {
                                 out = new PrintWriter(outputDir.toString() + "/" + type);
                             } else {
@@ -729,6 +737,7 @@ public class StatCraft extends JavaPlugin {
      * @see java.util.HashMap
      * @see #saveStatFiles()
      */
+    @SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
     public boolean checkStatFiles() throws IOException {
         if (getDataFolder().exists()) {
             // check the root stats directory
@@ -736,11 +745,13 @@ public class StatCraft extends JavaPlugin {
             // make sure the directory exists
             if (statsDir.exists()) {
                 // check the individual player directories
+                if (statsDir.listFiles() != null)
                 for (File player : statsDir.listFiles()) {
                     // get the player's name
                     String name = player.getName();
                     if (!name.equalsIgnoreCase("totals")) {
                         getLogger().info("" + name + " found at: " + player.getPath());
+                        if (player.listFiles() != null)
                         for (File type : player.listFiles()) {
                             // grab the statType
                             String statType = type.getName();
@@ -748,12 +759,13 @@ public class StatCraft extends JavaPlugin {
                             Gson gson = new Gson();
                             Type tokenType = new TypeToken<HashMap<String, Integer>>(){}.getType();
                             // insert the stats into the map to verify it works
-                            try {
+                            try (PrintWriter pw = new PrintWriter(type)) {
                                 Integer.parseInt(statType);
                                 HashMap<String, Integer> map = gson.fromJson(removeDuplicateFields(
                                         readFile(type.getPath(), StandardCharsets.UTF_8), statType, name),
                                         tokenType);
-                                map.clear();
+                                String json = gson.toJson(map);
+                                pw.println(json);
                             } catch (Exception e) {
                                 getLogger().severe(type + " stat for " + name + " could not be loaded successfully, deleting " + type + ".");
                                 e.printStackTrace();
@@ -787,10 +799,11 @@ public class StatCraft extends JavaPlugin {
      * @param in The input JSON, which must be a simple String:Integer set
      * @param type The type of stat, used only for logging
      * @param name The name of the player the stat belongs to, used only for logging
+     *
      * @return The input JSON, but with only the highest value of each duplicate key kept. If no duplicate keys were
      * found, then it returns exactly what was input.
      */
-    private String removeDuplicateFields(String in, String type, String name) {
+    public String removeDuplicateFields(String in, String type, String name) {
         // for the use of this method in this plugin, there will never be
         // a more complex JSON format than simply keys and values
         in = in.replaceAll("[\\{}]", "");
@@ -1151,6 +1164,7 @@ public class StatCraft extends JavaPlugin {
      *
      * @param f The directory that needs to be deleted
      */
+    @SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
     public static void deleteFolder(File f) {
         if (f.isDirectory())
             if (f.listFiles() != null)
@@ -1158,6 +1172,12 @@ public class StatCraft extends JavaPlugin {
                     deleteFolder(c);
         f.delete();
     }
+
+    @NotNull
+    public File getStatsDir() { return statsDir; }
+
+    @NotNull
+    public File getPlayersFile() { return playersFile; }
 
     /**
      * Take the HashMap generated from the json using Gson and add to the UniqueHashMap of the player names and their
@@ -1179,4 +1199,104 @@ public class StatCraft extends JavaPlugin {
             }
         }
     }
+
+    /**
+     * Read the players.json file and import it into a HashMap&gt;String, UUID&lt;, then call
+     * {@link #createPlayersUniqueMap(java.util.HashMap) createPlayersUniqueHashMap()} with the HashMap&gt;String, UUID&lt;
+     * created from the players.json file to initialize {@link #players players} with the already saved nickname-UUID
+     * mappings.
+     */
+    private void readPlayersFile() {
+        // See if the players file exists
+        File playersFile = new File(getDataFolder(), "players.json");
+        if (playersFile.exists()) {
+            String json;
+            try {
+                json = StatCraft.readFile(playersFile.getPath(), StandardCharsets.UTF_8);
+
+                Gson gson = new Gson();
+                Type tokenType = new TypeToken<HashMap<String, UUID>>(){}.getType();
+                HashMap<String, UUID> tempPlayers = gson.fromJson(json, tokenType);
+                createPlayersUniqueMap(tempPlayers);
+            } catch (IOException e) {
+                getLogger().severe("Fatal: Cannot parse players.json, perhaps a permission issue?");
+                e.printStackTrace();
+                enabled = false;
+            }
+        }
+    }
+
+    /**
+     * Write to players.json the nickname-UUID mappings from {@link #players players} and check to make sure the stat
+     * directories are up-to-date, as in make sure there is no known nickname-UUID pair that is still using the nickname
+     * as the stat directory.
+     */
+    @SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
+    private void writePlayersFile() {
+        // since any information from the players.json file should already be stored in the UniqueHashMap, we will not
+        // bother to re-read the file. Instead we will simply over-write it with the contents of the UniqueHashMap.
+
+        // create a new file if it does not already exist
+        try {
+            playersFile.createNewFile();
+        } catch (IOException e) {
+            getLogger().warning("Could not create " + playersFile.getName());
+            e.printStackTrace();
+        }
+
+        // first, check the stats directories with the information already in the UniqueHashMap
+        if (statsDir.listFiles() != null)
+        for (File f : statsDir.listFiles()) {
+            if (players.containsKey(f.getName())) {
+                // we will not check if there is a directory name conflict, as by the nature of UUIDs, and the nature of
+                // the UniqueHashMap, this will (should) never happen
+                f.renameTo(new File(players.getValueFromKey(f.getName()).toString()));
+            }
+        }
+
+        Gson gson = new Gson();
+
+        // Now before we over-write the players.json file, create a HashMap from it and check if anything needs to be
+        // changed from it first.
+        Type tokenType = new TypeToken<HashMap<String, UUID>>(){}.getType();
+        try {
+            HashMap<String, UUID> map = gson.fromJson(readFile(getPlayersFile().getPath(), StandardCharsets.UTF_8), tokenType);
+            for (File f : statsDir.listFiles()) {
+                if (map.containsKey(f.getName())) {
+                    // we will not check if there is a directory name conflict, as by the nature of UUIDs, and the nature of
+                    // the UniqueHashMap, this will (should) never happen
+                    f.renameTo(new File(map.get(f.getName()).toString()));
+                }
+            }
+        } catch (IOException e) {
+            getLogger().warning("Unable to read players.json!");
+            e.printStackTrace();
+        }
+
+        // now that the stat directories have been updated, write the players.json file with the new nickname-UUID mappings.
+
+        // we will use the PrintWriter to write out the json text
+        try (PrintWriter pw = new PrintWriter(playersFile)) {
+            // get the json from the UniqueHashMap (by simply using the keymap) and write it to the players file
+
+            pw.println(gson.toJson(players.getKeyMap()));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Returns {@link #threadLock threadLock} for synchronized blocks.
+     *
+     * @return {@link #threadLock threadLock} for synchronized blocks
+     */
+    public Object getThreadLock() { return threadLock; }
+
+    /**
+     * Returns {@link #players players}
+     *
+     * @return {@link #players players}
+     */
+    public UniqueHashMap<String, UUID> getPlayers() { return players; }
 }
