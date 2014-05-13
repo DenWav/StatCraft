@@ -203,201 +203,7 @@ public class StatCraft extends JavaPlugin {
         // should we track anything?
         enabled = getConfig().getBoolean("trackStats");
         if (enabled) {
-            // death stuff
-            death = getConfig().getBoolean("stats.death");
-            death_locations = getConfig().getBoolean("stats.death_locations");
-            if (death_locations && !death) {
-                getLogger().warning("death_locations could be enabled because death is false.");
-                death_locations = false;
-            }
-
-            // blocks
-            block = getConfig().getBoolean("stats.block");
-            mined_ores = getConfig().getBoolean("stats.mined_ores");
-            if (!block && mined_ores) {
-                getLogger().warning("mined_ores could not be enabled because block is false.");
-                mined_ores = false;
-            }
-
-            // playtime
-            last_join_time = getConfig().getBoolean("stats.last_join_time");
-            last_leave_time = getConfig().getBoolean("stats.last_leave_time");
-            play_time = getConfig().getBoolean("stats.play_time");
-            if (play_time && (!last_join_time || !last_leave_time)) {
-                getLogger().warning("play_time could not be enabled because either last_join_time or " +
-                        "last_leave_time are false.");
-                play_time = false;
-            }
-            joins = getConfig().getBoolean("stats.joins");
-            if (joins && !last_join_time) {
-                getLogger().warning("joins could not be enabled because last_join_time is false.");
-            }
-
-            // item creation
-            items_crafted = getConfig().getBoolean("stats.items_crafted");
-            items_brewed = getConfig().getBoolean("stats.items_brewed");
-            items_cooked = getConfig().getBoolean("stats.items_cooked");
-
-            // misc
-            on_fire = getConfig().getBoolean("stats.on_fire");
-            on_fire_announce = getConfig().getBoolean("stats.on_fire_announce");
-            world_change = getConfig().getBoolean("stats.world_change");
-            tools_broken = getConfig().getBoolean("stats.tools_broken");
-            arrows_shot = getConfig().getBoolean("stats.arrows_shot");
-
-            // buckets!
-            bucket_fill = getConfig().getBoolean("stats.bucket_fill");
-            bucket_empty = getConfig().getBoolean("stats.bucket_empty");
-
-            // item dropping and picking up
-            item_drops = getConfig().getBoolean("stats.item_drops");
-            item_pickups = getConfig().getBoolean("stats.item_pickups");
-
-            // sleep!
-            bed = getConfig().getBoolean("stats.bed");
-
-            // talking
-            messages_spoken = getConfig().getBoolean("stats.messages_spoken");
-            words_spoken = getConfig().getBoolean("stats.words_spoken");
-            specific_words_spoken = getConfig().getBoolean("stats.specific_words_spoken");
-            if (words_spoken && !messages_spoken) {
-                getLogger().warning("words_spoken could not be enabled because messages_spoken is false.");
-                words_spoken = false;
-            }
-            if (specific_words_spoken && !words_spoken) {
-                getLogger().warning("specific_words_spoken could not be enabled because words_spoken is false.");
-            }
-
-            tab_complete = getConfig().getBoolean("stats.tab_complete");
-
-            // misc
-            damage_taken = getConfig().getBoolean("stats.damage_taken");
-            drowning_announce = getConfig().getBoolean("stats.drowning_announce");
-            poison_announce = getConfig().getBoolean("stats.poison_announce");
-            fish_caught = getConfig().getBoolean("stats.fish_caught");
-            xp_gained = getConfig().getBoolean("stats.xp_gained");
-
-            // movement
-            move = getConfig().getBoolean("stats.move");
-            move_type = getConfig().getBoolean("stats.move_type");
-            if (move_type && !move) {
-                getLogger().warning("move_type could not be enabled because move is false.");
-                move_type = false;
-            }
-
-            // misc
-            kills = getConfig().getBoolean("stats.kills");
-            jumps = getConfig().getBoolean("stats.jumps");
-            fallen = getConfig().getBoolean("stats.fallen");
-
-            // chickens
-            egg_throws = getConfig().getBoolean("stats.egg_throws");
-            chicken_hatches = getConfig().getBoolean("stats.chicken_hatches");
-            if (chicken_hatches && !egg_throws) {
-                getLogger().warning("chicken_hatches could not be enabled because egg_throws is false.");
-            }
-
-            // misc
-            ender_pearls = getConfig().getBoolean("stats.ender_pearls");
-            animals_bred = getConfig().getBoolean("stats.animals_bred");
-            tnt_detonated = getConfig().getBoolean("stats.tnt_detonated");
-            enchants_done = getConfig().getBoolean("stats.enchants_done");
-            highest_level = getConfig().getBoolean("stats.highest_level");
-            damage_dealt = getConfig().getBoolean("stats.damage_dealt");
-            fires_started = getConfig().getBoolean("stats.fires_started");
-
-            // Permissions
-            resetOwnStats = getConfig().getBoolean("permissions.resetOwnStats");
-            resetAnotherPlayerStats = getConfig().getString("permissions.resetAnotherPlayerStats");
-            resetServerStats = getConfig().getString("permissions.resetServerStats");
-            if (!(resetAnotherPlayerStats.equalsIgnoreCase("op") || resetAnotherPlayerStats.equalsIgnoreCase("user"))) {
-                getLogger().warning("resetAnotherPlayerStats must either be \"op\" or \"user\", defaulting" +
-                        "to \"op\"");
-                resetAnotherPlayerStats = "op";
-            }
-            if (!(resetServerStats.equalsIgnoreCase("op") || resetServerStats.equalsIgnoreCase("user"))) {
-                getLogger().warning("resetServerStats must either be \"op\" or \"user\", defaulting" +
-                        "to \"op\"");
-                resetServerStats = "op";
-            }
-
-              /////////////////////
-             //   Disk writing  //
-            /////////////////////
-            totalsUpdating = getConfig().getString("writingToDisk.totalsUpdating");
-            totalsUpdatingMilliSec = parseTime(totalsUpdating);
-
-            if (totalsUpdatingMilliSec == -1) {
-                totalsUpdatingEnabled = false;
-                getLogger().warning("Totals Updating could not be enabled, \"" + totalsUpdating + "\" is invalid.");
-            }
-
-            statsToDisk = getConfig().getString("writingToDisk.statsToDisk");
-            if (statsToDisk.equalsIgnoreCase("real-time"))
-                saveStatsRealTime = true;
-            else
-                statsToDiskMilliSec = parseTime(statsToDisk);
-
-            if (statsToDiskMilliSec == -1) {
-                statsToDiskMilliSec = 30 * 1000;
-                getLogger().warning("StatsToDisk could not be enabled correctly, \"" + statsToDisk + "\"" +
-                        " is invalid. Defaulting to 30 seconds delay.");
-            }
-
-              ///////////////
-             //  Backups  //
-            ///////////////
-            backupStats = getConfig().getBoolean("backups.backupStats");
-            if (backupStats) {
-                backupStatsLocation = getConfig().getString("backups.backupStatsLocation");
-
-                backupName = getConfig().getString("backups.backupName");
-
-                backupStatsInterval = getConfig().getString("backups.backupStatsInterval");
-                backupMilliSec = parseTime(backupStatsInterval);
-
-                if (backupMilliSec == -1) {
-                    backupMilliSec = 24 * 60 * 60 * 1000;
-                    getLogger().warning("Backups could not be enabled correctly, \"" + backupStatsInterval + "\"" +
-                            " is invalid. Defaulting to once every 24 hours.");
-                }
-
-                backupStatsNumber = getConfig().getInt("backups.backupStatsNumber");
-
-                // get the current backup number
-                Scanner input = null;
-                try {
-                    File backupNumberFile = new File(getDataFolder(), "backup-number");
-                    input = new Scanner(backupNumberFile);
-                    backupNumber = input.nextInt();
-                } catch (FileNotFoundException e) {
-                    backupNumber = 1;
-                } finally {
-                    if (input != null)
-                        input.close();
-                }
-
-                // get the current backups from disk
-                File backupArray = new File(getDataFolder(), "backup-array");
-                if (backupArray.exists()) {
-                    ObjectInputStream ois = null;
-                    try {
-                        FileInputStream fis = new FileInputStream(backupArray);
-                        ois = new ObjectInputStream(fis);
-                        Object array = ois.readObject();
-                        backups = (ArrayList<String>) array;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        try {
-                            if (ois != null)
-                                ois.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
+            getConfigSettings();
         }
 
         // make sure the stats directory exists
@@ -435,171 +241,11 @@ public class StatCraft extends JavaPlugin {
             enabled = false;
         }
 
+          ////////////////////
+         //    LISTENERS   //
+        ////////////////////
         if (enabled) {
-            String statsEnabled = "";
-            // load up the listeners
-            if (death) {
-                getServer().getPluginManager().registerEvents(deathListener, this);
-                statsEnabled = statsEnabled + " death";
-                if (death_locations) {
-                    statsEnabled = statsEnabled + " death_locations";
-                    getCommand("deathlocations").setExecutor(deathListener);
-                }
-
-                getCommand("deaths").setExecutor(deathListener);
-            }
-
-            if (block) {
-                getServer().getPluginManager().registerEvents(blockListener, this);
-                statsEnabled = statsEnabled + " block";
-
-                getCommand("blocks").setExecutor(blockListener);
-
-                if (mined_ores) {
-                    statsEnabled = statsEnabled + " mined_ores";
-                    getCommand("mined").setExecutor(blockListener);
-                }
-            }
-
-            if (play_time || last_join_time || last_leave_time || joins) {
-                getServer().getPluginManager().registerEvents(playtime, this);
-                if (last_join_time) {
-                    statsEnabled = statsEnabled + " last_join_time";
-                    getCommand("lastseen").setExecutor(playtime);
-                }
-                if (last_leave_time)
-                    statsEnabled = statsEnabled + " last_leave_time";
-                if (play_time) {
-                    statsEnabled = statsEnabled + " playtime";
-                    getCommand("playtime").setExecutor(playtime);
-                }
-                if (joins) {
-                    statsEnabled = statsEnabled + " joins";
-                    getCommand("joins").setExecutor(playtime);
-                }
-            }
-
-            if (item_pickups) {
-                getServer().getPluginManager().registerEvents(itemPickUp, this);
-                statsEnabled = statsEnabled + " item_pickups";
-                getCommand("itempickups").setExecutor(itemPickUp);
-            }
-
-            if (item_drops) {
-                getServer().getPluginManager().registerEvents(itemDrop, this);
-                statsEnabled = statsEnabled + " item_drops";
-                getCommand("itemdrops").setExecutor(itemDrop);
-            }
-
-            if (items_crafted) {
-                getServer().getPluginManager().registerEvents(itemsCrafted, this);
-                statsEnabled = statsEnabled + " items_crafted";
-                getCommand("itemscrafted").setExecutor(itemsCrafted);
-            }
-
-            if (on_fire) {
-                getServer().getPluginManager().registerEvents(onFire, this);
-                statsEnabled = statsEnabled + " on_fire";
-                getCommand("onfire").setExecutor(onFire);
-            }
-
-            if (tools_broken) {
-                getServer().getPluginManager().registerEvents(toolsBroken, this);
-                statsEnabled = statsEnabled + " tools_broken";
-                getCommand("toolsbroken").setExecutor(toolsBroken);
-            }
-
-            if (arrows_shot) {
-                getServer().getPluginManager().registerEvents(arrowsShot, this);
-                statsEnabled = statsEnabled + " arrows_shot";
-                getCommand("arrowsshot").setExecutor(arrowsShot);
-            }
-
-            if (bucket_fill) {
-                getServer().getPluginManager().registerEvents(bucketFill, this);
-                statsEnabled = statsEnabled + " bucket_fill";
-                getCommand("bucketsfilled").setExecutor(bucketFill);
-            }
-
-            if (bucket_empty) {
-                getServer().getPluginManager().registerEvents(bucketEmpty, this);
-                statsEnabled = statsEnabled + " bucket_empty";
-                getCommand("bucketsemptied").setExecutor(bucketEmpty);
-            }
-
-            if (bed) {
-                getServer().getPluginManager().registerEvents(sleepyTime, this);
-                statsEnabled = statsEnabled + " bed";
-                getCommand("timeslept").setExecutor(sleepyTime);
-                getCommand("lastslept").setExecutor(sleepyTime);
-            }
-
-            if (world_change) {
-                getServer().getPluginManager().registerEvents(worldChange, this);
-                statsEnabled = statsEnabled + " world_change";
-                getCommand("worldchanges").setExecutor(worldChange);
-            }
-
-            if (words_spoken || messages_spoken || specific_words_spoken) {
-                getServer().getPluginManager().registerEvents(wordsSpoken, this);
-                statsEnabled = statsEnabled + " words_spoken";
-                if (words_spoken)
-                    getCommand("wordsspoken").setExecutor(wordsSpoken);
-                if (messages_spoken)
-                    getCommand("messagesspoken").setExecutor(wordsSpoken);
-            }
-
-            if (damage_taken) {
-                getServer().getPluginManager().registerEvents(damageTaken, this);
-                statsEnabled = statsEnabled + " damage_taken";
-                getCommand("damagetaken").setExecutor(damageTaken);
-            }
-
-            if (damage_dealt) {
-                getServer().getPluginManager().registerEvents(damageDealt, this);
-                statsEnabled = statsEnabled + " damage_dealt";
-                getCommand("damagedealt").setExecutor(damageDealt);
-            }
-
-            if (fish_caught) {
-                getServer().getPluginManager().registerEvents(fishCaught, this);
-                statsEnabled = statsEnabled + " fish_caught";
-                getCommand("fishcaught").setExecutor(fishCaught);
-            }
-
-            if (xp_gained) {
-                getServer().getPluginManager().registerEvents(xpGained, this);
-                statsEnabled = statsEnabled + " xp_gained";
-                getCommand("xpgained").setExecutor(xpGained);
-            }
-
-            if (kills) {
-                getServer().getPluginManager().registerEvents(killListener, this);
-                statsEnabled = statsEnabled + " kills";
-                getCommand("kills").setExecutor(killListener);
-            }
-
-            if (highest_level) {
-                getServer().getPluginManager().registerEvents(highestLevel, this);
-                statsEnabled = statsEnabled + " highest_level";
-                getCommand("highestlevel").setExecutor(highestLevel);
-            }
-
-            if (tab_complete) {
-                getServer().getPluginManager().registerEvents(tabComplete, this);
-                statsEnabled = statsEnabled + " tab_complete";
-                getCommand("tabcompletes").setExecutor(tabComplete);
-            }
-
-            getLogger().info("Successfully enabled:" + statsEnabled);
-
-            // load up commands
-            getCommand("list").setExecutor(listCommand);
-            getCommand("resetstats").setExecutor(resetCommand);
-            getCommand("printdata").setExecutor(printData);
-            getCommand("updatetotals").setExecutor(updateTotals);
-            getCommand("savestats").setExecutor(saveStats);
-            getCommand("forcebackup").setExecutor(forceBackup);
+            createListeners();
         }
 
         timedActivities = new TimedActivities(this);
@@ -613,6 +259,371 @@ public class StatCraft extends JavaPlugin {
         if (backupStats)
             getLogger().info("Successfully started backups (" + backupStatsInterval + "): "
                     + timedActivities.startBackup(backupMilliSec));
+    }
+
+    private void getConfigSettings() {
+        // death stuff
+        death = getConfig().getBoolean("stats.death");
+        death_locations = getConfig().getBoolean("stats.death_locations");
+        if (death_locations && !death) {
+            getLogger().warning("death_locations could be enabled because death is false.");
+            death_locations = false;
+        }
+
+        // blocks
+        block = getConfig().getBoolean("stats.block");
+        mined_ores = getConfig().getBoolean("stats.mined_ores");
+        if (!block && mined_ores) {
+            getLogger().warning("mined_ores could not be enabled because block is false.");
+            mined_ores = false;
+        }
+
+        // playtime
+        last_join_time = getConfig().getBoolean("stats.last_join_time");
+        last_leave_time = getConfig().getBoolean("stats.last_leave_time");
+        play_time = getConfig().getBoolean("stats.play_time");
+        if (play_time && (!last_join_time || !last_leave_time)) {
+            getLogger().warning("play_time could not be enabled because either last_join_time or " +
+                    "last_leave_time are false.");
+            play_time = false;
+        }
+        joins = getConfig().getBoolean("stats.joins");
+        if (joins && !last_join_time) {
+            getLogger().warning("joins could not be enabled because last_join_time is false.");
+        }
+
+        // item creation
+        items_crafted = getConfig().getBoolean("stats.items_crafted");
+        items_brewed = getConfig().getBoolean("stats.items_brewed");
+        items_cooked = getConfig().getBoolean("stats.items_cooked");
+
+        // misc
+        on_fire = getConfig().getBoolean("stats.on_fire");
+        on_fire_announce = getConfig().getBoolean("stats.on_fire_announce");
+        world_change = getConfig().getBoolean("stats.world_change");
+        tools_broken = getConfig().getBoolean("stats.tools_broken");
+        arrows_shot = getConfig().getBoolean("stats.arrows_shot");
+
+        // buckets!
+        bucket_fill = getConfig().getBoolean("stats.bucket_fill");
+        bucket_empty = getConfig().getBoolean("stats.bucket_empty");
+
+        // item dropping and picking up
+        item_drops = getConfig().getBoolean("stats.item_drops");
+        item_pickups = getConfig().getBoolean("stats.item_pickups");
+
+        // sleep!
+        bed = getConfig().getBoolean("stats.bed");
+
+        // talking
+        messages_spoken = getConfig().getBoolean("stats.messages_spoken");
+        words_spoken = getConfig().getBoolean("stats.words_spoken");
+        specific_words_spoken = getConfig().getBoolean("stats.specific_words_spoken");
+        if (words_spoken && !messages_spoken) {
+            getLogger().warning("words_spoken could not be enabled because messages_spoken is false.");
+            words_spoken = false;
+        }
+        if (specific_words_spoken && !words_spoken) {
+            getLogger().warning("specific_words_spoken could not be enabled because words_spoken is false.");
+        }
+
+        tab_complete = getConfig().getBoolean("stats.tab_complete");
+
+        // misc
+        damage_taken = getConfig().getBoolean("stats.damage_taken");
+        drowning_announce = getConfig().getBoolean("stats.drowning_announce");
+        poison_announce = getConfig().getBoolean("stats.poison_announce");
+        fish_caught = getConfig().getBoolean("stats.fish_caught");
+        xp_gained = getConfig().getBoolean("stats.xp_gained");
+
+        // movement
+        move = getConfig().getBoolean("stats.move");
+        move_type = getConfig().getBoolean("stats.move_type");
+        if (move_type && !move) {
+            getLogger().warning("move_type could not be enabled because move is false.");
+            move_type = false;
+        }
+
+        // misc
+        kills = getConfig().getBoolean("stats.kills");
+        jumps = getConfig().getBoolean("stats.jumps");
+        fallen = getConfig().getBoolean("stats.fallen");
+
+        // chickens
+        egg_throws = getConfig().getBoolean("stats.egg_throws");
+        chicken_hatches = getConfig().getBoolean("stats.chicken_hatches");
+        if (chicken_hatches && !egg_throws) {
+            getLogger().warning("chicken_hatches could not be enabled because egg_throws is false.");
+        }
+
+        // misc
+        ender_pearls = getConfig().getBoolean("stats.ender_pearls");
+        animals_bred = getConfig().getBoolean("stats.animals_bred");
+        tnt_detonated = getConfig().getBoolean("stats.tnt_detonated");
+        enchants_done = getConfig().getBoolean("stats.enchants_done");
+        highest_level = getConfig().getBoolean("stats.highest_level");
+        damage_dealt = getConfig().getBoolean("stats.damage_dealt");
+        fires_started = getConfig().getBoolean("stats.fires_started");
+
+        // Permissions
+        resetOwnStats = getConfig().getBoolean("permissions.resetOwnStats");
+        resetAnotherPlayerStats = getConfig().getString("permissions.resetAnotherPlayerStats");
+        resetServerStats = getConfig().getString("permissions.resetServerStats");
+        if (!(resetAnotherPlayerStats.equalsIgnoreCase("op") || resetAnotherPlayerStats.equalsIgnoreCase("user"))) {
+            getLogger().warning("resetAnotherPlayerStats must either be \"op\" or \"user\", defaulting" +
+                    "to \"op\"");
+            resetAnotherPlayerStats = "op";
+        }
+        if (!(resetServerStats.equalsIgnoreCase("op") || resetServerStats.equalsIgnoreCase("user"))) {
+            getLogger().warning("resetServerStats must either be \"op\" or \"user\", defaulting" +
+                    "to \"op\"");
+            resetServerStats = "op";
+        }
+
+        /////////////////////
+        //   Disk writing  //
+        /////////////////////
+        totalsUpdating = getConfig().getString("writingToDisk.totalsUpdating");
+        totalsUpdatingMilliSec = parseTime(totalsUpdating);
+
+        if (totalsUpdatingMilliSec == -1) {
+            totalsUpdatingEnabled = false;
+            getLogger().warning("Totals Updating could not be enabled, \"" + totalsUpdating + "\" is invalid.");
+        }
+
+        statsToDisk = getConfig().getString("writingToDisk.statsToDisk");
+        if (statsToDisk.equalsIgnoreCase("real-time"))
+            saveStatsRealTime = true;
+        else
+            statsToDiskMilliSec = parseTime(statsToDisk);
+
+        if (statsToDiskMilliSec == -1) {
+            statsToDiskMilliSec = 30 * 1000;
+            getLogger().warning("StatsToDisk could not be enabled correctly, \"" + statsToDisk + "\"" +
+                    " is invalid. Defaulting to 30 seconds delay.");
+        }
+
+        ///////////////
+        //  Backups  //
+        ///////////////
+        backupStats = getConfig().getBoolean("backups.backupStats");
+        if (backupStats) {
+            backupStatsLocation = getConfig().getString("backups.backupStatsLocation");
+
+            backupName = getConfig().getString("backups.backupName");
+
+            backupStatsInterval = getConfig().getString("backups.backupStatsInterval");
+            backupMilliSec = parseTime(backupStatsInterval);
+
+            if (backupMilliSec == -1) {
+                backupMilliSec = 24 * 60 * 60 * 1000;
+                getLogger().warning("Backups could not be enabled correctly, \"" + backupStatsInterval + "\"" +
+                        " is invalid. Defaulting to once every 24 hours.");
+            }
+
+            backupStatsNumber = getConfig().getInt("backups.backupStatsNumber");
+
+            // get the current backup number
+            Scanner input = null;
+            try {
+                File backupNumberFile = new File(getDataFolder(), "backup-number");
+                input = new Scanner(backupNumberFile);
+                backupNumber = input.nextInt();
+            } catch (FileNotFoundException e) {
+                backupNumber = 1;
+            } finally {
+                if (input != null)
+                    input.close();
+            }
+
+            // get the current backups from disk
+            File backupArray = new File(getDataFolder(), "backup-array");
+            if (backupArray.exists()) {
+                ObjectInputStream ois = null;
+                try {
+                    FileInputStream fis = new FileInputStream(backupArray);
+                    ois = new ObjectInputStream(fis);
+                    Object array = ois.readObject();
+                    backups = (ArrayList<String>) array;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (ois != null)
+                            ois.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    private void createListeners() {
+        String statsEnabled = "";
+        // load up the listeners
+        if (death) {
+            getServer().getPluginManager().registerEvents(deathListener, this);
+            statsEnabled = statsEnabled + " death";
+            if (death_locations) {
+                statsEnabled = statsEnabled + " death_locations";
+                getCommand("deathlocations").setExecutor(deathListener);
+            }
+
+            getCommand("deaths").setExecutor(deathListener);
+        }
+
+        if (block) {
+            getServer().getPluginManager().registerEvents(blockListener, this);
+            statsEnabled = statsEnabled + " block";
+
+            getCommand("blocks").setExecutor(blockListener);
+
+            if (mined_ores) {
+                statsEnabled = statsEnabled + " mined_ores";
+                getCommand("mined").setExecutor(blockListener);
+            }
+        }
+
+        if (play_time || last_join_time || last_leave_time || joins) {
+            getServer().getPluginManager().registerEvents(playtime, this);
+            if (last_join_time) {
+                statsEnabled = statsEnabled + " last_join_time";
+                getCommand("lastseen").setExecutor(playtime);
+            }
+            if (last_leave_time)
+                statsEnabled = statsEnabled + " last_leave_time";
+            if (play_time) {
+                statsEnabled = statsEnabled + " playtime";
+                getCommand("playtime").setExecutor(playtime);
+            }
+            if (joins) {
+                statsEnabled = statsEnabled + " joins";
+                getCommand("joins").setExecutor(playtime);
+            }
+        }
+
+        if (item_pickups) {
+            getServer().getPluginManager().registerEvents(itemPickUp, this);
+            statsEnabled = statsEnabled + " item_pickups";
+            getCommand("itempickups").setExecutor(itemPickUp);
+        }
+
+        if (item_drops) {
+            getServer().getPluginManager().registerEvents(itemDrop, this);
+            statsEnabled = statsEnabled + " item_drops";
+            getCommand("itemdrops").setExecutor(itemDrop);
+        }
+
+        if (items_crafted) {
+            getServer().getPluginManager().registerEvents(itemsCrafted, this);
+            statsEnabled = statsEnabled + " items_crafted";
+            getCommand("itemscrafted").setExecutor(itemsCrafted);
+        }
+
+        if (on_fire) {
+            getServer().getPluginManager().registerEvents(onFire, this);
+            statsEnabled = statsEnabled + " on_fire";
+            getCommand("onfire").setExecutor(onFire);
+        }
+
+        if (tools_broken) {
+            getServer().getPluginManager().registerEvents(toolsBroken, this);
+            statsEnabled = statsEnabled + " tools_broken";
+            getCommand("toolsbroken").setExecutor(toolsBroken);
+        }
+
+        if (arrows_shot) {
+            getServer().getPluginManager().registerEvents(arrowsShot, this);
+            statsEnabled = statsEnabled + " arrows_shot";
+            getCommand("arrowsshot").setExecutor(arrowsShot);
+        }
+
+        if (bucket_fill) {
+            getServer().getPluginManager().registerEvents(bucketFill, this);
+            statsEnabled = statsEnabled + " bucket_fill";
+            getCommand("bucketsfilled").setExecutor(bucketFill);
+        }
+
+        if (bucket_empty) {
+            getServer().getPluginManager().registerEvents(bucketEmpty, this);
+            statsEnabled = statsEnabled + " bucket_empty";
+            getCommand("bucketsemptied").setExecutor(bucketEmpty);
+        }
+
+        if (bed) {
+            getServer().getPluginManager().registerEvents(sleepyTime, this);
+            statsEnabled = statsEnabled + " bed";
+            getCommand("timeslept").setExecutor(sleepyTime);
+            getCommand("lastslept").setExecutor(sleepyTime);
+        }
+
+        if (world_change) {
+            getServer().getPluginManager().registerEvents(worldChange, this);
+            statsEnabled = statsEnabled + " world_change";
+            getCommand("worldchanges").setExecutor(worldChange);
+        }
+
+        if (words_spoken || messages_spoken || specific_words_spoken) {
+            getServer().getPluginManager().registerEvents(wordsSpoken, this);
+            statsEnabled = statsEnabled + " words_spoken";
+            if (words_spoken)
+                getCommand("wordsspoken").setExecutor(wordsSpoken);
+            if (messages_spoken)
+                getCommand("messagesspoken").setExecutor(wordsSpoken);
+        }
+
+        if (damage_taken) {
+            getServer().getPluginManager().registerEvents(damageTaken, this);
+            statsEnabled = statsEnabled + " damage_taken";
+            getCommand("damagetaken").setExecutor(damageTaken);
+        }
+
+        if (damage_dealt) {
+            getServer().getPluginManager().registerEvents(damageDealt, this);
+            statsEnabled = statsEnabled + " damage_dealt";
+            getCommand("damagedealt").setExecutor(damageDealt);
+        }
+
+        if (fish_caught) {
+            getServer().getPluginManager().registerEvents(fishCaught, this);
+            statsEnabled = statsEnabled + " fish_caught";
+            getCommand("fishcaught").setExecutor(fishCaught);
+        }
+
+        if (xp_gained) {
+            getServer().getPluginManager().registerEvents(xpGained, this);
+            statsEnabled = statsEnabled + " xp_gained";
+            getCommand("xpgained").setExecutor(xpGained);
+        }
+
+        if (kills) {
+            getServer().getPluginManager().registerEvents(killListener, this);
+            statsEnabled = statsEnabled + " kills";
+            getCommand("kills").setExecutor(killListener);
+        }
+
+        if (highest_level) {
+            getServer().getPluginManager().registerEvents(highestLevel, this);
+            statsEnabled = statsEnabled + " highest_level";
+            getCommand("highestlevel").setExecutor(highestLevel);
+        }
+
+        if (tab_complete) {
+            getServer().getPluginManager().registerEvents(tabComplete, this);
+            statsEnabled = statsEnabled + " tab_complete";
+            getCommand("tabcompletes").setExecutor(tabComplete);
+        }
+
+        getLogger().info("Successfully enabled:" + statsEnabled);
+
+        // load up commands
+        getCommand("list").setExecutor(listCommand);
+        getCommand("resetstats").setExecutor(resetCommand);
+        getCommand("printdata").setExecutor(printData);
+        getCommand("updatetotals").setExecutor(updateTotals);
+        getCommand("savestats").setExecutor(saveStats);
+        getCommand("forcebackup").setExecutor(forceBackup);
     }
 
     @Override
