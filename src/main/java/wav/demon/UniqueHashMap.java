@@ -64,11 +64,6 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
     }
 
     /**
-     * Private constructor to prevent use.
-     */
-    private UniqueHashMap(){}
-
-    /**
      * Private constructor to be called by the #create(Class<K> keyType, Class<V> valueType) method.
      *
      * @param keyType the type of Object to be used for the key, so String.class, for example, is valid.
