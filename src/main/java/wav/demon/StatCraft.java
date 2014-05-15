@@ -22,6 +22,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author DemonWav
+ */
 public class StatCraft extends JavaPlugin {
 
     public volatile HashMap<String, HashMap<Integer, HashMap<String, Integer>>> statsForPlayers;

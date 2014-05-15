@@ -17,9 +17,11 @@ import java.util.*;
  * not attempt to modify the sets, or your will break invariants in the map. The keyMap and valueMap must match at all
  * times, and attempting to modify those sets will modify one map and not the other.
  *
+ * @author DemonWav
+ *
  * @see java.util.HashMap
  */
-public class UniqueHashMap<K, V> extends AbstractMap implements Map {
+public final class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
 
     /**
      * The HashMap that will store the Key, Value pairs in the order that they are declared in the UniqueHasHMap. This is
@@ -402,6 +404,27 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
         K key = valueMap.remove(value);
         keyMap.remove(key);
         return key;
+    }
+
+    /**
+     * Returns a shallow copy of this HashMap instance: the keys and values themselves are not cloned.
+     *
+     * @return a shallow copy of this map
+     */
+    @Override
+    @SuppressWarnings({"unchecked", "CloneDoesntDeclareCloneNotSupportedException", "CloneDoesntCallSuperClone"})
+    public Object clone() {
+        UniqueHashMap<K, V> result = create(keyType, valueType);
+
+        HashMap resKeyMap = (HashMap<K, V>)getKeyMap().clone();
+        HashMap resValueMap = (HashMap<V, K>)getValueMap().clone();
+
+        if (result != null) {
+            result.getKeyMap().putAll(resKeyMap);
+            result.getValueMap().putAll(resValueMap);
+        }
+
+        return result;
     }
 }
 
