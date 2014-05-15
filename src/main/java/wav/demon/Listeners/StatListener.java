@@ -24,6 +24,13 @@ import java.nio.file.NoSuchFileException;
 import java.text.DecimalFormat;
 import java.util.*;
 
+/**
+ *
+ * Super class for all of the listeners and the commands that go with
+ * each listener. This class holds a few methods used multiple times by each of the subclasses
+ * to clean-up the overall code.
+ *
+ **/
 public abstract class StatListener implements Listener, CommandExecutor {
 
     protected StatCraft plugin;
@@ -33,14 +40,6 @@ public abstract class StatListener implements Listener, CommandExecutor {
     public StatListener(StatCraft plugin) {
         this.plugin = plugin;
     }
-
-    /**
-     *
-     * This class is just a super class for all of the listeners and the commands that go with
-     * each listener. This class holds a few methods used multiple times by each of the subclasses
-     * to clean-up the overall code.
-     *
-     **/
 
     // Synchronized method to increment stats on players, this method will be run in a separate
     // asynchronous thread.

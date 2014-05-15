@@ -12,10 +12,13 @@ import java.util.*;
  * <li>HashMap&lt;Key, Value&gt; keyMap
  * <li>HashMap&lt;Value, Key&gt; valueMap
  * </ul>
- * It works mostly the same way as a normal HashMap, but it requires twice as much memory, and changes to the maps must be
- * done through the UniqueHashMap's methods. For example, when using entrySet(), keySet(), or valueSet(), you <b>must</b>
- * not attempt to modify the sets, or your will break invariants in the map. The keyMap and valueMap must match at all
- * times, and attempting to modify those sets will modify one map and not the other.
+ * It works mostly the same way as a normal HashMap, but changes to the maps must be done through the UniqueHashMap's
+ * methods. For example, when using entrySet(), keySet(), or valueSet(), you <b>must</b> not attempt to modify the sets,
+ * or your will break invariants in the map. The keyMap and valueMap must match at all times, and attempting to modify
+ * those sets will modify one map and not the other.
+ * <p>
+ * Though this map utilizes two individual HashMaps, the memory usage of this map will only be slightly higher than that
+ * of a regular HashMap, as both maps point to the same objects.
  *
  * @author DemonWav
  *
@@ -234,7 +237,7 @@ public final class UniqueHashMap<K, V> extends AbstractMap implements Map, Clone
     public boolean isEmpty() { return keyMap.isEmpty(); }
 
     /**
-     * <b>This method is here to satisfy the Map interface, but it just calls {@link #getValueFromKey(K key) getValueFromKey()}
+     * <b>This method is here to satisfy the Map interface, but it just calls {@link #getValueFromKey(Object) getValueFromKey()}
      * internally.</b>
      * <p>
      * Returns the value to which the specified key is mapped, or null if this map contains no mapping for the key.
@@ -261,7 +264,7 @@ public final class UniqueHashMap<K, V> extends AbstractMap implements Map, Clone
     }
 
     /**
-     * <b>This method is here to satisfy the Map interface, but it just calls {@link #removeKey(K key) removeKey()}
+     * <b>This method is here to satisfy the Map interface, but it just calls {@link #removeKey(Object) removeKey()}
      * internally.</b>
      * <p>
      * Removes the mapping for the specified key from this map if present.
@@ -321,8 +324,8 @@ public final class UniqueHashMap<K, V> extends AbstractMap implements Map, Clone
      * <p>
      * Changes to the keySet will break invariants in the map, and the map will no longer function properly, as the two
      * sub-hashmaps would no longer match. You can use this for iterating over the map, but to remove keys from the map
-     * you must use {@link #removeKey(K) removeKey()}, or to remove values you must use
-     * {@link #removeValue(V) removeValue()}.
+     * you must use {@link #removeKey(Object) removeKey()}, or to remove values you must use
+     * {@link #removeValue(Object) removeValue()}.
      *
      * @return a set view of the keys contained in this map
      */
@@ -338,8 +341,8 @@ public final class UniqueHashMap<K, V> extends AbstractMap implements Map, Clone
      * <p>
      * Changes to the valueSet will break invariants in the map, and the map will no longer function properly, as the two
      * sub-hashmaps would no longer match. You can use this for iterating over the map, but to remove keys from the map
-     * you must use {@link #removeKey(K) removeKey()}, or to remove values you must use
-     * {@link #removeValue(V) removeValue()}.
+     * you must use {@link #removeKey(Object) removeKey()}, or to remove values you must use
+     * {@link #removeValue(Object) removeValue()}.
      *
      * @return a set view of the values contained in this map
      */
