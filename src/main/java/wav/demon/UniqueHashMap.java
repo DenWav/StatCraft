@@ -103,7 +103,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
      */
     @Override
     @Nullable
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "SuspiciousMethodCalls"})
     public V put(Object key, Object value) {
         // do a type check
         if ((key == null || this.keyType.isAssignableFrom(key.getClass())) &&
@@ -193,6 +193,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
      * @return true if this map contains a mapping for the specified value.
      */
     @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
     public boolean containsValue(Object value) {
         return (value == null || this.valueType.isAssignableFrom(value.getClass())) && valueMap.containsKey(value);
     }
@@ -211,6 +212,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
      */
     @Override
     @NotNull
+    @SuppressWarnings("NullableProblems")
     public Set<Map.Entry<K, V>> entrySet() { return keyMap.entrySet(); }
 
     /**
@@ -289,7 +291,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
      * @throws java.lang.ClassCastException if the provided map's keys or values are of the wrong type.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "NullableProblems"})
     public void putAll(Map m) {
         // null check
         if (m == null) {
@@ -324,6 +326,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
      */
     @Override
     @NotNull
+    @SuppressWarnings("NullableProblems")
     public Set<K> keySet() { return keyMap.keySet(); }
 
     /**
@@ -350,6 +353,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
      */
     @Override
     @NotNull
+    @SuppressWarnings("NullableProblems")
     public Collection values() { return keyMap.values(); }
 
     /**
@@ -406,14 +410,10 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
      * @return a shallow copy of this map
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "CloneDoesntDeclareCloneNotSupportedException", "CloneDoesntCallSuperClone"})
     public Object clone() {
-        UniqueHashMap<K, V> result = null;
-        try {
-            result = (UniqueHashMap<K, V>) super.clone();
-        } catch (CloneNotSupportedException e) {
-            // nope
-        }
+        UniqueHashMap<K, V> result = create(keyType, valueType);
+
         HashMap resKeyMap = (HashMap<K, V>)getKeyMap().clone();
         HashMap resValueMap = (HashMap<V, K>)getValueMap().clone();
 
@@ -427,6 +427,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
 }
 
 class ValueNotUniqueException extends RuntimeException {
+    @SuppressWarnings("UnusedDeclaration")
     public ValueNotUniqueException() { super(); }
 
     public ValueNotUniqueException(String message) { super(message); }

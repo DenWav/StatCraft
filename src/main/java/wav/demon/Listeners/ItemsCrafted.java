@@ -14,13 +14,11 @@ import wav.demon.StatTypes;
 import java.util.ArrayList;
 
 /** BIG THANKS to Comphenix and Digi for figuring out a way to do this, I'm glad I didn't
- * have to figure this out myself.
- * https://forums.bukkit.org/threads/cant-get-amount-of-shift-click-craft-item.79090/ */
+ *  have to figure this out myself.
+ *  https://forums.bukkit.org/threads/cant-get-amount-of-shift-click-craft-item.79090/ */
 public class ItemsCrafted extends StatListener {
 
-    public ItemsCrafted(StatCraft plugin) {
-        super(plugin);
-    }
+    public ItemsCrafted(StatCraft plugin) { super(plugin); }
 
     /** this method is Comphenix's code */
     @SuppressWarnings({"unused", "deprecation"})

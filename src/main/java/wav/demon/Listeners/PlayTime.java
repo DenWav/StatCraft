@@ -17,9 +17,7 @@ import java.util.*;
 
 public class PlayTime extends StatListener {
 
-    public PlayTime(StatCraft plugin) {
-        super(plugin);
-    }
+    public PlayTime(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

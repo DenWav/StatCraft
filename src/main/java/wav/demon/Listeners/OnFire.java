@@ -14,9 +14,7 @@ import java.util.ArrayList;
 
 public class OnFire extends StatListener {
 
-    public OnFire(StatCraft plugin) {
-        super(plugin);
-    }
+    public OnFire(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

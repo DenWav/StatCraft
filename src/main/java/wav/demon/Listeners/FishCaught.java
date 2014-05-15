@@ -13,9 +13,7 @@ import java.util.ArrayList;
 
 public class FishCaught extends StatListener {
 
-    public FishCaught(StatCraft plugin) {
-        super(plugin);
-    }
+    public FishCaught(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

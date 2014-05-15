@@ -13,9 +13,7 @@ import java.util.ArrayList;
 
 public class KillListener extends StatListener {
 
-    public KillListener(StatCraft plugin) {
-        super(plugin);
-    }
+    public KillListener(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

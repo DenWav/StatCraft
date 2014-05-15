@@ -16,9 +16,7 @@ import java.util.Map;
 
 public class DeathListener extends StatListener {
 
-    public DeathListener(StatCraft plugin) {
-        super(plugin);
-    }
+    public DeathListener(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

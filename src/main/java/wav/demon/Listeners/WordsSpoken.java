@@ -12,9 +12,7 @@ import java.util.ArrayList;
 
 public class WordsSpoken extends StatListener {
 
-    public WordsSpoken(StatCraft plugin) {
-        super(plugin);
-    }
+    public WordsSpoken(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

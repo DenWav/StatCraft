@@ -13,9 +13,7 @@ import java.util.ArrayList;
 
 public class HighestLevel extends StatListener {
 
-    public HighestLevel(StatCraft plugin) {
-        super(plugin);
-    }
+    public HighestLevel(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

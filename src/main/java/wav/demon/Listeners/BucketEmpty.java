@@ -12,9 +12,7 @@ import java.util.ArrayList;
 
 public class BucketEmpty extends StatListener {
 
-    public BucketEmpty(StatCraft plugin) {
-        super(plugin);
-    }
+    public BucketEmpty(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings({"unused", "deprecation"})
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

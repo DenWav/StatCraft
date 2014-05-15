@@ -21,9 +21,7 @@ import java.util.*;
 
 public class BlockListener extends StatListener {
 
-    public BlockListener(StatCraft plugin) {
-        super(plugin);
-    }
+    public BlockListener(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings({"unused", "deprecation"})
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -56,6 +54,8 @@ public class BlockListener extends StatListener {
         final String message = event.getBlock().getType().getId() + ":" + event.getBlock().getData();
         final String name = event.getPlayer().getName();
         incrementStat(StatTypes.BLOCK_PLACE.id, name, message);
+
+
     }
 
     @Override

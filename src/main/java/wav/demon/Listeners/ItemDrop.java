@@ -12,9 +12,7 @@ import java.util.ArrayList;
 
 public class ItemDrop extends StatListener {
 
-    public ItemDrop(StatCraft plugin) {
-        super(plugin);
-    }
+    public ItemDrop(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings({"unused", "deprecation"})
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

@@ -12,9 +12,7 @@ import java.util.ArrayList;
 
 public class TabComplete extends StatListener {
 
-    public TabComplete(StatCraft plugin) {
-        super(plugin);
-    }
+    public TabComplete(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

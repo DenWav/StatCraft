@@ -12,9 +12,7 @@ import java.util.ArrayList;
 
 public class ToolsBroken extends StatListener {
 
-    public ToolsBroken(StatCraft plugin) {
-        super(plugin);
-    }
+    public ToolsBroken(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings({"unused", "deprecation"})
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

@@ -12,9 +12,7 @@ import java.util.ArrayList;
 
 public class ItemPickUp extends StatListener {
 
-    public ItemPickUp(StatCraft plugin) {
-        super(plugin);
-    }
+    public ItemPickUp(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings({"unused", "deprecation"})
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

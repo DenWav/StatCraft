@@ -16,9 +16,7 @@ import java.util.*;
 
 public class SleepyTime extends StatListener {
 
-    public SleepyTime(StatCraft plugin) {
-        super(plugin);
-    }
+    public SleepyTime(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

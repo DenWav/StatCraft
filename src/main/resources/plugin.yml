@@ -1,7 +1,7 @@
-name: StatCraft
-main: wav.demon.StatCraft
-version: 0.1.3
-author: DemonWav
+name: ${project.name}
+main: ${project.groupId}
+version: ${project.version}
+author: ${project.author}
 commands:
   list:
     description: Lists all online players.

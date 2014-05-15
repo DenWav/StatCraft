@@ -14,9 +14,7 @@ import java.util.ArrayList;
 
 public class DamageTaken extends StatListener {
 
-    public DamageTaken(StatCraft plugin) {
-        super(plugin);
-    }
+    public DamageTaken(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

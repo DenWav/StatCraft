@@ -12,9 +12,7 @@ import java.util.ArrayList;
 
 public class WorldChange extends StatListener {
 
-    public WorldChange(StatCraft plugin) {
-        super(plugin);
-    }
+    public WorldChange(StatCraft plugin) { super(plugin); }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
