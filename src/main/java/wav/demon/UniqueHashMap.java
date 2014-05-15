@@ -19,7 +19,7 @@ import java.util.*;
  *
  * @see java.util.HashMap
  */
-public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
+public class UniqueHashMap<K, V> extends AbstractMap implements Map {
 
     /**
      * The HashMap that will store the Key, Value pairs in the order that they are declared in the UniqueHasHMap. This is
@@ -402,27 +402,6 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
         K key = valueMap.remove(value);
         keyMap.remove(key);
         return key;
-    }
-
-    /**
-     * Returns a shallow copy of this HashMap instance: the keys and values themselves are not cloned.
-     *
-     * @return a shallow copy of this map
-     */
-    @Override
-    @SuppressWarnings({"unchecked", "CloneDoesntDeclareCloneNotSupportedException", "CloneDoesntCallSuperClone"})
-    public Object clone() {
-        UniqueHashMap<K, V> result = create(keyType, valueType);
-
-        HashMap resKeyMap = (HashMap<K, V>)getKeyMap().clone();
-        HashMap resValueMap = (HashMap<V, K>)getValueMap().clone();
-
-        if (result != null) {
-            result.getKeyMap().putAll(resKeyMap);
-            result.getValueMap().putAll(resValueMap);
-        }
-
-        return result;
     }
 }
 
