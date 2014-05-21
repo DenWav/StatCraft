@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 public class StatCraft extends JavaPlugin {
 
     public volatile HashMap<String, HashMap<Integer, HashMap<String, Integer>>> statsForPlayers;
-    private volatile UniqueHashMap<String, UUID> players;
+    public volatile UniqueHashMap<String, UUID> players;
 
     private Object threadLock = new Object();
 
@@ -1235,7 +1235,7 @@ public class StatCraft extends JavaPlugin {
      * as the stat directory.
      */
     @SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
-    private void writePlayersFile() {
+    public void writePlayersFile() {
         // since any information from the players.json file should already be stored in the UniqueHashMap, we will not
         // bother to re-read the file. Instead we will simply over-write it with the contents of the UniqueHashMap.
 
@@ -1295,11 +1295,4 @@ public class StatCraft extends JavaPlugin {
      * @return {@link #threadLock threadLock} for synchronized blocks
      */
     public Object getThreadLock() { return threadLock; }
-
-    /**
-     * Returns {@link #players players}
-     *
-     * @return {@link #players players}
-     */
-    public UniqueHashMap<String, UUID> getPlayers() { return players; }
 }

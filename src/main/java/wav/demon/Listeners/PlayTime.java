@@ -22,12 +22,46 @@ public class PlayTime extends StatListener {
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent event) {
-            final String name = event.getPlayer().getName();
-            final int currentTime = (int) (System.currentTimeMillis() / 1000);
+
+        if (plugin.players.containsValue(event.getPlayer().getUniqueId())) {
+            if (!plugin.players.containsKey(event.getPlayer().getName())) {
+                // this player must have gotten a name change, we have the UUID on file, but not the username
+                plugin.players.removeValue(event.getPlayer().getUniqueId());
+                plugin.players.put(event.getPlayer().getName(), event.getPlayer().getUniqueId());
+            } else if (plugin.players.getKeyFromValue(event.getPlayer().getUniqueId()) == null) {
+                // null check
+                plugin.players.removeValue(event.getPlayer().getUniqueId());
+                plugin.players.put(event.getPlayer().getName(), event.getPlayer().getUniqueId());
+            } else //noinspection ConstantConditions
+                if (!plugin.players.getKeyFromValue(event.getPlayer().getUniqueId()).equals(event.getPlayer().getName())) {
+                // This is a bit of a problem. It appears that someone already on the server changed their name, and then
+                // someone else already on the server also changed their name before the other play could reconnect, so
+                // the old pairing is wrong. We know the player with the conflicting nickname isn't online, or it would
+                // have been resolved by now, so we will simply change it to null.
+                UUID uuid = plugin.players.getValueFromKey(event.getPlayer().getName());
+                plugin.players.removeValue(uuid);
+                plugin.players.put(null, uuid);
+                plugin.players.put(event.getPlayer().getName(), event.getPlayer().getUniqueId());
+            }
+        } else if (plugin.players.containsKey(event.getPlayer().getName())) {
+            // The mapping is wrong from two people doing name changes mentioned earlier, so set the current to null
+            // so it will be fixed when the player later connects
+            UUID uuid = plugin.players.getValueFromKey(event.getPlayer().getName());
+            plugin.players.removeValue(uuid);
+            plugin.players.put(null, uuid);
+            plugin.players.put(event.getPlayer().getName(), event.getPlayer().getUniqueId());
+        } else {
+            plugin.players.put(event.getPlayer().getName(), event.getPlayer().getUniqueId());
+        }
+
+        plugin.writePlayersFile();
+
+        final String uuid = event.getPlayer().getUniqueId().toString();
+        final int currentTime = (int) (System.currentTimeMillis() / 1000);
         if (plugin.getLast_join_time())
-            addStat(StatTypes.LAST_JOIN_TIME.id, name, currentTime);
+            addStat(StatTypes.LAST_JOIN_TIME.id, uuid, currentTime);
         if (plugin.getJoins())
-            addStat(StatTypes.JOINS.id, name, getStat(name, StatTypes.JOINS.id) + 1);
+            addStat(StatTypes.JOINS.id, uuid, getStat(uuid, StatTypes.JOINS.id) + 1);
 
         plugin.highestLevel.updateHighestLevel(event.getPlayer());
     }

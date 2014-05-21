@@ -37,9 +37,7 @@ public abstract class StatListener implements Listener, CommandExecutor {
     // look, I don't know how big these number are gonna be
     protected DecimalFormat df = new DecimalFormat("###,###,###,###,###,###,###,###");
 
-    public StatListener(StatCraft plugin) {
-        this.plugin = plugin;
-    }
+    public StatListener(StatCraft plugin) { this.plugin = plugin; }
 
     // Synchronized method to increment stats on players, this method will be run in a separate
     // asynchronous thread.
@@ -59,8 +57,8 @@ public abstract class StatListener implements Listener, CommandExecutor {
                     if (!playerStatDir.exists()) {
                         if (plugin.getStatsDir().listFiles() != null)
                             for (File f : plugin.getStatsDir().listFiles()) {
-                                if (plugin.getPlayers().containsKey(f.getName())) {
-                                    f.renameTo(new File(plugin.getPlayers().getValueFromKey(f.getName()).toString()));
+                                if (plugin.players.containsKey(f.getName())) {
+                                    f.renameTo(new File(plugin.players.getValueFromKey(f.getName()).toString()));
                                 }
                             }
                     }
@@ -175,8 +173,8 @@ public abstract class StatListener implements Listener, CommandExecutor {
                     if (!playerStatDir.exists()) {
                         if (plugin.getStatsDir().listFiles() != null)
                             for (File f : plugin.getStatsDir().listFiles()) {
-                                if (plugin.getPlayers().containsKey(f.getName())) {
-                                    f.renameTo(new File(plugin.getPlayers().getValueFromKey(f.getName()).toString()));
+                                if (plugin.players.containsKey(f.getName())) {
+                                    f.renameTo(new File(plugin.players.getValueFromKey(f.getName()).toString()));
                                 }
                             }
                     }
@@ -294,26 +292,26 @@ public abstract class StatListener implements Listener, CommandExecutor {
      * This method is used by the command parts of the subclasses. The returned value is the "total"
      * value of the specified stat.
      *
-     * @param name Name of the player to get stats from
+     * @param uuid UUID of the player to get stats from
      * @param type StatType.id int of whatever stat you want to get
      * @return "total" value of specified type
      */
-    protected int getStat(String name, int type) {
+    protected int getStat(String uuid, int type) {
         // This is method of getting stats takes about half as many look-ups
         // I could do a little better, but then I'd have to catch NullPointedExceptions,
         // and I would rather not catch a RuntimeException if possible
         if (plugin.getSaveStatsRealTime()) {
-            Integer i = getStatFromFile(name, type);
+            Integer i = getStatFromFile(uuid, type);
             return i == null ? 0 : i;
         } else {
-            HashMap<Integer, HashMap<String, Integer>> firstMap = plugin.statsForPlayers.get(name);
+            HashMap<Integer, HashMap<String, Integer>> firstMap = plugin.statsForPlayers.get(uuid);
             if (firstMap == null) {
-                Integer i = getStatFromFile(name, type);
+                Integer i = getStatFromFile(uuid, type);
                 return i == null ? 0 : i;
             } else {
                 HashMap<String, Integer> secondMap = firstMap.get(type);
                 if (secondMap == null) {
-                    Integer i = getStatFromFile(name, type);
+                    Integer i = getStatFromFile(uuid, type);
                     return i == null ? 0 : i;
                 } else {
                     Integer stat = secondMap.get("total");
@@ -330,15 +328,15 @@ public abstract class StatListener implements Listener, CommandExecutor {
      * <p>
      * This method looks for the stats only on the disk and should not be used solely as the stat-lookup
      *
-     * @param name Name of the player to get stats from
+     * @param uuid UUID of the player to get stats from
      * @param type StatType.id int of whatever stat you want to get
      * @return "total" value of specified type, but as an Integer so it is null if nothing is found
      */
     @Nullable
     @SuppressWarnings("unchecked")
-    protected Integer getStatFromFile(String name, int type) {
+    protected Integer getStatFromFile(String uuid, int type) {
 
-        File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+        File statFile = new File(plugin.getDataFolder(), "stats/" + uuid + "/" + type);
 
         HashMap<String, Integer> map = getMapFromFile(statFile);
 
