@@ -26,7 +26,7 @@ import java.util.*;
 
 /**
  *
- * Super class for all of the listeners and the commands that go with
+ * This class is just a super class for all of the listeners and the commands that go with
  * each listener. This class holds a few methods used multiple times by each of the subclasses
  * to clean-up the overall code.
  *
