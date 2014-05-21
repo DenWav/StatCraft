@@ -12,14 +12,19 @@ import java.util.*;
  * <li>HashMap&lt;Key, Value&gt; keyMap
  * <li>HashMap&lt;Value, Key&gt; valueMap
  * </ul>
- * It works mostly the same way as a normal HashMap, but it requires twice as much memory, and changes to the maps must be
- * done through the UniqueHashMap's methods. For example, when using entrySet(), keySet(), or valueSet(), you <b>must</b>
- * not attempt to modify the sets, or your will break invariants in the map. The keyMap and valueMap must match at all
- * times, and attempting to modify those sets will modify one map and not the other.
+ * It works mostly the same way as a normal HashMap, but changes to the maps must be done through the UniqueHashMap's
+ * methods. For example, when using entrySet(), keySet(), or valueSet(), you <b>must</b> not attempt to modify the sets,
+ * or your will break invariants in the map. The keyMap and valueMap must match at all times, and attempting to modify
+ * those sets will modify one map and not the other.
+ * <p>
+ * Though this map utilizes two individual HashMaps, the memory usage of this map will only be slightly higher than that
+ * of a regular HashMap, as both maps point to the same objects.
+ *
+ * @author DemonWav
  *
  * @see java.util.HashMap
  */
-public class UniqueHashMap<K, V> extends AbstractMap implements Map {
+public final class UniqueHashMap<K, V> extends AbstractMap implements Map, Cloneable {
 
     /**
      * The HashMap that will store the Key, Value pairs in the order that they are declared in the UniqueHasHMap. This is
@@ -103,7 +108,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
      */
     @Override
     @Nullable
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "SuspiciousMethodCalls"})
     public V put(Object key, Object value) {
         // do a type check
         if ((key == null || this.keyType.isAssignableFrom(key.getClass())) &&
@@ -193,6 +198,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
      * @return true if this map contains a mapping for the specified value.
      */
     @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
     public boolean containsValue(Object value) {
         return (value == null || this.valueType.isAssignableFrom(value.getClass())) && valueMap.containsKey(value);
     }
@@ -211,6 +217,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
      */
     @Override
     @NotNull
+    @SuppressWarnings("NullableProblems")
     public Set<Map.Entry<K, V>> entrySet() { return keyMap.entrySet(); }
 
     /**
@@ -230,7 +237,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
     public boolean isEmpty() { return keyMap.isEmpty(); }
 
     /**
-     * <b>This method is here to satisfy the Map interface, but it just calls {@link #getValueFromKey(K key) getValueFromKey()}
+     * <b>This method is here to satisfy the Map interface, but it just calls {@link #getValueFromKey(Object) getValueFromKey()}
      * internally.</b>
      * <p>
      * Returns the value to which the specified key is mapped, or null if this map contains no mapping for the key.
@@ -257,7 +264,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
     }
 
     /**
-     * <b>This method is here to satisfy the Map interface, but it just calls {@link #removeKey(K key) removeKey()}
+     * <b>This method is here to satisfy the Map interface, but it just calls {@link #removeKey(Object) removeKey()}
      * internally.</b>
      * <p>
      * Removes the mapping for the specified key from this map if present.
@@ -289,7 +296,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
      * @throws java.lang.ClassCastException if the provided map's keys or values are of the wrong type.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "NullableProblems"})
     public void putAll(Map m) {
         // null check
         if (m == null) {
@@ -317,13 +324,14 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
      * <p>
      * Changes to the keySet will break invariants in the map, and the map will no longer function properly, as the two
      * sub-hashmaps would no longer match. You can use this for iterating over the map, but to remove keys from the map
-     * you must use {@link #removeKey(K) removeKey()}, or to remove values you must use
-     * {@link #removeValue(V) removeValue()}.
+     * you must use {@link #removeKey(Object) removeKey()}, or to remove values you must use
+     * {@link #removeValue(Object) removeValue()}.
      *
      * @return a set view of the keys contained in this map
      */
     @Override
     @NotNull
+    @SuppressWarnings("NullableProblems")
     public Set<K> keySet() { return keyMap.keySet(); }
 
     /**
@@ -333,8 +341,8 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
      * <p>
      * Changes to the valueSet will break invariants in the map, and the map will no longer function properly, as the two
      * sub-hashmaps would no longer match. You can use this for iterating over the map, but to remove keys from the map
-     * you must use {@link #removeKey(K) removeKey()}, or to remove values you must use
-     * {@link #removeValue(V) removeValue()}.
+     * you must use {@link #removeKey(Object) removeKey()}, or to remove values you must use
+     * {@link #removeValue(Object) removeValue()}.
      *
      * @return a set view of the values contained in this map
      */
@@ -350,6 +358,7 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
      */
     @Override
     @NotNull
+    @SuppressWarnings("NullableProblems")
     public Collection values() { return keyMap.values(); }
 
     /**
@@ -399,9 +408,31 @@ public class UniqueHashMap<K, V> extends AbstractMap implements Map {
         keyMap.remove(key);
         return key;
     }
+
+    /**
+     * Returns a shallow copy of this HashMap instance: the keys and values themselves are not cloned.
+     *
+     * @return a shallow copy of this map
+     */
+    @Override
+    @SuppressWarnings({"unchecked", "CloneDoesntDeclareCloneNotSupportedException", "CloneDoesntCallSuperClone"})
+    public Object clone() {
+        UniqueHashMap<K, V> result = create(keyType, valueType);
+
+        HashMap resKeyMap = (HashMap<K, V>)getKeyMap().clone();
+        HashMap resValueMap = (HashMap<V, K>)getValueMap().clone();
+
+        if (result != null) {
+            result.getKeyMap().putAll(resKeyMap);
+            result.getValueMap().putAll(resValueMap);
+        }
+
+        return result;
+    }
 }
 
 class ValueNotUniqueException extends RuntimeException {
+    @SuppressWarnings("UnusedDeclaration")
     public ValueNotUniqueException() { super(); }
 
     public ValueNotUniqueException(String message) { super(message); }
