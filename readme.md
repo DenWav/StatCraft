@@ -77,4 +77,5 @@ or want to contact me for any reason, you can find me in IRC:
 `irc.esper.net`
 
 I am usually in *#bukkit* and *#bukkitdev*, but you can always just message me, username is DemonWav.
+If you can't  find me there, you should always be able to message me in `chat.freenode.net`
 
