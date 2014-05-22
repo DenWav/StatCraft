@@ -19,12 +19,13 @@ public class HighestLevel extends StatListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onLevel(PlayerLevelChangeEvent event) {
         int newLevel = event.getNewLevel();
-        String name = event.getPlayer().getName();
-        if (getStat(name, StatTypes.HIGHEST_LEVEL.id) < newLevel) {
-            addStat(StatTypes.HIGHEST_LEVEL.id, name, newLevel);
+        String uuid = event.getPlayer().getUniqueId().toString();
+        if (getStat(uuid, StatTypes.HIGHEST_LEVEL.id) < newLevel) {
+            addStat(StatTypes.HIGHEST_LEVEL.id, uuid, newLevel);
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -33,14 +34,17 @@ public class HighestLevel extends StatListener {
 
         for (String name : names) {
 
-            int stat = getStat(name, StatTypes.HIGHEST_LEVEL.id);
-            if (stat == 0)
-                stat = sender.getServer().getPlayer(name).getLevel();
+            try {
+                int stat = getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.HIGHEST_LEVEL.id);
+                if (stat == 0)
+                    stat = sender.getServer().getPlayer(name).getLevel();
 
-            String message = "§c" + name + "§f - Highest Level: " + df.format(stat);
+                String message = "§c" + name + "§f - Highest Level: " + df.format(stat);
 
-            respondToCommand(message, args, sender, StatTypes.HIGHEST_LEVEL);
-
+                respondToCommand(message, args, sender, StatTypes.HIGHEST_LEVEL);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Highest Level: 0", args, sender, StatTypes.HIGHEST_LEVEL);
+            }
         }
 
         return true;
@@ -59,8 +63,8 @@ public class HighestLevel extends StatListener {
     public void updateHighestLevel(Player player) {
         int level = player.getLevel();
 
-        if (getStat(player.getName(), StatTypes.HIGHEST_LEVEL.id) < level) {
-            addStat(StatTypes.HIGHEST_LEVEL.id, player.getName(), level);
+        if (getStat(player.getUniqueId().toString(), StatTypes.HIGHEST_LEVEL.id) < level) {
+            addStat(StatTypes.HIGHEST_LEVEL.id, player.getUniqueId().toString(), level);
         }
     }
 }

@@ -17,13 +17,14 @@ public class ToolsBroken extends StatListener {
     @SuppressWarnings({"unused", "deprecation"})
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onToolBreak(PlayerItemBreakEvent event) {
-        final String name = event.getPlayer().getName();
+        final String uuid = event.getPlayer().getUniqueId().toString();
         final String message = event.getBrokenItem().getType().getId() + ":" +
                 event.getBrokenItem().getData().getData();
 
-        incrementStat(StatTypes.TOOLS_BROKEN.id, name, message);
+        incrementStat(StatTypes.TOOLS_BROKEN.id, uuid, message);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -31,9 +32,13 @@ public class ToolsBroken extends StatListener {
             return false;
 
         for (String name : names) {
-            String toolsBroken = df.format(getStat(name, StatTypes.TOOLS_BROKEN.id));
-            String message = "§c" + name + "§f - Tools Broken: " + toolsBroken;
-            respondToCommand(message, args, sender, StatTypes.TOOLS_BROKEN);
+            try {
+                String toolsBroken = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.TOOLS_BROKEN.id));
+                String message = "§c" + name + "§f - Tools Broken: " + toolsBroken;
+                respondToCommand(message, args, sender, StatTypes.TOOLS_BROKEN);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Tools Broken: 0", args, sender, StatTypes.TOOLS_BROKEN);
+            }
         }
         return true;
     }

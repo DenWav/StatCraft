@@ -20,27 +20,28 @@ public class DamageTaken extends StatListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamageTaken(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
-            final String name = ((Player) event.getEntity()).getName();
+            final String uuid = event.getEntity().getUniqueId().toString();
 
-            scheduleHeathDetection((HumanEntity) event.getEntity(), name);
+            scheduleHeathDetection((HumanEntity) event.getEntity(), uuid);
 
             if (plugin.getDrowning_announce())
             if (event.getCause().equals(EntityDamageEvent.DamageCause.DROWNING)) {
-                if ((System.currentTimeMillis() / 1000) - plugin.getLastDrownTime(name) > 10) {
-                    event.getEntity().getServer().broadcastMessage("§9" + name + " is drowning! Oh no!");
-                    plugin.setLastDrowningTime(name, (int) (System.currentTimeMillis() / 1000));
+                if ((System.currentTimeMillis() / 1000) - plugin.getLastDrownTime(uuid) > 10) {
+                    event.getEntity().getServer().broadcastMessage("§9" + uuid + " is drowning! Oh no!");
+                    plugin.setLastDrowningTime(uuid, (int) (System.currentTimeMillis() / 1000));
                 }
             }
             if (plugin.getPoison_announce())
             if (event.getCause().equals(EntityDamageEvent.DamageCause.POISON)) {
-                if ((System.currentTimeMillis() / 1000) - plugin.getLastPoisonTime(name) > 14) {
-                    event.getEntity().getServer().broadcastMessage("§2" + name + " is Poisoned! Oh no!");
-                    plugin.setLastPoisonTime(name, (int) (System.currentTimeMillis() / 1000));
+                if ((System.currentTimeMillis() / 1000) - plugin.getLastPoisonTime(uuid) > 14) {
+                    event.getEntity().getServer().broadcastMessage("§2" + uuid + " is Poisoned! Oh no!");
+                    plugin.setLastPoisonTime(uuid, (int) (System.currentTimeMillis() / 1000));
                 }
             }
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -48,9 +49,13 @@ public class DamageTaken extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.DAMAGE_TAKEN.id));
-            String message = "§c" + name + "§f - Damage Taken: " + stat;
-            respondToCommand(message, args, sender, StatTypes.DAMAGE_TAKEN);
+            try {
+                String stat = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.DAMAGE_TAKEN.id));
+                String message = "§c" + name + "§f - Damage Taken: " + stat;
+                respondToCommand(message, args, sender, StatTypes.DAMAGE_TAKEN);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Damage Taken: 0", args, sender, StatTypes.DAMAGE_TAKEN);
+            }
         }
         return true;
     }

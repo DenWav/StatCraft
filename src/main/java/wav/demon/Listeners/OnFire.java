@@ -23,8 +23,8 @@ public class OnFire extends StatListener {
             final EntityDamageEvent.DamageCause cause = event.getCause();
             if (cause == EntityDamageEvent.DamageCause.FIRE_TICK) {
 
-                final String name = ((Player) event.getEntity()).getName();
-                addStat(StatTypes.ON_FIRE.id, name, getStat(name, StatTypes.ON_FIRE.id) + 1);
+                final String uuid = event.getEntity().getUniqueId().toString();
+                addStat(StatTypes.ON_FIRE.id, uuid, getStat(uuid, StatTypes.ON_FIRE.id) + 1);
             }
         }
     }
@@ -34,14 +34,15 @@ public class OnFire extends StatListener {
     public void onCombust(EntityCombustEvent event) {
         if (plugin.getOn_fire_announce())
         if (event.getEntity() instanceof Player) {
-            String name = ((Player) event.getEntity()).getName();
-            if ((System.currentTimeMillis() / 1000) - plugin.getLastFireTime(name) > 5) {
-                event.getEntity().getServer().broadcastMessage("§c" + name + " is on fire! Oh no!");
-                plugin.setLastFireTime(name, (int)(System.currentTimeMillis() / 1000));
+            String uuid = event.getEntity().getUniqueId().toString();
+            if ((System.currentTimeMillis() / 1000) - plugin.getLastFireTime(uuid) > 5) {
+                event.getEntity().getServer().broadcastMessage("§c" + uuid + " is on fire! Oh no!");
+                plugin.setLastFireTime(uuid, (int)(System.currentTimeMillis() / 1000));
             }
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -50,15 +51,19 @@ public class OnFire extends StatListener {
 
         //int fireTime;
         for (String name : names) {
-            int stat = getStat(name, StatTypes.ON_FIRE.id);
-            String timeOnFire = transformTime(stat);
-            String message;
-            if (timeOnFire.equals(""))
-                message = name + " has not been on fire yet.";
-            else
-                message = name + " - On fire: " + timeOnFire;
+            try {
+                int stat = getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.ON_FIRE.id);
+                String timeOnFire = transformTime(stat);
+                String message;
+                if (timeOnFire.equals(""))
+                    message = name + " has not been on fire yet.";
+                else
+                    message = name + " - On fire: " + timeOnFire;
 
-            respondToCommand(message, args, sender, StatTypes.ON_FIRE);
+                respondToCommand(message, args, sender, StatTypes.ON_FIRE);
+            } catch (NullPointerException e) {
+                respondToCommand(name + " has not been on fire yet.", args, sender, StatTypes.ON_FIRE);
+            }
         }
 
         return true;

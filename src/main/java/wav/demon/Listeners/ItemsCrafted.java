@@ -40,15 +40,16 @@ public class ItemsCrafted extends StatListener {
 
                     final String message = toCraft.getType().getId() + ":" +
                             toCraft.getData().getData();
-                    final String name = player.getName();
+                    final String uuid = player.getUniqueId().toString();
 
                     for (int y = 0; y < newItemsCount; y++)
-                        incrementStat(StatTypes.ITEMS_CRAFTED.id, name, message);
+                        incrementStat(StatTypes.ITEMS_CRAFTED.id, uuid, message);
                 }
             }
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -56,9 +57,13 @@ public class ItemsCrafted extends StatListener {
             return false;
 
         for (String name : names) {
-            String itemsCrafted = df.format(getStat(name, StatTypes.ITEMS_CRAFTED.id));
-            String message = "§c" + name + "§f - Items Crafted: " + itemsCrafted;
-            respondToCommand(message, args, sender, StatTypes.ITEMS_CRAFTED);
+            try {
+                String itemsCrafted = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.ITEMS_CRAFTED.id));
+                String message = "§c" + name + "§f - Items Crafted: " + itemsCrafted;
+                respondToCommand(message, args, sender, StatTypes.ITEMS_CRAFTED);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Items Crafted: 0", args, sender, StatTypes.ITEMS_CRAFTED);
+            }
         }
 
         return true;
@@ -106,10 +111,10 @@ public class ItemsCrafted extends StatListener {
                 if (newItemsCount > 0) {
                     final String message = compareItem.getType().getId() + ":" +
                             compareItem.getData().getData();
-                    final String name = player.getName();
+                    final String uuid = player.getUniqueId().toString();
 
                     for (int y = 0; y < newItemsCount; y++)
-                        incrementStat(StatTypes.ITEMS_CRAFTED.id, name, message);
+                        incrementStat(StatTypes.ITEMS_CRAFTED.id, uuid, message);
                 }
             }
         }, ticks);
@@ -123,9 +128,9 @@ public class ItemsCrafted extends StatListener {
             return false;
 
         return a.getTypeId() == b.getTypeId() &&
-                a.getDurability() == b.getDurability() &&
-                Objects.equal(a.getData(), b.getData()) &&
-                Objects.equal(a.getEnchantments(), b.getEnchantments());
+               a.getDurability() == b.getDurability() &&
+               Objects.equal(a.getData(), b.getData()) &&
+               Objects.equal(a.getEnchantments(), b.getEnchantments());
     }
 
     private boolean isStackSumLegal(ItemStack a, ItemStack b) {

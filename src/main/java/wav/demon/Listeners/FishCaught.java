@@ -9,7 +9,9 @@ import org.bukkit.event.player.PlayerFishEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FishCaught extends StatListener {
 
@@ -19,7 +21,7 @@ public class FishCaught extends StatListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onFishCatch(PlayerFishEvent event) {
         if (event.getCaught() != null) {
-            final String name = event.getPlayer().getName();
+            final String uuid = event.getPlayer().getUniqueId().toString();
             if (event.getCaught() instanceof Item) {
                 Item item = (Item) event.getCaught();
                 item.getItemStack().getData();
@@ -60,11 +62,12 @@ public class FishCaught extends StatListener {
                         break;
                 }
 
-                incrementStat(StatTypes.FISH_CAUGHT.id, name, message);
+                incrementStat(StatTypes.FISH_CAUGHT.id, uuid, message);
             }
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -72,12 +75,17 @@ public class FishCaught extends StatListener {
             return false;
 
         for (String name : names) {
-            String fishCaught = df.format(getStat(name, StatTypes.FISH_CAUGHT.id, "fish"));
-            String junkCaught = df.format(getStat(name, StatTypes.FISH_CAUGHT.id, "junk"));
-            String treasureCaught = df.format(getStat(name, StatTypes.FISH_CAUGHT.id, "treasure"));
-            String message = "§c" + name + "§f - Fish Caught: " + fishCaught + " | Treasure Caught: " + treasureCaught +
-                    " | Junk Caught: " + junkCaught;
-            respondToCommand(message, args, sender, StatTypes.FISH_CAUGHT);
+            try {
+                String fishCaught = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.FISH_CAUGHT.id, "fish"));
+                String junkCaught = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.FISH_CAUGHT.id, "junk"));
+                String treasureCaught = df.format(getStat(name, StatTypes.FISH_CAUGHT.id, "treasure"));
+                String message = "§c" + name + "§f - Fish Caught: " + fishCaught + " | Treasure Caught: " + treasureCaught +
+                        " | Junk Caught: " + junkCaught;
+                respondToCommand(message, args, sender, StatTypes.FISH_CAUGHT);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Fish Caught: 0" + " | Treasure Caught: 0" +
+                        " | Junk Caught: 0", args, sender, StatTypes.FISH_CAUGHT);
+            }
         }
 
         return true;
@@ -93,19 +101,37 @@ public class FishCaught extends StatListener {
         return "Fish Caught";
     }
 
-    private int getStat(String name, int type, String s) {
-        int stat;
-        if (plugin.statsForPlayers.containsKey(name))
-            if (plugin.statsForPlayers.get(name).containsKey(type))
-                if (plugin.statsForPlayers.get(name).get(type).containsKey(s))
-                    stat = plugin.statsForPlayers.get(name).get(type).get(s);
-                else
-                    stat = 0;
-            else
-                stat = 0;
-        else
-            stat = 0;
+    private int getStat(String uuid, int type, String s) {
+        // This is method of getting stats takes about half as many look-ups
+        // I could do a little better, but then I'd have to catch NullPointedExceptions,
+        // and I would rather not catch a RuntimeException if possible
+        if (plugin.getSaveStatsRealTime()) {
+            Integer i = getStatFromFile(uuid, type, s);
+            return i == null ? 0 : i;
+        } else {
+            HashMap<Integer, HashMap<String, Integer>> firstMap = plugin.statsForPlayers.get(uuid);
+            if (firstMap == null) {
+                Integer i = getStatFromFile(uuid, type, s);
+                return i == null ? 0 : i;
+            } else {
+                HashMap<String, Integer> secondMap = firstMap.get(type);
+                if (secondMap == null) {
+                    Integer i = getStatFromFile(uuid, type, s);
+                    return i == null ? 0 : i;
+                } else {
+                    Integer i = secondMap.get(s);
+                    return i == null ? 0 : i;
+                }
+            }
+        }
+    }
 
-        return stat;
+    private Integer getStatFromFile(String uuid, int type, String s) {
+
+        File statFile = new File(plugin.getDataFolder(), "stats/" + uuid + "/" + type);
+
+        HashMap<String, Integer> map = getMapFromFile(statFile);
+
+        return map == null ? null : map.containsKey("total") ? map.get(s) : null;
     }
 }

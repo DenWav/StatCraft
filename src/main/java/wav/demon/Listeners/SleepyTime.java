@@ -21,31 +21,32 @@ public class SleepyTime extends StatListener {
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBedEnter(PlayerBedEnterEvent event) {
-        final String name = event.getPlayer().getName();
+        final String uuid = event.getPlayer().getUniqueId().toString();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
 
-        addStat(StatTypes.ENTER_BED.id, name, currentTime);
+        addStat(StatTypes.ENTER_BED.id, uuid, currentTime);
     }
 
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBedLeave(PlayerBedLeaveEvent event) {
-        final String name = event.getPlayer().getName();
+        final String uuid = event.getPlayer().getUniqueId().toString();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
-        addStat(StatTypes.LEAVE_BED.id, name, currentTime);
+        addStat(StatTypes.LEAVE_BED.id, uuid, currentTime);
 
-        addStat(StatTypes.TIME_SLEPT.id, name, calculateTimeInterval(name, currentTime));
+        addStat(StatTypes.TIME_SLEPT.id, uuid, calculateTimeInterval(uuid, currentTime));
     }
 
 
     // NOTE: Only call this method on PlayerBedLeaveEvent!
-    private int calculateTimeInterval(String name, final int leaveBed) {
-        final int currentSleepTime = getStat(name, StatTypes.TIME_SLEPT.id);
-        final int enterBed = getStat(name, StatTypes.ENTER_BED.id);
+    private int calculateTimeInterval(String uuid, final int leaveBed) {
+        final int currentSleepTime = getStat(uuid, StatTypes.TIME_SLEPT.id);
+        final int enterBed = getStat(uuid, StatTypes.ENTER_BED.id);
 
         return (leaveBed - enterBed) + currentSleepTime;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("timeslept")) {
@@ -57,22 +58,27 @@ public class SleepyTime extends StatListener {
             // now list them
             int timeSlept;
             for (String name : names) {
-                if (getStat(name, StatTypes.ENTER_BED.id) > getStat(name, StatTypes.LEAVE_BED.id)) {
-                    final int startTime = (int) (System.currentTimeMillis() / 1000);
-                    final int currentTimeSlept = startTime - getStat(name, StatTypes.ENTER_BED.id);
-                    timeSlept = currentTimeSlept + getStat(name, StatTypes.TIME_SLEPT.id);
-                } else {
-                    timeSlept = getStat(name, StatTypes.TIME_SLEPT.id);
-                }
+                try {
+                    if (getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.ENTER_BED.id) >
+                            getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.LEAVE_BED.id)) {
+                        final int startTime = (int) (System.currentTimeMillis() / 1000);
+                        final int currentTimeSlept = startTime - getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.ENTER_BED.id);
+                        timeSlept = currentTimeSlept + getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.TIME_SLEPT.id);
+                    } else {
+                        timeSlept = getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.TIME_SLEPT.id);
+                    }
 
-                String message = transformTime(timeSlept);
+                    String message = transformTime(timeSlept);
 
-                if (message.equalsIgnoreCase("")) {
-                    message = "§c" + name + "§f hasn't slept yet.";
-                    respondToCommand(message, args, sender, StatTypes.TIME_SLEPT);
-                } else {
-                    message = "§c" + name + "§f - Time Slept: " + message;
-                    respondToCommand(message, args, sender, StatTypes.TIME_SLEPT);
+                    if (message.equalsIgnoreCase("")) {
+                        message = "§c" + name + "§f hasn't slept yet.";
+                        respondToCommand(message, args, sender, StatTypes.TIME_SLEPT);
+                    } else {
+                        message = "§c" + name + "§f - Time Slept: " + message;
+                        respondToCommand(message, args, sender, StatTypes.TIME_SLEPT);
+                    }
+                } catch (NullPointerException e) {
+                    respondToCommand("§c" + name + "§f - Time Slept: 0", args, sender, StatTypes.TIME_SLEPT);
                 }
             }
             return true;
@@ -90,21 +96,26 @@ public class SleepyTime extends StatListener {
             }
 
             for (String name : names) {
-                if (getStat(name, StatTypes.ENTER_BED.id) > getStat(name, StatTypes.LEAVE_BED.id)) {
-                    String message = "§c" + name + "§f is sleeping now!";
-                    respondToCommand(message, args, sender, null);
-                } else {
-                    long dateTime = (long) getStat(name, StatTypes.LEAVE_BED.id) * 1000;
-                    if (dateTime == 0) {
-                        String message = "§c" +  name + "§f hasn't slept yet.";
+                try {
+                    if (getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.ENTER_BED.id) >
+                            getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.LEAVE_BED.id)) {
+                        String message = "§c" + name + "§f is sleeping now!";
                         respondToCommand(message, args, sender, null);
                     } else {
-                        Date date = new Date(dateTime);
-                        SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd, hh:mm aa yyyy");
-                        format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
-                        String message = "§c" + name + "§f - Last Slept: " + format.format(date);
-                        respondToCommand(message, args, sender, null);
+                        long dateTime = (long) getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.LEAVE_BED.id) * 1000;
+                        if (dateTime == 0) {
+                            String message = "§c" + name + "§f hasn't slept yet.";
+                            respondToCommand(message, args, sender, null);
+                        } else {
+                            Date date = new Date(dateTime);
+                            SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd, hh:mm aa yyyy");
+                            format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
+                            String message = "§c" + name + "§f - Last Slept: " + format.format(date);
+                            respondToCommand(message, args, sender, null);
+                        }
                     }
+                } catch (NullPointerException e) {
+                    respondToCommand("§c" + name + "§f hasn't slept yet.", args, sender, null);
                 }
             }
             return true;

@@ -17,11 +17,12 @@ public class TabComplete extends StatListener {
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTabComplete(PlayerChatTabCompleteEvent event) {
-        String name = event.getPlayer().getName();
+        String uuid = event.getPlayer().getUniqueId().toString();
 
-        addStat(StatTypes.TAB_COMPLETE.id, name, getStat(name, StatTypes.TAB_COMPLETE.id) + 1);
+        addStat(StatTypes.TAB_COMPLETE.id, uuid, getStat(uuid, StatTypes.TAB_COMPLETE.id) + 1);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -29,9 +30,13 @@ public class TabComplete extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.TAB_COMPLETE.id));
-            String message = "§c" + name + "§f - Tab Completes: " + stat;
-            respondToCommand(message, args, sender, StatTypes.TAB_COMPLETE);
+            try {
+                String stat = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.TAB_COMPLETE.id));
+                String message = "§c" + name + "§f - Tab Completes: " + stat;
+                respondToCommand(message, args, sender, StatTypes.TAB_COMPLETE);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Tab Completes: 0", args, sender, StatTypes.TAB_COMPLETE);
+            }
         }
 
         return true;

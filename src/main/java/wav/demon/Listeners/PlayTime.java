@@ -69,13 +69,13 @@ public class PlayTime extends StatListener {
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onLeave(PlayerQuitEvent event) {
-        final String name = event.getPlayer().getName();
+        final String uuid = event.getPlayer().getUniqueId().toString();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
         if (plugin.getLast_leave_time())
-            addStat(StatTypes.LAST_LEAVE_TIME.id, name, currentTime);
+            addStat(StatTypes.LAST_LEAVE_TIME.id, uuid, currentTime);
 
         if (plugin.getPlay_time())
-            addStat(StatTypes.PLAY_TIME.id, name, calculateTimeInterval(name, currentTime));
+            addStat(StatTypes.PLAY_TIME.id, uuid, calculateTimeInterval(uuid, currentTime));
     }
 
     // NOTE: Only call this method on PlayerQuitEvent!
@@ -86,6 +86,7 @@ public class PlayTime extends StatListener {
         return (leaveTime - joinTime) + currentPlayTime;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("playtime")) {
@@ -97,25 +98,29 @@ public class PlayTime extends StatListener {
             // otherwise, go through the array and print playtime for each player
             int playTime;
             for (String name : names) {
-                if (sender.getServer().getPlayer(name) != null) {
-                    final int startTime = (int) (System.currentTimeMillis() / 1000);
-                    final int currentTimePlayed = startTime - getStat(name, StatTypes.LAST_JOIN_TIME.id);
-                    playTime = currentTimePlayed + getStat(name, StatTypes.PLAY_TIME.id);
-                } else {
-                    playTime = getStat(name, StatTypes.PLAY_TIME.id);
-                }
+                try {
+                    if (sender.getServer().getPlayer(plugin.players.getValueFromKey(name)) != null) {
+                        final int startTime = (int) (System.currentTimeMillis() / 1000);
+                        final int currentTimePlayed = startTime - getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.LAST_JOIN_TIME.id);
+                        playTime = currentTimePlayed + getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.PLAY_TIME.id);
+                    } else {
+                        playTime = getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.PLAY_TIME.id);
+                    }
 
-                String message = transformTime(playTime);
+                    String message = transformTime(playTime);
 
-                if (message.equalsIgnoreCase("")) {
-                    message = "§c" + name + "§f doesn't have any logged playtime yet.";
-                    respondToCommand(message, args, sender, StatTypes.PLAY_TIME);
-                } else {
-                    int thisSession = (int) (System.currentTimeMillis() / 1000) - getStat(name, StatTypes.LAST_JOIN_TIME.id);
-                    String thisSessionText = transformTime(thisSession);
+                    if (message.equalsIgnoreCase("")) {
+                        message = "§c" + name + "§f doesn't have any logged playtime yet.";
+                        respondToCommand(message, args, sender, StatTypes.PLAY_TIME);
+                    } else {
+                        int thisSession = (int) (System.currentTimeMillis() / 1000) - getStat(name, StatTypes.LAST_JOIN_TIME.id);
+                        String thisSessionText = transformTime(thisSession);
 
-                    message = "§c" + name + "§f - Playtime: " + message + " | This session: " + thisSessionText;
-                    respondToCommand(message, args, sender, StatTypes.PLAY_TIME);
+                        message = "§c" + name + "§f - Playtime: " + message + " | This session: " + thisSessionText;
+                        respondToCommand(message, args, sender, StatTypes.PLAY_TIME);
+                    }
+                } catch (NullPointerException e) {
+                    respondToCommand("§c" + name + "§f doesn't have any logged playtime yet.", args, sender, StatTypes.PLAY_TIME);
                 }
             }
             return true;
@@ -133,20 +138,24 @@ public class PlayTime extends StatListener {
             }
 
             for (String name : names) {
-                if (sender.getServer().getPlayer(name) != null) {
-                    sender.getServer().broadcastMessage(name + " is online now!");
-                } else {
-                    long dateTime = (long) getStat(name, StatTypes.LAST_LEAVE_TIME.id) * 1000;
-                    if (dateTime == 0) {
-                        String message = "§c" + name + "§f hasn't been seen on the server yet.";
-                        respondToCommand(message, args, sender, null);
+                try {
+                    if (sender.getServer().getPlayer(plugin.players.getValueFromKey(name)) != null) {
+                        sender.getServer().broadcastMessage(name + " is online now!");
                     } else {
-                        Date date = new Date(dateTime);
-                        SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd, hh:mm aa yyyy");
-                        format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
-                        String message = "§c" + name + "§f - Last Seen: " + format.format(date);
-                        respondToCommand(message, args, sender, null);
+                        long dateTime = (long) getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.LAST_LEAVE_TIME.id) * 1000;
+                        if (dateTime == 0) {
+                            String message = "§c" + name + "§f hasn't been seen on the server yet.";
+                            respondToCommand(message, args, sender, null);
+                        } else {
+                            Date date = new Date(dateTime);
+                            SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd, hh:mm aa yyyy");
+                            format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
+                            String message = "§c" + name + "§f - Last Seen: " + format.format(date);
+                            respondToCommand(message, args, sender, null);
+                        }
                     }
+                } catch (NullPointerException e) {
+                    respondToCommand("§c" + name + "§f hasn't been seen on the server yet.", args, sender, null);
                 }
             }
             return true;
@@ -156,9 +165,13 @@ public class PlayTime extends StatListener {
                 return false;
 
             for (String name : names) {
-                String joins = df.format(getStat(name, StatTypes.JOINS.id));
-                String message = "§c" + name + "§f - Joins: " + joins;
-                respondToCommand(message, args, sender, StatTypes.JOINS);
+                try {
+                    String joins = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.JOINS.id));
+                    String message = "§c" + name + "§f - Joins: " + joins;
+                    respondToCommand(message, args, sender, StatTypes.JOINS);
+                } catch (NullPointerException e) {
+                    respondToCommand("§c" + name + "§f - Joins: 0", args, sender, StatTypes.JOINS);
+                }
             }
 
             return true;

@@ -17,11 +17,12 @@ public class BucketEmpty extends StatListener {
     @SuppressWarnings({"unused", "deprecation"})
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        final String name = event.getPlayer().getName();
+        final String uuid = event.getPlayer().getUniqueId().toString();
         final String message = event.getBucket().getId() + "";
-        incrementStat(StatTypes.EMPTY_BUCKET.id, name, message);
+        incrementStat(StatTypes.EMPTY_BUCKET.id, uuid, message);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -29,9 +30,13 @@ public class BucketEmpty extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.EMPTY_BUCKET.id));
-            String message = "§c" + name + "§f - Buckets Emptied: " + stat;
-            respondToCommand(message, args, sender, StatTypes.EMPTY_BUCKET);
+            try {
+                String stat = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.EMPTY_BUCKET.id));
+                String message = "§c" + name + "§f - Buckets Emptied: " + stat;
+                respondToCommand(message, args, sender, StatTypes.EMPTY_BUCKET);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Buckets Emptied: 0", args, sender, StatTypes.EMPTY_BUCKET);
+            }
         }
 
         return true;

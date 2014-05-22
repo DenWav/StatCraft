@@ -20,12 +20,13 @@ public class XpGained extends StatListener {
         // I don't know if this is called when a player dies and loses exp or not
         int amount = event.getAmount();
         if (amount > 0) {
-            String name = event.getPlayer().getName();
-            addStat(StatTypes.XP_GAINED.id, name, getStat(name, StatTypes.XP_GAINED.id) + amount);
+            String uuid = event.getPlayer().getUniqueId().toString();
+            addStat(StatTypes.XP_GAINED.id, uuid, getStat(uuid, StatTypes.XP_GAINED.id) + amount);
         }
 
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -33,9 +34,13 @@ public class XpGained extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.XP_GAINED.id));
-            String message = "§c" + name + "§f - Exp Gained: " + stat;
-            respondToCommand(message, args, sender, StatTypes.XP_GAINED);
+            try {
+                String stat = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.XP_GAINED.id));
+                String message = "§c" + name + "§f - Exp Gained: " + stat;
+                respondToCommand(message, args, sender, StatTypes.XP_GAINED);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Exp Gained: 0", args, sender, StatTypes.WORLD_CHANGE);
+            }
         }
 
         return true;

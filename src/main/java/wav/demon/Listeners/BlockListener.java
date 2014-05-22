@@ -27,8 +27,8 @@ public class BlockListener extends StatListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         String message = event.getBlock().getType().getId() + ":" + event.getBlock().getData();
-        final String name = event.getPlayer().getName();
-        incrementStat(StatTypes.BLOCK_BREAK.id, name, message);
+        final String uuid = event.getPlayer().getUniqueId().toString();
+        incrementStat(StatTypes.BLOCK_BREAK.id, uuid, message);
 
         if (plugin.getMined_ores()) {
             Block block = event.getBlock();
@@ -40,7 +40,7 @@ public class BlockListener extends StatListener {
 
                 if (message != null) {
                     for (int x = 1; x <= stack.getAmount(); x++) {
-                        incrementStat(StatTypes.MINED.id, name, message);
+                        incrementStat(StatTypes.MINED.id, uuid, message);
                     }
                 }
 
@@ -52,12 +52,13 @@ public class BlockListener extends StatListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         final String message = event.getBlock().getType().getId() + ":" + event.getBlock().getData();
-        final String name = event.getPlayer().getName();
-        incrementStat(StatTypes.BLOCK_PLACE.id, name, message);
+        final String uuid = event.getPlayer().getUniqueId().toString();
+        incrementStat(StatTypes.BLOCK_PLACE.id, uuid, message);
 
 
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("blocks")) {
@@ -67,13 +68,17 @@ public class BlockListener extends StatListener {
                 return false;
 
             for (String name : names) {
-                String blocksBroken = df.format(super.getStat(name, StatTypes.BLOCK_BREAK.id));
-                String blocksPlaced = df.format(super.getStat(name, StatTypes.BLOCK_PLACE.id));
+                try {
+                    String blocksBroken = df.format(super.getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.BLOCK_BREAK.id));
+                    String blocksPlaced = df.format(super.getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.BLOCK_PLACE.id));
 
-                String message = "§c" + name + "§f - Blocks Broken: " + blocksBroken + " Blocks Placed: " + blocksPlaced;
+                    String message = "§c" + name + "§f - Blocks Broken: " + blocksBroken + " Blocks Placed: " + blocksPlaced;
 
-                // print out the results
-                respondToCommand(message, args, sender, null);
+                    // print out the results
+                    respondToCommand(message, args, sender, null);
+                } catch (NullPointerException e) {
+                    respondToCommand("§c" + name + "§f - Blocks Broken: 0 Blocks Placed: 0", args, sender, null);
+                }
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("mined")) {
@@ -84,16 +89,20 @@ public class BlockListener extends StatListener {
             String name = args[0];
             String type = args[1];
             String message;
-
-            int stat = getStat(name, StatTypes.BLOCK_BREAK.id, type);
             String material = type.replace("_", " ");
-            if (stat != -1) {
-                message = "§c" + name + "§f - " + WordUtils.capitalizeFully(material) + " Mined: " + df.format(stat);
-            } else {
-                message = "§c" + name + "§f - " + WordUtils.capitalizeFully(material) + " Mined: " + 0;
-            }
+            try {
+                int stat = getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.BLOCK_BREAK.id, type);
 
-            respondToCommand(message, args, sender, null);
+                if (stat != -1) {
+                    message = "§c" + name + "§f - " + WordUtils.capitalizeFully(material) + " Mined: " + df.format(stat);
+                } else {
+                    message = "§c" + name + "§f - " + WordUtils.capitalizeFully(material) + " Mined: " + 0;
+                }
+
+                respondToCommand(message, args, sender, null);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - " + WordUtils.capitalizeFully(material) + " Mined: 0", args, sender, null);
+            }
 
             return true;
         } else {
@@ -115,22 +124,22 @@ public class BlockListener extends StatListener {
     }
 
     @SuppressWarnings("deprecation")
-    private int getStat(String name, int type, String s) {
+    private int getStat(String uuid, int type, String s) {
         Material mat = Material.matchMaterial(s);
         if (mat != null) {
             MaterialData data = new MaterialData(mat);
             if (plugin.getSaveStatsRealTime()) {
-                Integer i = getStatFromFile(name, type, mat.getId() + ":" + data.getData());
+                Integer i = getStatFromFile(uuid, type, mat.getId() + ":" + data.getData());
                 return i == null ? 0 : i;
             } else {
-                HashMap<Integer, HashMap<String, Integer>> firstMap = plugin.statsForPlayers.get(name);
+                HashMap<Integer, HashMap<String, Integer>> firstMap = plugin.statsForPlayers.get(uuid);
                 if (firstMap == null) {
-                    Integer i = getStatFromFile(name, type, mat.getId() + ":" + data.getData());
+                    Integer i = getStatFromFile(uuid, type, mat.getId() + ":" + data.getData());
                     return i == null ? 0 : i;
                 } else {
                     HashMap<String, Integer> secondMap = firstMap.get(type);
                     if (secondMap == null) {
-                        Integer i = getStatFromFile(name, type, mat.getId() + ":" + data.getData());
+                        Integer i = getStatFromFile(uuid, type, mat.getId() + ":" + data.getData());
                         return i == null ? 0 : i;
                     } else {
                         Integer stat = secondMap.get(mat.getId() + ":" + data.getData());
@@ -145,9 +154,9 @@ public class BlockListener extends StatListener {
 
     @Nullable
     @SuppressWarnings("unchecked")
-    protected Integer getStatFromFile(String name, int type, String stat) {
+    protected Integer getStatFromFile(String uuid, int type, String stat) {
 
-        File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + type);
+        File statFile = new File(plugin.getDataFolder(), "stats/" + uuid + "/" + type);
 
         HashMap<String, Integer> map = getMapFromFile(statFile);
 

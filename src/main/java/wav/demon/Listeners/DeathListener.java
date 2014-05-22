@@ -22,13 +22,14 @@ public class DeathListener extends StatListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(PlayerDeathEvent event) {
         final String message = event.getDeathMessage();
-        final String name = event.getEntity().getName();
-        incrementStat(StatTypes.DEATH.id, name, message);
+        final String uuid = event.getEntity().getUniqueId().toString();
+        incrementStat(StatTypes.DEATH.id, uuid, message);
 
         if (plugin.getDeath_locations())
-            incrementStat(StatTypes.DEATH_LOCATIONS.id, name, event.getEntity().getWorld().getName());
+            incrementStat(StatTypes.DEATH_LOCATIONS.id, uuid, event.getEntity().getWorld().getName());
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("deaths")) {
@@ -38,11 +39,15 @@ public class DeathListener extends StatListener {
                 return false;
 
             for (String name : names) {
-                String deaths = df.format(getStat(name, StatTypes.DEATH.id));
-                String message = "§c" + name + "§f - Deaths: " + deaths;
+                try {
+                    String deaths = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.DEATH.id));
+                    String message = "§c" + name + "§f - Deaths: " + deaths;
 
-                // print out the results
-                respondToCommand(message, args, sender, StatTypes.DEATH);
+                    // print out the results
+                    respondToCommand(message, args, sender, StatTypes.DEATH);
+                } catch (NullPointerException e) {
+                    respondToCommand("§c" + name + "§f - Deaths: 0", args, sender, StatTypes.DEATH);
+                }
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("deathlocations")) {
@@ -60,27 +65,32 @@ public class DeathListener extends StatListener {
             }
 
             for (String name : names) {
-                if (!plugin.getSaveStatsRealTime()) {
-                    if (plugin.statsForPlayers.containsKey(name)) {
-                        if (plugin.statsForPlayers.get(name).containsKey(StatTypes.DEATH_LOCATIONS.id)) {
-                            respondToDeathLocations(plugin.statsForPlayers.get(name).get(StatTypes.DEATH_LOCATIONS.id), name, sender, args);
+                try {
+                    String uuid = plugin.players.getValueFromKey(name).toString();
+                    if (!plugin.getSaveStatsRealTime()) {
+                        if (plugin.statsForPlayers.containsKey(uuid)) {
+                            if (plugin.statsForPlayers.get(uuid).containsKey(StatTypes.DEATH_LOCATIONS.id)) {
+                                respondToDeathLocations(plugin.statsForPlayers.get(uuid).get(StatTypes.DEATH_LOCATIONS.id), uuid, sender, args);
+                            } else {
+                                File statFile = new File(plugin.getDataFolder(), "stats/" + uuid + "/" + 29);
+                                HashMap<String, Integer> map = getMapFromFile(statFile);
+
+                                respondToDeathLocations(map, uuid, sender, args);
+                            }
                         } else {
-                            File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + 29);
+                            File statFile = new File(plugin.getDataFolder(), "stats/" + uuid + "/" + 29);
                             HashMap<String, Integer> map = getMapFromFile(statFile);
 
-                            respondToDeathLocations(map, name, sender, args);
+                            respondToDeathLocations(map, uuid, sender, args);
                         }
                     } else {
-                        File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + 29);
+                        File statFile = new File(plugin.getDataFolder(), "stats/" + uuid + "/" + 29);
                         HashMap<String, Integer> map = getMapFromFile(statFile);
 
-                        respondToDeathLocations(map, name, sender, args);
+                        respondToDeathLocations(map, uuid, sender, args);
                     }
-                } else {
-                    File statFile = new File(plugin.getDataFolder(), "stats/" + name + "/" + 29);
-                    HashMap<String, Integer> map = getMapFromFile(statFile);
-
-                    respondToDeathLocations(map, name, sender, args);
+                } catch (NullPointerException e) {
+                    respondToCommand("§c" + name + "§f - Death Locations: 0", args, sender, StatTypes.DEATH);
                 }
             }
             return true;

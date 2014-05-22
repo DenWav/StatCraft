@@ -23,13 +23,14 @@ public class DamageDealt extends StatListener {
         Entity damager = event.getDamager();
         Entity damagee = event.getEntity();
         if (damager instanceof Player) {
-            final String name = ((Player) damager).getName();
+            final String uuid = damager.getUniqueId().toString();
 
             if (damagee instanceof LivingEntity)
-                scheduleHeathDetection((LivingEntity) damagee, name);
+                scheduleHeathDetection((LivingEntity) damagee, uuid);
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -37,9 +38,13 @@ public class DamageDealt extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.DAMAGE_DEALT.id));
-            String message = "§c" + name + "§f - Damage Dealt: " + stat;
-            respondToCommand(message, args, sender, StatTypes.DAMAGE_DEALT);
+            try {
+                String stat = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.DAMAGE_DEALT.id));
+                String message = "§c" + name + "§f - Damage Dealt: " + stat;
+                respondToCommand(message, args, sender, StatTypes.DAMAGE_DEALT);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Damage Dealt: 0", args, sender, StatTypes.DAMAGE_DEALT);
+            }
         }
         return true;
     }

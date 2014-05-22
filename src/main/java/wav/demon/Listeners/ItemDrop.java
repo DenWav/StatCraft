@@ -19,13 +19,14 @@ public class ItemDrop extends StatListener {
     public void onItemPickup(PlayerPickupItemEvent event) {
         final String message = event.getItem().getItemStack().getType().getId() + ":" +
                 event.getItem().getItemStack().getData().getData();
-        final String name = event.getPlayer().getName();
+        final String uuid = event.getPlayer().getUniqueId().toString();
         final int x = event.getItem().getItemStack().getAmount();
 
         for (int y = 0; y < x; y++)
-            incrementStat(StatTypes.ITEM_DROPS.id, name, message);
+            incrementStat(StatTypes.ITEM_DROPS.id, uuid, message);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -33,9 +34,13 @@ public class ItemDrop extends StatListener {
             return false;
 
         for (String name : names) {
-            String itemsDropped = df.format(getStat(name, StatTypes.ITEM_DROPS.id));
-            String message = "§c" + name + "§f - Items Dropped: " + itemsDropped;
-            respondToCommand(message, args, sender, StatTypes.ITEM_DROPS);
+            try {
+                String itemsDropped = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.ITEM_DROPS.id));
+                String message = "§c" + name + "§f - Items Dropped: " + itemsDropped;
+                respondToCommand(message, args, sender, StatTypes.ITEM_DROPS);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Items Dropped: 0", args, sender, StatTypes.ITEM_DROPS);
+            }
         }
         return true;
     }

@@ -17,12 +17,13 @@ public class WorldChange extends StatListener {
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerWorldChange(PlayerChangedWorldEvent event) {
-        final String name = event.getPlayer().getName();
+        final String uuid = event.getPlayer().getUniqueId().toString();
         final String message = event.getFrom().getName() + ":" + event.getPlayer().getWorld().getName();
 
-        incrementStat(StatTypes.WORLD_CHANGE.id, name, message);
+        incrementStat(StatTypes.WORLD_CHANGE.id, uuid, message);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // list the number of times a player has changed worlds
@@ -31,9 +32,13 @@ public class WorldChange extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.WORLD_CHANGE.id));
-            String message = "§c" +  name + "§f - World Changes: " + stat;
-            respondToCommand(message, args, sender, StatTypes.WORLD_CHANGE);
+            try {
+                String stat = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.WORLD_CHANGE.id));
+                String message = "§c" + name + "§f - World Changes: " + stat;
+                respondToCommand(message, args, sender, StatTypes.WORLD_CHANGE);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - World Changes: 0", args, sender, StatTypes.WORLD_CHANGE);
+            }
         }
         return true;
     }

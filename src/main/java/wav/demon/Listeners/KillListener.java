@@ -19,15 +19,16 @@ public class KillListener extends StatListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onKill(EntityDeathEvent event) {
         if (event.getEntity().getKiller() != null) {
-            String name = event.getEntity().getKiller().getName();
+            String uuid = event.getEntity().getKiller().getUniqueId().toString();
             if (event.getEntity() instanceof Player) {
-                incrementStat(StatTypes.KILLS.id, name, ((Player) event.getEntity()).getName());
+                incrementStat(StatTypes.KILLS.id, uuid, ((Player) event.getEntity()).getName());
             } else {
-                incrementStat(StatTypes.KILLS.id, name, event.getEntity().getType().toString());
+                incrementStat(StatTypes.KILLS.id, uuid, event.getEntity().getType().toString());
             }
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -35,9 +36,13 @@ public class KillListener extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.KILLS.id));
-            String message = "§c" + name + "§f - Kills: " + stat;
-            respondToCommand(message, args, sender, StatTypes.KILLS);
+            try {
+                String stat = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.KILLS.id));
+                String message = "§c" + name + "§f - Kills: " + stat;
+                respondToCommand(message, args, sender, StatTypes.KILLS);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Kills: 0", args, sender, StatTypes.KILLS);
+            }
         }
 
         return true;

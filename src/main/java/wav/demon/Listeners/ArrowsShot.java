@@ -19,12 +19,13 @@ public class ArrowsShot extends StatListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onArrowShot(EntityShootBowEvent event) {
         if (event.getEntity() instanceof Player) {
-            final String name = ((Player) event.getEntity()).getName();
+            final String uuid = ((Player) event.getEntity()).getUniqueId().toString();
 
-            addStat(StatTypes.ARROWS_SHOT.id, name, getStat(name, StatTypes.ARROWS_SHOT.id) + 1);
+            addStat(StatTypes.ARROWS_SHOT.id, uuid, getStat(uuid, StatTypes.ARROWS_SHOT.id) + 1);
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ArrayList<String> names = getPlayers(sender, args);
@@ -32,9 +33,13 @@ public class ArrowsShot extends StatListener {
             return false;
 
         for (String name : names) {
-            String stat = df.format(getStat(name, StatTypes.ARROWS_SHOT.id));
-            String message = "§c" + name + "§f - Arrows Shot: " + stat;
-            respondToCommand(message, args, sender, StatTypes.ARROWS_SHOT);
+            try {
+                String stat = df.format(getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.ARROWS_SHOT.id));
+                String message = "§c" + name + "§f - Arrows Shot: " + stat;
+                respondToCommand(message, args, sender, StatTypes.ARROWS_SHOT);
+            } catch (NullPointerException e) {
+                respondToCommand("§c" + name + "§f - Arrows Shot: 0", args, sender, StatTypes.ARROWS_SHOT);
+            }
         }
         return true;
     }
