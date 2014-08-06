@@ -194,12 +194,11 @@ public class BlockListener extends StatListener {
             Map<String, Integer> sortableBlocksPlaced = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
             Map<String, Integer> sortableBlocksBroken = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
 
-            File statsDir = new File(plugin.getDataFolder(), "stats");
-            File[] files = statsDir.listFiles();
+            File[] files = plugin.getStatsDir().listFiles();
 
             if (files != null) {
                 for (File name : files) {
-                    if (!name.getName().equalsIgnoreCase("total")) {
+                    if (!name.getName().equalsIgnoreCase("totals")) {
                         File placeFile = new File(name, StatTypes.BLOCK_PLACE.id + "");
                         File breakFile = new File(name, StatTypes.BLOCK_BREAK.id + "");
                         Map<String, Integer> blocksPlacedMap = getMapFromFile(placeFile);
@@ -229,7 +228,7 @@ public class BlockListener extends StatListener {
                 if (brokenIt.hasNext()) {
                     Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) brokenIt.next();
 
-                    String name = sortedMapEntry.getKey();
+                    String name = plugin.players.getKeyFromValue(UUID.fromString(sortedMapEntry.getKey()));
                     Integer value = sortedMapEntry.getValue();
 
                     blocksBrokenOutput = blocksBrokenOutput + "§6" + i + ". §c" + name + "§f: " + typeFormat(value, type) + " ";
@@ -244,7 +243,7 @@ public class BlockListener extends StatListener {
                 if (placedIt.hasNext()) {
                     Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) placedIt.next();
 
-                    String name = sortedMapEntry.getKey();
+                    String name = plugin.players.getKeyFromValue(UUID.fromString(sortedMapEntry.getKey()));
                     Integer value = sortedMapEntry.getValue();
 
                     blocksPlacedOutput = blocksPlacedOutput + "§6" + i + ". §c" + name + "§f: " + typeFormat(value, type) + " ";

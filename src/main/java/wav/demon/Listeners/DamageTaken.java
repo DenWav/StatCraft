@@ -27,14 +27,14 @@ public class DamageTaken extends StatListener {
             if (plugin.getDrowning_announce())
             if (event.getCause().equals(EntityDamageEvent.DamageCause.DROWNING)) {
                 if ((System.currentTimeMillis() / 1000) - plugin.getLastDrownTime(uuid) > 10) {
-                    event.getEntity().getServer().broadcastMessage("§9" + uuid + " is drowning! Oh no!");
+                    event.getEntity().getServer().broadcastMessage("§9" + ((HumanEntity) event.getEntity()).getName() + " is drowning! Oh no!");
                     plugin.setLastDrowningTime(uuid, (int) (System.currentTimeMillis() / 1000));
                 }
             }
             if (plugin.getPoison_announce())
             if (event.getCause().equals(EntityDamageEvent.DamageCause.POISON)) {
                 if ((System.currentTimeMillis() / 1000) - plugin.getLastPoisonTime(uuid) > 14) {
-                    event.getEntity().getServer().broadcastMessage("§2" + uuid + " is Poisoned! Oh no!");
+                    event.getEntity().getServer().broadcastMessage("§2" + ((HumanEntity) event.getEntity()).getName() + " is Poisoned! Oh no!");
                     plugin.setLastPoisonTime(uuid, (int) (System.currentTimeMillis() / 1000));
                 }
             }

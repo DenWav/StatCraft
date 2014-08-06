@@ -15,11 +15,6 @@ commands:
   resetstats:
     description: Resets the server stats
     usage: /<command> force-all [type] or /<command> force [player] [type]
-  printdata:
-    description: Prints the data held in statsForPlayers
-    usage: /<command>
-    permission: StatCraft.admin.*
-    permission-message: You don't have <permission>
   updateTotals:
     description: Updates the totals
     usage: /<command>

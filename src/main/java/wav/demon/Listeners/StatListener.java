@@ -4,6 +4,7 @@ import com.avaje.ebean.validation.NotNull;
 import com.google.common.base.Functions;
 import com.google.common.collect.Ordering;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -50,7 +51,7 @@ public abstract class StatListener implements Listener, CommandExecutor {
                 try {
                     // load up the json into a map, do the increment, then save the json back to the file
                     // declare the gson for writing the json
-                    Gson gson = new Gson();
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
                     // check if the directory needs to be renamed to the UUID
                     File playerStatDir = new File(plugin.getStatsDir(), uuid);
@@ -166,7 +167,7 @@ public abstract class StatListener implements Listener, CommandExecutor {
                 try {
                     // load up the json into a map, do the increment, then save the json back to the file
                     // declare the gson for writing the json
-                    Gson gson = new Gson();
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
                     // check if the directory needs to be renamed to the UUID
                     File playerStatDir = new File(plugin.getStatsDir(), uuid);
@@ -527,15 +528,14 @@ public abstract class StatListener implements Listener, CommandExecutor {
             // create a ValueComparableMap to sort in reverse order, so the largest numbers are on top
             Map<String, Integer> sortableMap = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
             // parse through the stats directory to find the individual stats
-            File statsDir = new File(plugin.getDataFolder(), "stats");
             // get the list of directories in the stats/ directory, these will be player directories
-            File[] files = statsDir.listFiles();
+            File[] files = plugin.getStatsDir().listFiles();
             // make sure the directory list isn't null for some reason
             if (files != null) {
                 // loop through each player directory looking for the specific stat
                 for (File name : files) {
-                    // there is a "total" directory here, ignore it
-                    if (!name.getName().equalsIgnoreCase("total")) {
+                    // there is a "totals" directory here, ignore it
+                    if (!name.getName().equalsIgnoreCase("totals")) {
                         // find the stat file that matches the specified stat type
                         File typeFile = new File(name, type.id + "");
                         // create a map of the json file of the specified type
@@ -563,7 +563,7 @@ public abstract class StatListener implements Listener, CommandExecutor {
                         Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) iterator.next();
 
                         // get the name and the value for each entry
-                        String name = sortedMapEntry.getKey();
+                        String name = plugin.players.getKeyFromValue(UUID.fromString(sortedMapEntry.getKey()));
                         Integer value = sortedMapEntry.getValue();
 
                         // append the output with the next entry
@@ -607,7 +607,7 @@ public abstract class StatListener implements Listener, CommandExecutor {
             return null;
         }
 
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Type tokenType = new TypeToken<HashMap<String, Integer>>(){}.getType();
 
         return gson.fromJson(plugin.removeDuplicateFields(json, f.getName(), f.getParentFile().getName()), tokenType);

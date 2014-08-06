@@ -1,6 +1,7 @@
 package wav.demon;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -146,7 +147,7 @@ public class TimedActivities extends Timer {
             }
         }
         // set gson
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         // set iterator
         Iterator it = tempMap.entrySet().iterator();

@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerBedLeaveEvent;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -161,53 +162,70 @@ public class SleepyTime extends StatListener {
             else
                 sender.sendMessage(message);
         } else {
+            // this is a -top command, so get the list of the top people for the stats
+            // create a ValueComparableMap to sort in reverse order, so the largest numbers are on top
             Map<String, Integer> sortableMap = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
-
-            for (Map.Entry<String, HashMap<Integer, HashMap<String, Integer>>> pairs : plugin.statsForPlayers.entrySet()) {
-                String name = pairs.getKey();
-                if (!name.equalsIgnoreCase("total")) {
-                    HashMap<Integer, HashMap<String, Integer>> playerMap = pairs.getValue();
-                    Map<String, Integer> typeMap = playerMap.get(type.id);
-                    if (typeMap != null) {
-                        Integer total = typeMap.get("total");
-                        if (total != null) {
-                            sortableMap.put(name, total);
+            // parse through the stats directory to find the individual stats
+            // get the list of directories in the stats/ directory, these will be player directories
+            File[] files = plugin.getStatsDir().listFiles();
+            // make sure the directory list isn't null for some reason
+            if (files != null) {
+                // loop through each player directory looking for the specific stat
+                for (File name : files) {
+                    // there is a "totals" directory here, ignore it
+                    if (!name.getName().equalsIgnoreCase("totals")) {
+                        // find the stat file that matches the specified stat type
+                        File typeFile = new File(name, type.id + "");
+                        // create a map of the json file of the specified type
+                        HashMap<String, Integer> map = getMapFromFile(typeFile);
+                        // make sure the map isn't null
+                        if (map != null) {
+                            // find the "total" value in the stat
+                            Integer total = map.get("total");
+                            // make sure the total value isn't null
+                            if (total != null) {
+                                // place the value of "total" in the ValueComparableMap
+                                sortableMap.put(name.getName(), total);
+                            }
                         }
                     }
                 }
-            }
 
-            for (Player player : plugin.getServer().getOnlinePlayers()) {
-                if (getStat(player.getName(), StatTypes.ENTER_BED.id) > getStat(player.getName(), StatTypes.LEAVE_BED.id)) {
-                    int timeSlept;
-                    final int startTime = (int) (System.currentTimeMillis() / 1000);
-                    final int currentTimeSlept = startTime - getStat(player.getName(), StatTypes.ENTER_BED.id);
-                    timeSlept = currentTimeSlept + getStat(player.getName(), StatTypes.TIME_SLEPT.id);
+                for (Player player : plugin.getServer().getOnlinePlayers()) {
+                    if (getStat(player.getName(), StatTypes.ENTER_BED.id) > getStat(player.getName(), StatTypes.LEAVE_BED.id)) {
+                        int timeSlept;
+                        final int startTime = (int) (System.currentTimeMillis() / 1000);
+                        final int currentTimeSlept = startTime - getStat(player.getName(), StatTypes.ENTER_BED.id);
+                        timeSlept = currentTimeSlept + getStat(player.getName(), StatTypes.TIME_SLEPT.id);
 
-                    sortableMap.put(player.getName(), timeSlept);
+                        sortableMap.put(player.getName(), timeSlept);
+                    }
                 }
-            }
 
-            String output = typeLabel(type) + " - ";
-            Iterator iterator = sortableMap.entrySet().iterator();
-            for (int i = 1; i <= topNumber; i++) {
-                if (iterator.hasNext()) {
-                    Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) iterator.next();
+                String output = typeLabel(type) + " - ";
+                Iterator iterator = sortableMap.entrySet().iterator();
+                for (int i = 1; i <= topNumber; i++) {
+                    if (iterator.hasNext()) {
+                        Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) iterator.next();
 
-                    String name = sortedMapEntry.getKey();
-                    Integer value = sortedMapEntry.getValue();
+                        String name = plugin.players.getKeyFromValue(UUID.fromString(sortedMapEntry.getKey()));
+                        Integer value = sortedMapEntry.getValue();
 
-                    output = output + "§6" + i + ". §c" + name + "§f: " + typeFormat(value, type) + " ";
-                } else {
-                    break;
+                        output = output + "§6" + i + ". §c" + name + "§f: " + typeFormat(value, type) + " ";
+                    } else {
+                        break;
+                    }
                 }
+
+                if (publicCmd)
+                    sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + output);
+                else
+                    sender.sendMessage(output);
+            } else {
+                // if the player directory listing returns null, then something went wrong in the command
+                // the issue is more than likely a permissions issue and out of the control of this plugin
+                sender.sendMessage("There was an error processing that command.");
             }
-
-            if (publicCmd)
-                sender.getServer().broadcastMessage("§3@" + sender.getName() + "§f: " + output);
-            else
-                sender.sendMessage(output);
-
         }
     }
 }

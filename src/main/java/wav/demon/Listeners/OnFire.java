@@ -7,6 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import wav.demon.StatCraft;
 import wav.demon.StatTypes;
 
@@ -36,8 +38,15 @@ public class OnFire extends StatListener {
         if (event.getEntity() instanceof Player) {
             String uuid = event.getEntity().getUniqueId().toString();
             if ((System.currentTimeMillis() / 1000) - plugin.getLastFireTime(uuid) > 5) {
-                event.getEntity().getServer().broadcastMessage("§c" + uuid + " is on fire! Oh no!");
-                plugin.setLastFireTime(uuid, (int)(System.currentTimeMillis() / 1000));
+                boolean giveWarning = true;
+                for (PotionEffect pe : ((Player) event.getEntity()).getActivePotionEffects()) {
+                    if (pe.getType().getName().equalsIgnoreCase(PotionEffectType.FIRE_RESISTANCE.getName()))
+                        giveWarning = false;
+                }
+                if (giveWarning) {
+                    event.getEntity().getServer().broadcastMessage("§c" + ((Player) event.getEntity()).getName() + " is on fire! Oh no!");
+                    plugin.setLastFireTime(uuid, (int) (System.currentTimeMillis() / 1000));
+                }
             }
         }
     }

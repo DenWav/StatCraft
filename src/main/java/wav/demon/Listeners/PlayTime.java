@@ -35,20 +35,19 @@ public class PlayTime extends StatListener {
             } else //noinspection ConstantConditions
                 if (!plugin.players.getKeyFromValue(event.getPlayer().getUniqueId()).equals(event.getPlayer().getName())) {
                 // This is a bit of a problem. It appears that someone already on the server changed their name, and then
-                // someone else already on the server also changed their name before the other play could reconnect, so
-                // the old pairing is wrong. We know the player with the conflicting nickname isn't online, or it would
-                // have been resolved by now, so we will simply change it to null.
+                // someone else already on the server also changed their name before the other player could reconnect, so
+                // the old pairing is wrong.
                 UUID uuid = plugin.players.getValueFromKey(event.getPlayer().getName());
                 plugin.players.removeValue(uuid);
-                plugin.players.put(null, uuid);
+                plugin.players.put(plugin.getServer().getPlayer(uuid).getName(), uuid);
                 plugin.players.put(event.getPlayer().getName(), event.getPlayer().getUniqueId());
             }
         } else if (plugin.players.containsKey(event.getPlayer().getName())) {
-            // The mapping is wrong from two people doing name changes mentioned earlier, so set the current to null
-            // so it will be fixed when the player later connects
+            // The mapping is wrong from two people doing name changes mentioned earlier, so set the current to whatever
+            // their new name is
             UUID uuid = plugin.players.getValueFromKey(event.getPlayer().getName());
             plugin.players.removeValue(uuid);
-            plugin.players.put(null, uuid);
+            plugin.players.put(plugin.getServer().getPlayer(uuid).getName(), uuid);
             plugin.players.put(event.getPlayer().getName(), event.getPlayer().getUniqueId());
         } else {
             plugin.players.put(event.getPlayer().getName(), event.getPlayer().getUniqueId());
@@ -113,10 +112,14 @@ public class PlayTime extends StatListener {
                         message = "§c" + name + "§f doesn't have any logged playtime yet.";
                         respondToCommand(message, args, sender, StatTypes.PLAY_TIME);
                     } else {
-                        int thisSession = (int) (System.currentTimeMillis() / 1000) - getStat(name, StatTypes.LAST_JOIN_TIME.id);
-                        String thisSessionText = transformTime(thisSession);
+                        int lastJoinTime = getStat(plugin.players.getValueFromKey(name).toString(), StatTypes.LAST_JOIN_TIME.id);
+                        String thisSessionText = "";
+                        if (plugin.getServer().getPlayer(name) != null) {
+                            int thisSession = (int) (System.currentTimeMillis() / 1000) - lastJoinTime;
+                            thisSessionText = " | This session: " + transformTime(thisSession);
+                        }
 
-                        message = "§c" + name + "§f - Playtime: " + message + " | This session: " + thisSessionText;
+                        message = "§c" + name + "§f - Playtime: " + message + thisSessionText;
                         respondToCommand(message, args, sender, StatTypes.PLAY_TIME);
                     }
                 } catch (NullPointerException e) {
@@ -226,12 +229,11 @@ public class PlayTime extends StatListener {
         } else {
             Map<String, Integer> sortableMap = Collections.synchronizedMap(new ValueComparableMap<String, Integer>(Ordering.from(Collections.reverseOrder())));
 
-            File statsDir = new File(plugin.getDataFolder(), "stats");
-            File[] files = statsDir.listFiles();
+            File[] files = plugin.getStatsDir().listFiles();
 
             if (files != null) {
                 for (File name : files) {
-                    if (!name.getName().equalsIgnoreCase("total")) {
+                    if (!name.getName().equalsIgnoreCase("totals")) {
                         File typeFile = new File(name, type.id + "");
                         Map<String, Integer> typeMap = getMapFromFile(typeFile);
                         if (typeMap != null) {
@@ -244,8 +246,9 @@ public class PlayTime extends StatListener {
                 }
             }
 
-
+            if (type == StatTypes.PLAY_TIME)
             for (Player player : plugin.getServer().getOnlinePlayers()) {
+
                 int playTime;
                 final int startTime = (int) (System.currentTimeMillis() / 1000);
                 final int currentTimePlayed = startTime - getStat(player.getName(), StatTypes.LAST_JOIN_TIME.id);
@@ -260,7 +263,7 @@ public class PlayTime extends StatListener {
                 if (iterator.hasNext()) {
                     Map.Entry<String, Integer> sortedMapEntry = (Map.Entry<String, Integer>) iterator.next();
 
-                    String name = sortedMapEntry.getKey();
+                    String name = plugin.players.getKeyFromValue(UUID.fromString(sortedMapEntry.getKey()));
                     Integer value = sortedMapEntry.getValue();
 
                     output = output + "§6" + i + ". §c" + name + "§f: " + typeFormat(value, type) + " ";
