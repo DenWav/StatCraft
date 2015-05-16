@@ -35,7 +35,7 @@ public class SCBlocksBroken extends SCTemplate {
 
             return new ResponseBuilder(plugin)
                     .setName(name)
-                    .setStatName("Blocks Break")
+                    .setStatName("Blocks Broken")
                     .addStat("Total", df.format(total == null ? 0 : total))
                     .toString();
         } catch (Exception e) {
