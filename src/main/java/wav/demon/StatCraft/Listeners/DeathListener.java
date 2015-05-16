@@ -12,6 +12,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import wav.demon.StatCraft.Magic.EntityCode;
 import wav.demon.StatCraft.Querydsl.Death;
+import wav.demon.StatCraft.Querydsl.DeathByEntity;
 import wav.demon.StatCraft.Querydsl.QDeath;
 import wav.demon.StatCraft.Querydsl.QDeathByEntity;
 import wav.demon.StatCraft.StatCraft;
@@ -63,8 +64,16 @@ public class DeathListener implements Listener {
                     SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(d);
                     clause.columns(d.id, d.message, d.world, d.amount).values(id, message, world, 1).execute();
                 }
+            }
+        });
 
-                if (finalEntity != null) {
+        if (finalEntity != null) {
+            plugin.getWorkerThread().schedule(DeathByEntity.class, new Runnable() {
+                @Override
+                public void run() {
+                    int id = plugin.getDatabaseManager().getPlayerId(uuid);
+
+                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
                     QDeathByEntity e = QDeathByEntity.deathByEntity;
 
                     if (finalCode != null) {
@@ -81,7 +90,7 @@ public class DeathListener implements Listener {
                                     .and(e.entity.eq(finalEntity))
                                     .and(e.type.eq(finalCode.getCode()))
                                     .and(e.world.eq(world))
-                            ).set(d.amount, d.amount.add(1)).execute();
+                            ).set(e.amount, e.amount.add(1)).execute();
                         } else {
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(e);
                             clause.columns(e.id, e.entity, e.type, e.world, e.amount)
@@ -107,7 +116,7 @@ public class DeathListener implements Listener {
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 }

@@ -20,10 +20,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class SCReset extends SCTemplate implements CustomResponse {
 
-    private HashMap<CommandSender, OfflinePlayer> map = new HashMap<>();
+    private HashMap<CommandSender, UUID> map = new HashMap<>();
 
     public SCReset(StatCraft plugin) {
         super(plugin);
@@ -50,12 +52,12 @@ public class SCReset extends SCTemplate implements CustomResponse {
                     sender.sendMessage("Reset stats request canceled.");
                 }
             } else {
-                OfflinePlayer player = map.get(sender);
-                if (player.equals(sender)) {
+                UUID uuid = map.get(sender);
+                if (uuid.equals(plugin.players.get(sender.getName()))) {
                     // this person is resetting their own stats
                     // check permissions one more time
                     if (sender.hasPermission("statcraft.user.resetstats")) {
-                        resetStats(sender, player);
+                        resetStats(sender, uuid, sender.getName());
                     } else {
                         sender.sendMessage("You don't have permission to reset your own stats.");
                     }
@@ -63,7 +65,18 @@ public class SCReset extends SCTemplate implements CustomResponse {
                     // This person is resetting someone else's stats
                     // Check permissions one more time
                     if (sender.hasPermission("statcraft.admin.resetotherstats")) {
-                        resetStats(sender, player);
+                        String name = null;
+                        for (Map.Entry<String, UUID> entry : plugin.players.entrySet()) {
+                            if (entry.getValue().equals(uuid)) {
+                                name = entry.getKey();
+                                break;
+                            }
+                        }
+                        if (name != null) {
+                            resetStats(sender, uuid, name);
+                        } else {
+                            resetStats(sender, uuid, "");
+                        }
                     } else {
                         sender.sendMessage("You don't have permission to reset someone else's stats.");
                     }
@@ -76,18 +89,19 @@ public class SCReset extends SCTemplate implements CustomResponse {
                     "Run command: " + ChatColor.GRAY + ChatColor.ITALIC + "/sc resetstats yes" + ChatColor.RESET + " to verify.");
                 sender.sendMessage("Run command: " + ChatColor.GRAY + ChatColor.ITALIC + "/sc resetstats cancel" +
                     ChatColor.RESET + " to cancel.");
-                map.put(sender, (OfflinePlayer) sender);
+                map.put(sender, ((OfflinePlayer) sender).getUniqueId());
             } else if (args.length == 0) {
                 sender.sendMessage("You must be a player to reset your own stats.");
             } else if (args.length == 1) {
-                OfflinePlayer player = plugin.getServer().getPlayer(args[0]);
-                if (player.getUniqueId().version() == 4) {
+                if (plugin.players.containsKey(args[0])) {
                     sender.sendMessage("Are you sure you want to reset " + args[0] + "'s stats?\n" +
                         "Run command: " + ChatColor.GRAY + ChatColor.ITALIC + "/sc resetstats yes" +
                         ChatColor.RESET + " to verify.");
                     sender.sendMessage("Run command: " + ChatColor.GRAY + ChatColor.ITALIC + "/sc resetstats cancel" +
                         ChatColor.RESET + " to cancel.");
-                    map.put(sender, player);
+                    map.put(sender, plugin.players.get(args[0]));
+                } else {
+                    sender.sendMessage(args[0] + " was not found.");
                 }
             } else {
                 sender.sendMessage("Usage: /sc resetstats [player]");
@@ -95,13 +109,13 @@ public class SCReset extends SCTemplate implements CustomResponse {
         }
     }
 
-    private void resetStats(final CommandSender sender, final OfflinePlayer player) {
+    private void resetStats(final CommandSender sender, final UUID uuid, final String name) {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
             @Override
             public void run() {
-                final int id = plugin.getDatabaseManager().getPlayerId(player.getUniqueId());
+                final int id = plugin.getDatabaseManager().getPlayerId(uuid);
                 if (id < 0) {
-                    sender.sendMessage("Unable to find " + player.getName() + " in the database.");
+                    sender.sendMessage("Unable to find " + name + " in the database.");
                     return;
                 }
 
@@ -140,7 +154,8 @@ public class SCReset extends SCTemplate implements CustomResponse {
 
                 // So we don't mess up play time / time slept, check if they are online or in the bed
                 // and add "join" values for now
-                if (player.isOnline()) {
+                OfflinePlayer player = plugin.getServer().getPlayer(uuid);
+                if (player != null && player.isOnline()) {
                     int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
                     QLastJoinTime j = QLastJoinTime.lastJoinTime;
@@ -167,10 +182,10 @@ public class SCReset extends SCTemplate implements CustomResponse {
                     }
                 }
 
-                if (player.equals(sender))
+                if (sender.getName().equals(name))
                     sender.sendMessage("Your stats have been successfully reset.");
                 else
-                    sender.sendMessage(player.getName() + "'s stats have been successfully reset.");
+                    sender.sendMessage(name + "'s stats have been successfully reset.");
             }
         });
     }

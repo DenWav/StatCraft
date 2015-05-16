@@ -37,7 +37,7 @@ public class SCTimeSlept extends SCTemplate {
             Integer result = query.from(t).where(t.id.eq(id)).uniqueResult(t.amount);
 
             if (result == null)
-                throw new Exception();
+                result = 0;
 
             UUID uuid = plugin.players.get(name);
             OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
@@ -46,11 +46,12 @@ public class SCTimeSlept extends SCTemplate {
                 int now = (int)(System.currentTimeMillis() / 1000L);
 
                 QEnterBed e = QEnterBed.enterBed;
-                Integer join = query.from(e).where(e.id.eq(id)).uniqueResult(e.time);
+                query = plugin.getDatabaseManager().getNewQuery();
+                Integer enter = query.from(e).where(e.id.eq(id)).uniqueResult(e.time);
 
                 // Sanity check
-                if (join != null && join != 0 && now != 0)
-                    result = result + (now - join);
+                if (enter != null && enter != 0 && now != 0)
+                    result = result + (now - enter);
             }
 
             return new TimeResponseBuilder(plugin)

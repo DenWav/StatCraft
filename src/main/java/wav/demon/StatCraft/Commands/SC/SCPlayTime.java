@@ -37,15 +37,16 @@ public class SCPlayTime extends SCTemplate {
             Integer result = query.from(t).where(t.id.eq(id)).uniqueResult(t.amount);
 
             if (result == null)
-                throw new Exception();
+                result = 0;
 
             UUID uuid = plugin.players.get(name);
             OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
 
-            if (player.isOnline()) {
+            if (player != null && player.isOnline()) {
                 int now = (int)(System.currentTimeMillis() / 1000L);
 
                 QLastJoinTime j = QLastJoinTime.lastJoinTime;
+                query = plugin.getDatabaseManager().getNewQuery();
                 Integer join = query.from(j).where(j.id.eq(id)).uniqueResult(j.time);
 
                 // Sanity check
