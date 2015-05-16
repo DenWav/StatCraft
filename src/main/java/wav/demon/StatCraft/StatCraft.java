@@ -459,9 +459,11 @@ public class StatCraft extends JavaPlugin {
         if (enabler)
             finishPlaytimeAndBed();
 
-        workerThread.stop();
+        if (workerThread != null)
+            workerThread.stop();
 
-        getDatabaseManager().close();
+        if (getDatabaseManager() != null)
+            getDatabaseManager().close();
      }
 
     /**
