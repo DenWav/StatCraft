@@ -11,9 +11,9 @@ import wav.demon.StatCraft.Config.com.md_5.config.NewLine;
 public class SqlConfig extends AnnotatedConfig {
 
     public String hostname = "localhost";
-    public String username = "statcraft_test";
+    public String username = "statcraft";
     public String password = "";
-    public String database = "statcraft_test";
+    public String database = "statcraft";
     public String port = "3306";
 
     @NewLine
