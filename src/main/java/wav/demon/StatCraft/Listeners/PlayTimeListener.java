@@ -66,6 +66,8 @@ public class PlayTimeListener implements Listener {
                 .execute();
         }
 
+        plugin.players.put(name, uuid);
+
         final int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
         plugin.getWorkerThread().schedule(Joins.class, new Runnable() {
