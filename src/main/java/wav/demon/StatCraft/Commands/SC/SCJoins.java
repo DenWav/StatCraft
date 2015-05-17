@@ -30,6 +30,8 @@ public class SCJoins extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QJoins j = QJoins.joins;
 
             Integer result = query.from(j).where(j.id.eq(id)).uniqueResult(j.amount);
@@ -51,6 +53,8 @@ public class SCJoins extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QJoins j = QJoins.joins;
         QPlayers p = QPlayers.players;
 

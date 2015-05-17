@@ -39,6 +39,8 @@ public class DamageTakenListener implements Listener {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    if (query == null)
+                        return;
                     QDamageTaken t = QDamageTaken.damageTaken;
 
                     if (query.from(t).where(
@@ -121,6 +123,8 @@ public class DamageTakenListener implements Listener {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    if (query == null)
+                        return;
                     QDamageTaken t = QDamageTaken.damageTaken;
 
                     // For special entities which are clumped together

@@ -32,6 +32,8 @@ public class HighestLevelListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QHighestLevel h = QHighestLevel.highestLevel;
 
                 Integer currentLevel = query.from(h).where(h.id.eq(id)).uniqueResult(h.level);

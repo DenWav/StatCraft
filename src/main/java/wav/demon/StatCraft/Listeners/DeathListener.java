@@ -51,6 +51,8 @@ public class DeathListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QDeath d = QDeath.death;
 
                 if (query.from(d).where(d.id.eq(id).and(d.message.eq(message)).and(d.world.eq(world))).exists()) {
@@ -74,6 +76,8 @@ public class DeathListener implements Listener {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    if (query == null)
+                        return;
                     QDeathByEntity e = QDeathByEntity.deathByEntity;
 
                     if (finalCode != null) {

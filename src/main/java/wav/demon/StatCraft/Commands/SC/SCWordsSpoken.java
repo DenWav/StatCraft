@@ -30,6 +30,8 @@ public class SCWordsSpoken extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QWordsSpoken w = QWordsSpoken.wordsSpoken;
             Integer result = query.from(w).where(w.id.eq(id)).uniqueResult(w.amount.sum());
 
@@ -50,6 +52,8 @@ public class SCWordsSpoken extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QWordsSpoken w = QWordsSpoken.wordsSpoken;
         QPlayers p = QPlayers.players;
 

@@ -35,6 +35,8 @@ public class KillListener implements Listener {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    if (query == null)
+                        return;
                     QKills k = QKills.kills;
 
                     if (code == null) {

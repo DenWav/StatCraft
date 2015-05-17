@@ -44,6 +44,8 @@ public class BucketFillListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QBucketFill f = QBucketFill.bucketFill;
 
                 if (query.from(f).where(f.id.eq(id).and(f.type.eq(code.getCode()))).exists()) {

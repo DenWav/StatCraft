@@ -23,23 +23,43 @@ public class DatabaseManager {
 
     private StatCraft plugin;
     private Connection connection;
+    final private String url;
+    private boolean connecting = true;
 
     public DatabaseManager(StatCraft plugin) {
         this.plugin = plugin;
-        String url = "jdbc:mysql://" + plugin.config().mysql.hostname + ":" + plugin.config().mysql.port + "/" + plugin.config().mysql.database;
+        this.url = "jdbc:mysql://" + plugin.config().mysql.hostname + ":" + plugin.config().mysql.port +
+            "/" + plugin.config().mysql.database + "?autoReconnect=true";
         try {
             connection = DriverManager.getConnection(url, plugin.config().mysql.username, plugin.config().mysql.password);
+            connecting = false;
         } catch (SQLException ex) {
             plugin.getLogger().severe(red(" *** StatCraft was unable to communicate with the database,"));
             plugin.getLogger().severe(red(" *** please check your settings and reload, StatCraft will"));
             plugin.getLogger().severe(red(" *** now be disabled."));
             plugin.getPluginLoader().disablePlugin(plugin);
         }
-
     }
 
     public Connection getConnection() {
         return connection;
+    }
+
+    public void reconnect() {
+        try {
+            connection = DriverManager.getConnection(url, plugin.config().mysql.username, plugin.config().mysql.password);
+        } catch (SQLException e) {
+            plugin.getLogger().warning("StatCraft is having issues connecting to the database. Will try to reconnect in 10 seconds.");
+            for (int i = 0 ; i < 1000; i++) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            reconnect();
+            e.printStackTrace();
+        }
     }
 
     public void setupDatabase()  {
@@ -244,15 +264,24 @@ public class DatabaseManager {
     }
 
     public synchronized SQLQuery getNewQuery() {
-        return new SQLQuery(getConnection(), MySQLTemplates.DEFAULT);
+        if (!connecting)
+            return new SQLQuery(getConnection(), MySQLTemplates.DEFAULT);
+        else
+            return null;
     }
 
     public synchronized SQLUpdateClause getUpdateClause(RelationalPath path) {
-        return new SQLUpdateClause(getConnection(), MySQLTemplates.DEFAULT, path);
+        if (!connecting)
+            return new SQLUpdateClause(getConnection(), MySQLTemplates.DEFAULT, path);
+        else
+            return null;
     }
 
     public synchronized SQLInsertClause getInsertClause(RelationalPath path) {
-        return new SQLInsertClause(getConnection(), MySQLTemplates.DEFAULT, path);
+        if (!connecting)
+            return new SQLInsertClause(getConnection(), MySQLTemplates.DEFAULT, path);
+        else
+            return null;
     }
 
     // In case something goes wrong, at least try to close the connection nicely

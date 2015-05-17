@@ -30,6 +30,8 @@ public class SCOnFire extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QOnFire o = QOnFire.onFire;
             Integer result = query.from(o).where(o.id.eq(id)).uniqueResult(o.time);
 
@@ -51,6 +53,8 @@ public class SCOnFire extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QOnFire o = QOnFire.onFire;
         QPlayers p = QPlayers.players;
 

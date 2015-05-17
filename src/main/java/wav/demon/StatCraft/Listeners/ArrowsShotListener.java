@@ -39,6 +39,8 @@ public class ArrowsShotListener implements Listener {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    if (query == null)
+                        return;
                     QArrowsShot a = QArrowsShot.arrowsShot;
 
                     if (query.from(a).where(a.id.eq(id).and(a.type.eq(code.getCode()))).exists()) {

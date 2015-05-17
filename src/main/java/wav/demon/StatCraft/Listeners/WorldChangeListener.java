@@ -33,6 +33,8 @@ public class WorldChangeListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QWorldChange w = QWorldChange.worldChange;
 
                 if (query.from(w).where(

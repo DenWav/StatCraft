@@ -33,6 +33,8 @@ public class XpGainedListener implements Listener {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    if (query == null)
+                        return;
                     QXpGained x = QXpGained.xpGained;
 
                     if (query.from(x).where(x.id.eq(id)).exists()) {

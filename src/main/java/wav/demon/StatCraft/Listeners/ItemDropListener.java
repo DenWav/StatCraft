@@ -34,6 +34,8 @@ public class ItemDropListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QItemDrops i = QItemDrops.itemDrops;
 
                 if (query.from(i).where(

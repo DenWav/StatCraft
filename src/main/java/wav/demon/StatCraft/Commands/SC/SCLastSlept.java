@@ -42,6 +42,8 @@ public class SCLastSlept extends SCTemplate {
                 }
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return "Sorry, there seems to be an issue connecting to the database right now.";
                 QEnterBed b = QEnterBed.enterBed;
 
                 Integer result = query.from(b).where(b.id.eq(id)).uniqueResult(b.time);

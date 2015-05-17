@@ -30,6 +30,8 @@ public class SCWorldChanges extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QWorldChange w = QWorldChange.worldChange;
             Integer result = query.from(w).where(w.id.eq(id)).uniqueResult(w.amount.sum());
 
@@ -50,6 +52,8 @@ public class SCWorldChanges extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QWorldChange w = QWorldChange.worldChange;
         QPlayers p = QPlayers.players;
 

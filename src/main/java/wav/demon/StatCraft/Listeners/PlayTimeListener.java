@@ -41,6 +41,8 @@ public class PlayTimeListener implements Listener {
         // This MUST be done before the other two jobs, so do it in the main thread
         QPlayers p = QPlayers.players;
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return;
         Players result = query.from(p).where(p.uuid.eq(array)).uniqueResult(p);
 
         if (result == null) {
@@ -75,6 +77,8 @@ public class PlayTimeListener implements Listener {
             public void run() {
                 QJoins j = QJoins.joins;
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 if (query.from(j).where(j.id.eq(id)).exists()) {
                     SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(j);
                     clause.where(j.id.eq(id)).set(j.amount, j.amount.add(1)).execute();
@@ -90,6 +94,8 @@ public class PlayTimeListener implements Listener {
             public void run() {
                 QLastJoinTime l = QLastJoinTime.lastJoinTime;
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 if (query.from(l).where(l.id.eq(id)).exists()) {
                     SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(l);
                     clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
@@ -112,6 +118,8 @@ public class PlayTimeListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
 
                 QLastLeaveTime l = QLastLeaveTime.lastLeaveTime;
                 if (query.from(l).where(l.id.eq(id)).exists()) {
@@ -130,6 +138,8 @@ public class PlayTimeListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
 
                 QLastJoinTime j = QLastJoinTime.lastJoinTime;
                 Integer lastJoinTime = query.from(j).where(j.id.eq(id)).uniqueResult(j.time);

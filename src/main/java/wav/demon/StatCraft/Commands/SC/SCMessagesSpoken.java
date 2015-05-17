@@ -31,6 +31,8 @@ public class SCMessagesSpoken extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QMessagesSpoken m = QMessagesSpoken.messagesSpoken;
             Integer result = query.from(m).where(m.id.eq(id)).uniqueResult(m.amount);
 
@@ -54,6 +56,8 @@ public class SCMessagesSpoken extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QMessagesSpoken m = QMessagesSpoken.messagesSpoken;
         QPlayers p = QPlayers.players;
 

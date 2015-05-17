@@ -39,6 +39,8 @@ public class BucketEmptyListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QBucketEmpty e = QBucketEmpty.bucketEmpty;
 
                 if (query.from(e).where(e.id.eq(id).and(e.type.eq(code.getCode()))).exists()) {
@@ -68,6 +70,8 @@ public class BucketEmptyListener implements Listener {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    if (query == null)
+                        return;
                     QBucketEmpty e = QBucketEmpty.bucketEmpty;
 
                     if (query.from(e).where(e.id.eq(id).and(e.type.eq(code.getCode()))).exists()) {

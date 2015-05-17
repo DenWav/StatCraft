@@ -37,6 +37,8 @@ public class BlockListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QBlockBreak b = QBlockBreak.blockBreak;
 
                 if (query.from(b).where(

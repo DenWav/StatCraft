@@ -37,6 +37,8 @@ public class SleepyTimeListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QEnterBed e = QEnterBed.enterBed;
 
                 if (query.from(e).where(e.id.eq(id)).exists()) {
@@ -61,7 +63,8 @@ public class SleepyTimeListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-
+                if (query == null)
+                    return;
                 QLeaveBed l = QLeaveBed.leaveBed;
                 if (query.from(l).where(l.id.eq(id)).exists()) {
                     SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(l);
@@ -79,7 +82,8 @@ public class SleepyTimeListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-
+                if (query == null)
+                    return;
                 QEnterBed e = QEnterBed.enterBed;
                 Integer enterBed = query.from(e).where(e.id.eq(id)).uniqueResult(e.time);
                 enterBed = enterBed == null ? 0 : enterBed;

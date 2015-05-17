@@ -30,6 +30,8 @@ public class SCDeaths extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QDeath d = QDeath.death;
 
             Integer total = query.from(d).where(d.id.eq(id)).uniqueResult(d.amount.sum());
@@ -51,6 +53,8 @@ public class SCDeaths extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QDeath d = QDeath.death;
         QPlayers p = QPlayers.players;
 

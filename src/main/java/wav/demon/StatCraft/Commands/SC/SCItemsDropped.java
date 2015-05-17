@@ -30,6 +30,8 @@ public class SCItemsDropped extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QItemDrops i = QItemDrops.itemDrops;
             Integer result = query.from(i).where(i.id.eq(id)).uniqueResult(i.amount.sum());
 
@@ -50,6 +52,8 @@ public class SCItemsDropped extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QItemDrops i = QItemDrops.itemDrops;
         QPlayers p = QPlayers.players;
 

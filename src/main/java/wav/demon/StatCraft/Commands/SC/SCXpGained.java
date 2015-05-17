@@ -30,6 +30,8 @@ public class SCXpGained extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QXpGained x = QXpGained.xpGained;
             Integer result = query.from(x).where(x.id.eq(id)).uniqueResult(x.amount);
 
@@ -50,6 +52,8 @@ public class SCXpGained extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QXpGained x = QXpGained.xpGained;
         QPlayers p = QPlayers.players;
 

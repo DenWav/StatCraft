@@ -32,6 +32,8 @@ public class SCBucketsEmptied extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QBucketEmpty e = QBucketEmpty.bucketEmpty;
             List<BucketEmpty> results = query.from(e).where(e.id.eq(id)).list(e);
 
@@ -84,6 +86,8 @@ public class SCBucketsEmptied extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QBucketEmpty e = QBucketEmpty.bucketEmpty;
         QPlayers p = QPlayers.players;
         List<Tuple> result = query

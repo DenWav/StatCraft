@@ -79,6 +79,7 @@ import java.util.UUID;
 
 public class StatCraft extends JavaPlugin {
     private DatabaseManager databaseManager;
+    private volatile int errors = 0;
 
     private HashMap<UUID, Integer> lastFireTime = new HashMap<>();
     private HashMap<UUID, Integer> lastDrownTime = new HashMap<>();
@@ -558,4 +559,16 @@ public class StatCraft extends JavaPlugin {
     public BaseCommand getBaseCommand() { return baseCommand; }
 
     public WorkerThread getWorkerThread() { return workerThread; }
+
+    public synchronized void incrementError() {
+        errors++;
+        if (errors > 15) {
+            clearError();
+            getDatabaseManager().reconnect();
+        }
+    }
+
+    public synchronized void clearError() {
+        errors = 0;
+    }
 }

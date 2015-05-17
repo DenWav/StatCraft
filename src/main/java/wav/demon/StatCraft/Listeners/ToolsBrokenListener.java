@@ -32,6 +32,8 @@ public class ToolsBrokenListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QToolsBroken t = QToolsBroken.toolsBroken;
 
                 if (query.from(t).where(t.id.eq(id).and(t.item.eq(item))).exists()) {

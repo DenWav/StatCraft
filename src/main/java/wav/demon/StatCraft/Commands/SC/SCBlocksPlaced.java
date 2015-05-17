@@ -30,6 +30,8 @@ public class SCBlocksPlaced extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QBlockPlace b = QBlockPlace.blockPlace;
             Integer total = query.from(b).where(b.id.eq(id)).uniqueResult(b.amount.sum());
 
@@ -50,6 +52,8 @@ public class SCBlocksPlaced extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QBlockPlace b = QBlockPlace.blockPlace;
         QPlayers p = QPlayers.players;
         List<Tuple> result = query

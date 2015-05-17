@@ -31,6 +31,8 @@ public class TabCompleteListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QTabComplete t = QTabComplete.tabComplete;
 
                 if (query.from(t).where(t.id.eq(id)).exists()) {

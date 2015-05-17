@@ -101,6 +101,8 @@ public class SCMined extends SCTemplate implements CustomResponse {
                         throw new Exception();
 
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    if (query == null)
+                        return;
                     QBlockBreak b = QBlockBreak.blockBreak;
 
                     Integer result;

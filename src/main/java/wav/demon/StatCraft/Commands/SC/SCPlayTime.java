@@ -33,6 +33,8 @@ public class SCPlayTime extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QPlayTime t = QPlayTime.playTime;
             Integer result = query.from(t).where(t.id.eq(id)).uniqueResult(t.amount);
 
@@ -71,6 +73,8 @@ public class SCPlayTime extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QPlayTime t = QPlayTime.playTime;
         QPlayers p = QPlayers.players;
 

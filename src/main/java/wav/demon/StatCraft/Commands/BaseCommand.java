@@ -52,17 +52,17 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
             }
             sender.sendMessage(stringBuilder.toString());
         } else {
-            if (subCommands.containsKey(args[0])) {
-                String[] subArgs = new String[args.length - 1];
-                System.arraycopy(args, 1, subArgs, 0, subArgs.length);
-                if (subCommands.get(args[0]).hasPermission(sender, subArgs)) {
-                    respondToCommand(sender, subArgs, subCommands.get(args[0]));
+                if (subCommands.containsKey(args[0])) {
+                    String[] subArgs = new String[args.length - 1];
+                    System.arraycopy(args, 1, subArgs, 0, subArgs.length);
+                    if (subCommands.get(args[0]).hasPermission(sender, subArgs)) {
+                        respondToCommand(sender, subArgs, subCommands.get(args[0]));
+                    } else {
+                        sender.sendMessage("You don't have permission to run this command.");
+                    }
                 } else {
-                    sender.sendMessage("You don't have permission to run this command.");
+                    sender.sendMessage("Command not found.");
                 }
-            } else {
-                sender.sendMessage("Command not found.");
-            }
         }
         return true;
     }

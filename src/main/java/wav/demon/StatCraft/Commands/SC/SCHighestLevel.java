@@ -30,6 +30,8 @@ public class SCHighestLevel extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QHighestLevel h = QHighestLevel.highestLevel;
             Integer result = query.from(h).where(h.id.eq(id)).uniqueResult(h.level);
 
@@ -50,6 +52,8 @@ public class SCHighestLevel extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QHighestLevel h = QHighestLevel.highestLevel;
         QPlayers p = QPlayers.players;
 

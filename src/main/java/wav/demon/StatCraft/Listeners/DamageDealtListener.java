@@ -42,6 +42,8 @@ public class DamageDealtListener implements Listener {
                         int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                        if (query == null)
+                            return;
                         QDamageDealt d = QDamageDealt.damageDealt;
 
                         // For special entities which are clumped together

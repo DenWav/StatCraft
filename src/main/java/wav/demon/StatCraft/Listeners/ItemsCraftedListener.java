@@ -61,6 +61,8 @@ public class ItemsCraftedListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QItemsCrafted i = QItemsCrafted.itemsCrafted;
 
                 if (query.from(i).where(

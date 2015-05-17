@@ -76,6 +76,8 @@ public class FishCaughtListener implements Listener {
                         int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                        if (query == null)
+                            return;
                         QFishCaught f = QFishCaught.fishCaught;
 
                         if (query.from(f).where(

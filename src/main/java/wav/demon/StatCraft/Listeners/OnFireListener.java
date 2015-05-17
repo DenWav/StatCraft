@@ -39,6 +39,8 @@ public class OnFireListener implements Listener {
                         int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                        if (query == null)
+                            return;
                         QOnFire o = QOnFire.onFire;
 
                         if (query.from(o).where(o.id.eq(id)).exists()) {

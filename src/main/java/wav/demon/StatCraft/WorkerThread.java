@@ -1,5 +1,7 @@
 package wav.demon.StatCraft;
 
+import com.mysema.query.QueryException;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,7 +27,6 @@ public class WorkerThread implements Runnable {
 
     @Override
     public void run() {
-
         // Remove any work that has finished
         for (Iterator<Map.Entry<Class<?>, Integer>> it = work.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Class<?>, Integer> entry = it.next();
@@ -43,7 +44,7 @@ public class WorkerThread implements Runnable {
                 work.put(
                     entry.getKey(),
                     plugin.getServer().getScheduler().runTaskAsynchronously(plugin,
-                        new WorkerInstance(entry.getValue())
+                        new WorkerInstance(entry.getValue(), plugin)
                     ).getTaskId()
                 );
                 it.remove();
@@ -80,15 +81,23 @@ public class WorkerThread implements Runnable {
 class WorkerInstance implements Runnable {
 
     final private List<Runnable> list;
+    final private StatCraft plugin;
 
-    public WorkerInstance(List<Runnable> list) {
+    public WorkerInstance(List<Runnable> list, StatCraft plugin) {
         this.list = list;
+        this.plugin = plugin;
     }
 
     @Override
     public void run() {
         for (Runnable runnable : list) {
-            runnable.run();
+            try {
+                runnable.run();
+            } catch (QueryException e) {
+                // This is more than likely cause by a connection exception
+                plugin.incrementError();
+                e.printStackTrace();
+            }
         }
     }
 }

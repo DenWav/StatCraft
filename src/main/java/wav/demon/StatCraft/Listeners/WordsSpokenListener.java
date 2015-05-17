@@ -34,6 +34,8 @@ public class WordsSpokenListener implements Listener {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
                 QMessagesSpoken m = QMessagesSpoken.messagesSpoken;
 
                 if (query.from(m).where(m.id.eq(id)).exists()) {
@@ -58,6 +60,8 @@ public class WordsSpokenListener implements Listener {
                 if (plugin.config().stats.specific_words_spoken) {
                     for (String word : message) {
                         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                        if (query == null)
+                            return;
                         if (query.from(w).where(w.id.eq(id).and(w.word.eq(word))).exists()) {
                             SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
                             clause.where(w.id.eq(id).and(w.word.eq(word))).set(w.amount, w.amount.add(1)).execute();
@@ -68,6 +72,8 @@ public class WordsSpokenListener implements Listener {
                     }
                 } else {
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    if (query == null)
+                        return;
                     if (query.from(w).where(w.id.eq(id).and(w.word.eq("§"))).exists()) {
                         SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
                         clause.where(w.id.eq(id).and(w.word.eq("§"))).set(w.amount, w.amount.add(1)).execute();

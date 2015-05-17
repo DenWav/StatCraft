@@ -32,6 +32,8 @@ public class SCArrowsShot extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QArrowsShot a = QArrowsShot.arrowsShot;
             List<ArrowsShot> result = query.from(a).where(a.id.eq(id)).list(a);
 
@@ -78,6 +80,8 @@ public class SCArrowsShot extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QArrowsShot a = QArrowsShot.arrowsShot;
         QPlayers p = QPlayers.players;
         List<Tuple> result = query

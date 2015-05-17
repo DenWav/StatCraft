@@ -42,6 +42,8 @@ public class SCLastSeen extends SCTemplate {
                 }
 
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return "Sorry, there seems to be an issue connecting to the database right now.";
                 QLastLeaveTime l = QLastLeaveTime.lastLeaveTime;
 
                 Integer result = query.from(l).where(l.id.eq(id)).uniqueResult(l.time);

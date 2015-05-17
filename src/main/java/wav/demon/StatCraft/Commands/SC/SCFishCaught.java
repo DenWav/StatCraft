@@ -31,6 +31,8 @@ public class SCFishCaught extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QFishCaught f = QFishCaught.fishCaught;
             List<Tuple> list = query.from(f).where(f.id.eq(id)).groupBy(f.type).list(f.type, f.amount.sum());
 
@@ -91,6 +93,8 @@ public class SCFishCaught extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QFishCaught f = QFishCaught.fishCaught;
         QPlayers p = QPlayers.players;
 

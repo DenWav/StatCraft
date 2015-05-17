@@ -30,6 +30,8 @@ public class SCDamageDealt extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QDamageDealt d = QDamageDealt.damageDealt;
             Integer total = query.from(d).where(d.id.eq(id)).uniqueResult(d.amount.sum());
 
@@ -50,6 +52,8 @@ public class SCDamageDealt extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QDamageDealt d = QDamageDealt.damageDealt;
         QPlayers p = QPlayers.players;
         List<Tuple> list = query

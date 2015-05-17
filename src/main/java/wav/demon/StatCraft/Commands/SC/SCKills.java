@@ -30,6 +30,8 @@ public class SCKills extends SCTemplate {
                 throw new Exception();
 
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
             QKills k = QKills.kills;
             Integer result = query.from(k).where(k.id.eq(id)).uniqueResult(k.amount.sum());
 
@@ -50,6 +52,8 @@ public class SCKills extends SCTemplate {
     @Override
     public String serverStatListResponse(int num) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
         QKills k = QKills.kills;
         QPlayers p = QPlayers.players;
 
