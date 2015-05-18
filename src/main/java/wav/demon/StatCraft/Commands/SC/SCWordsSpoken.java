@@ -5,7 +5,7 @@ import com.mysema.query.sql.SQLQuery;
 import org.bukkit.command.CommandSender;
 import wav.demon.StatCraft.Commands.ResponseBuilder;
 import wav.demon.StatCraft.Querydsl.QPlayers;
-import wav.demon.StatCraft.Querydsl.QWordsSpoken;
+import wav.demon.StatCraft.Querydsl.QWordFrequency;
 import wav.demon.StatCraft.StatCraft;
 
 import java.util.List;
@@ -32,7 +32,7 @@ public class SCWordsSpoken extends SCTemplate {
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
-            QWordsSpoken w = QWordsSpoken.wordsSpoken;
+            QWordFrequency w = QWordFrequency.wordFrequency;
             Integer result = query.from(w).where(w.id.eq(id)).uniqueResult(w.amount.sum());
 
             return new ResponseBuilder(plugin)
@@ -54,7 +54,7 @@ public class SCWordsSpoken extends SCTemplate {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
         if (query == null)
             return "Sorry, there seems to be an issue connecting to the database right now.";
-        QWordsSpoken w = QWordsSpoken.wordsSpoken;
+        QWordFrequency w = QWordFrequency.wordFrequency;
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query

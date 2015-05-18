@@ -9,8 +9,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import wav.demon.StatCraft.Querydsl.MessagesSpoken;
 import wav.demon.StatCraft.Querydsl.QMessagesSpoken;
-import wav.demon.StatCraft.Querydsl.QWordsSpoken;
-import wav.demon.StatCraft.Querydsl.WordsSpoken;
+import wav.demon.StatCraft.Querydsl.QWordFrequency;
+import wav.demon.StatCraft.Querydsl.WordFrequency;
 import wav.demon.StatCraft.StatCraft;
 
 import java.util.LinkedList;
@@ -57,7 +57,7 @@ public class WordsSpokenListener implements Listener {
             }
         });
 
-        plugin.getWorkerThread().schedule(WordsSpoken.class, new Runnable() {
+        plugin.getWorkerThread().schedule(WordFrequency.class, new Runnable() {
             @Override
             public void run() {
                 List<String> words = new LinkedList<>();
@@ -70,7 +70,7 @@ public class WordsSpokenListener implements Listener {
 
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                QWordsSpoken w = QWordsSpoken.wordsSpoken;
+                QWordFrequency w = QWordFrequency.wordFrequency;
 
                 if (plugin.config().stats.specific_words_spoken) {
                     for (String word : words) {

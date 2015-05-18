@@ -35,7 +35,7 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("Available commands: ");
+            sender.sendMessage(ChatColor.GRAY + "Available commands: ");
             StringBuilder stringBuilder = new StringBuilder();
             Iterator<Map.Entry<String, SCTemplate>> iterator = subCommands.entrySet().iterator();
             while (iterator.hasNext()) {
@@ -44,7 +44,7 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
                 if (entry.getValue().hasPermission(sender, args)) {
                     stringBuilder.append(entry.getKey());
                     if (iterator.hasNext()) {
-                        stringBuilder.append(ChatColor.BLUE.toString());
+                        stringBuilder.append(ChatColor.AQUA.toString());
                         stringBuilder.append(", ");
                         stringBuilder.append(ChatColor.RESET.toString());
                     }

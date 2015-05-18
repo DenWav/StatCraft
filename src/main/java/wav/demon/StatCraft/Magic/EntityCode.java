@@ -34,6 +34,6 @@ public enum EntityCode {
             else if (skeleton.getSkeletonType() == Skeleton.SkeletonType.WITHER)
                 return EntityCode.WITHER_SKELETON;
         }
-        return null;
+        return EntityCode.SKELETON;
     }
 }

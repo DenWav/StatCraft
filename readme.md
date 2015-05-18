@@ -12,47 +12,48 @@ Statistics Supported
 
 |                  Stat Name                      |                         Status                     |
 |-------------------------------------------------|----------------------------------------------------|
-| Player Deaths                                   | Implemented                                        |
-| Blocks Broken                                   | Implemented                                        |
-| Blocks Placed                                   | Implemented                                        |
+| Player Deaths                                   | **Implemented**                                    |
+| Blocks Broken                                   | **Implemented**                                    |
+| Blocks Placed                                   | **Implemented**                                    |
 | Time Played                                     | Implementation In Progress - Will Use Server Stats |
-| Items Crafted                                   | Implemented                                        |
-| Time On Fire                                    | Implemented                                        |
-| World Changes (Nether Portal, End Portal, etc.) | Implemented                                        |
-| Tools Broken                                    | Implemented                                        |
-| Arrows Shot                                     | Implemented                                        |
-| Last Time Joined                                | Implemented                                        |
-| Last Time Left                                  | Implemented                                        |
-| Buckets Filled                                  | Implemented                                        |
-| Buckets Emptied                                 | Implemented                                        |
-| Items Dropped                                   | Implemented                                        |
-| Items Picked Up                                 | Implemented                                        |
-| Beds Entered                                    | Implemented                                        |
-| Beds Left                                       | Implemented                                        |
-| Time Slept                                      | Implemented                                        |
-| Words Spoken                                    | Implemented                                        |
-| Messages Spoken                                 | Implemented                                        |
-| Damage Taken                                    | Implemented                                        |
-| Fish Caught                                     | Implemented                                        |
-| Number Of Joins                                 | Implemented                                        |
-| XP Gained                                       | Implemented                                        |
+| Items Crafted                                   | **Implemented**                                    |
+| Time On Fire                                    | **Implemented**                                    |
+| World Changes (Nether Portal, End Portal, etc.) | **Implemented**                                    |
+| Tools Broken                                    | **Implemented**                                    |
+| Arrows Shot                                     | **Implemented**                                    |
+| Last Time Joined                                | **Implemented**                                    |
+| Last Time Left                                  | **Implemented**                                    |
+| Buckets Filled                                  | **Implemented**                                    |
+| Buckets Emptied                                 | **Implemented**                                    |
+| Items Dropped                                   | **Implemented**                                    |
+| Items Picked Up                                 | **Implemented**                                    |
+| Beds Entered                                    | **Implemented**                                    |
+| Beds Left                                       | **Implemented**                                    |
+| Time Slept                                      | **Implemented**                                    |
+| Words Spoken                                    | **Implemented**                                    |
+| Messages Spoken                                 | **Implemented**                                    |
+| Damage Taken                                    | **Implemented**                                    |
+| Fish Caught                                     | **Implemented**                                    |
+| Number Of Joins                                 | **Implemented**                                    |
+| XP Gained                                       | **Implemented**                                    |
 | Distance Traveled                               | Unimplemented - Will Use Server Stats              |
-| Number Of Kills                                 | Implemented                                        |
+| Number Of Kills                                 | **Implemented**                                    |
 | Number Of Times Jumped                          | Unimplemented                                      |
 | Distance Fallen                                 | Unimplemented - Will Use Server Stats              |
-| Number Of Deaths In Each World                  | Implemented                                        |
-| Eggs Thrown                                     | Unimplemented                                      |
-| Chickens Hatched                                | Unimplemented                                      |
-| Ender Pearls Thrown                             | Unimplemented                                      |
+| Number Of Deaths In Each World                  | **Implemented**                                    |
+| Eggs Thrown                                     | **Implemented**                                    |
+| Chickens Hatched                                | **Implemented**                                    |
+| Ender Pearls Thrown                             | **Implemented**                                    |
+| Snow Balls Thrown                               | Unimplemented                                      |
 | Animals Bred                                    | Unimplemented                                      |
 | TNT Detonated                                   | Unimplemented                                      |
 | Enchants Done                                   | Unimplemented                                      |
-| Highest Level Achieved                          | Implemented                                        |
-| Damage Dealt                                    | Implemented                                        |
+| Highest Level Achieved                          | **Implemented**                                    |
+| Damage Dealt                                    | **Implemented**                                    |
 | Items Brewed                                    | Unimplemented                                      |
 | Items Cooked                                    | Unimplemented                                      |
 | Fires Started                                   | Unimplemented                                      |
-| Number Of Tab Completes Used                    | Implemented                                        |
+| Number Of Tab Completes Used                    | **Implemented**                                    |
 | Things Eaten                                    | Unimplemented                                      |
 | Sheep sheared                                   | Unimplemented                                      |
 

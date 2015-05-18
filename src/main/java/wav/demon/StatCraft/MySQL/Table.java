@@ -52,7 +52,7 @@ public enum Table {
     DAMAGE_DEALT("(" +
             "id INT UNSIGNED NOT NULL, " +
             "entity VARCHAR(50) NOT NULL, " +
-            "type TINYINT, " +
+            "type TINYINT NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
             "UNIQUE INDEX (id, entity, type)" +
             ")",
@@ -60,7 +60,7 @@ public enum Table {
     DAMAGE_TAKEN("(" +
             "id INT UNSIGNED NOT NULL, " +
             "entity VARCHAR(50) NOT NULL, " +
-            "type TINYINT, " +
+            "type TINYINT NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
             "UNIQUE INDEX (id, entity, type)" +
             ")",
@@ -68,7 +68,7 @@ public enum Table {
     DEATH_BY_CAUSE("(" +
             "id INT UNSIGNED NOT NULL, " +
             "cause VARCHAR(50) NOT NULL, " +
-            "type TINYINT, " +
+            "type TINYINT NOT NULL, " +
             "world VARCHAR(50) NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
             "UNIQUE INDEX (id, cause, type, world)" +
@@ -103,8 +103,14 @@ public enum Table {
             "UNIQUE INDEX (id, item)" +
             ")",
             Arrays.asList("id", "item", "amount")),
-    ENDER_PEARLS(Table.simple,
-            Arrays.asList("id", "amount")),
+    ENDER_PEARLS("(" +
+            "id INT UNSIGNED NOT NULL, " +
+            "amount INT UNSIGNED NOT NULL, " +
+            "distance INT UNSIGNED NOT NULL, " +
+            "max_throw INT UNSIGNED NOT NULL, " +
+            "UNIQUE INDEX (id)" +
+            ")",
+            Arrays.asList("id", "amount", "distance", "max_throw")),
     ENTER_BED("(" +
             "id INT UNSIGNED NOT NULL, " +
             "time INT NOT NULL, " +
@@ -181,7 +187,7 @@ public enum Table {
     KILLS("(" +
             "id INT UNSIGNED NOT NULL, " +
             "entity VARCHAR(50) NOT NULL, " +
-            "type TINYINT, " +
+            "type TINYINT NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
             "UNIQUE INDEX (id, entity, type)" +
             ")",
@@ -249,7 +255,7 @@ public enum Table {
             "UNIQUE INDEX (id, item)" +
             ")",
             Arrays.asList("id", "item", "amount")),
-    WORDS_SPOKEN("(" +
+    WORD_FREQUENCY("(" +
             "id INT UNSIGNED NOT NULL, " +
             "word VARCHAR(100) NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +

@@ -1,6 +1,7 @@
 package wav.demon.StatCraft;
 
 import java.nio.ByteBuffer;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -74,6 +75,18 @@ public class Util {
                 return (short) ((damage >= 8) ? (damage - 8) : (damage >= 4) ? (damage - 4) : damage);
             default:
                 return 0;
+        }
+    }
+
+    public static String distanceUnits(int distance) {
+        double distanceM = distance / 100.0;
+        DecimalFormat df = new DecimalFormat("#,##0.0");
+
+        if (distanceM > 1000) {
+            distanceM /= 1000;
+            return df.format(distanceM) + " km";
+        } else {
+            return df.format(distanceM) + " m";
         }
     }
 

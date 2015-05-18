@@ -17,6 +17,8 @@ import wav.demon.StatCraft.Commands.SC.SCBucketsFilled;
 import wav.demon.StatCraft.Commands.SC.SCDamageDealt;
 import wav.demon.StatCraft.Commands.SC.SCDamageTaken;
 import wav.demon.StatCraft.Commands.SC.SCDeaths;
+import wav.demon.StatCraft.Commands.SC.SCEggsThrown;
+import wav.demon.StatCraft.Commands.SC.SCEnderPearls;
 import wav.demon.StatCraft.Commands.SC.SCFishCaught;
 import wav.demon.StatCraft.Commands.SC.SCHighestLevel;
 import wav.demon.StatCraft.Commands.SC.SCItemsCrafted;
@@ -47,6 +49,8 @@ import wav.demon.StatCraft.Listeners.BucketFillListener;
 import wav.demon.StatCraft.Listeners.DamageDealtListener;
 import wav.demon.StatCraft.Listeners.DamageTakenListener;
 import wav.demon.StatCraft.Listeners.DeathListener;
+import wav.demon.StatCraft.Listeners.EggListener;
+import wav.demon.StatCraft.Listeners.EnderPearlListener;
 import wav.demon.StatCraft.Listeners.FishCaughtListener;
 import wav.demon.StatCraft.Listeners.HighestLevelListener;
 import wav.demon.StatCraft.Listeners.ItemDropListener;
@@ -479,6 +483,18 @@ public class StatCraft extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new TabCompleteListener(this), this);
             statsEnabled.append(" tab_complete");
             new SCTabCompletes(this);
+        }
+
+        if (config.stats.eggs_thrown) {
+            getServer().getPluginManager().registerEvents(new EggListener(this), this);
+            statsEnabled.append(" eggs_thrown");
+            new SCEggsThrown(this);
+        }
+
+        if (config.stats.ender_pearls) {
+            getServer().getPluginManager().registerEvents(new EnderPearlListener(this), this);
+            statsEnabled.append(" ender_pearls");
+            new SCEnderPearls(this);
         }
 
         getLogger().info("Successfully enabled:" + statsEnabled);

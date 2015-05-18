@@ -26,7 +26,7 @@ CREATE TABLE `animals_bred` (
   `id` int(10) unsigned NOT NULL,
   `animal` varchar(50) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  KEY `id` (`id`,`animal`(3))
+  UNIQUE KEY `id` (`id`,`animal`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -117,9 +117,9 @@ DROP TABLE IF EXISTS `damage_dealt`;
 CREATE TABLE `damage_dealt` (
   `id` int(10) unsigned NOT NULL,
   `entity` varchar(50) NOT NULL,
-  `type` tinyint(4) DEFAULT NULL,
+  `type` tinyint(4) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  KEY `id` (`id`,`entity`(3),`type`)
+  UNIQUE KEY `id` (`id`,`entity`,`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -133,9 +133,9 @@ DROP TABLE IF EXISTS `damage_taken`;
 CREATE TABLE `damage_taken` (
   `id` int(10) unsigned NOT NULL,
   `entity` varchar(50) NOT NULL,
-  `type` tinyint(4) DEFAULT NULL,
+  `type` tinyint(4) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  KEY `id` (`id`,`entity`(3),`type`)
+  UNIQUE KEY `id` (`id`,`entity`,`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -151,24 +151,24 @@ CREATE TABLE `death` (
   `message` varchar(200) NOT NULL,
   `world` varchar(50) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  KEY `id` (`id`,`message`(10),`world`(3))
+  UNIQUE KEY `id` (`id`,`message`,`world`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `death_by_entity`
+-- Table structure for table `death_by_cause`
 --
 
-DROP TABLE IF EXISTS death_by_cause;
+DROP TABLE IF EXISTS `death_by_cause`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `death_by_entity` (
+CREATE TABLE `death_by_cause` (
   `id` int(10) unsigned NOT NULL,
-  `entity` varchar(50) NOT NULL,
-  `type` tinyint(4) DEFAULT NULL,
+  `cause` varchar(50) NOT NULL,
+  `type` tinyint(4) NOT NULL,
   `world` varchar(50) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  KEY `id` (`id`,`entity`(3),`type`,`world`(3))
+  UNIQUE KEY `id` (`id`,`cause`,`type`,`world`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -183,7 +183,7 @@ CREATE TABLE `eating` (
   `id` int(10) unsigned NOT NULL,
   `food` varchar(20) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  KEY `id` (`id`,`food`(3))
+  UNIQUE KEY `id` (`id`,`food`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -227,6 +227,8 @@ DROP TABLE IF EXISTS `ender_pearls`;
 CREATE TABLE `ender_pearls` (
   `id` int(10) unsigned NOT NULL,
   `amount` int(10) unsigned NOT NULL,
+  `distance` int(10) unsigned NOT NULL,
+  `max_throw` int(10) unsigned NOT NULL,
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -422,9 +424,9 @@ DROP TABLE IF EXISTS `kills`;
 CREATE TABLE `kills` (
   `id` int(10) unsigned NOT NULL,
   `entity` varchar(50) NOT NULL,
-  `type` tinyint(4) DEFAULT NULL,
+  `type` tinyint(4) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  KEY `id` (`id`,`entity`(3),`type`)
+  UNIQUE KEY `id` (`id`,`entity`,`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -616,17 +618,17 @@ CREATE TABLE `tools_broken` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `words_spoken`
+-- Table structure for table `word_frequency`
 --
 
-DROP TABLE IF EXISTS `words_spoken`;
+DROP TABLE IF EXISTS `word_frequency`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `words_spoken` (
+CREATE TABLE `word_frequency` (
   `id` int(10) unsigned NOT NULL,
   `word` varchar(100) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  KEY `id` (`id`,`word`(3))
+  UNIQUE KEY `id` (`id`,`word`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -642,7 +644,7 @@ CREATE TABLE `world_change` (
   `from_world` varchar(50) NOT NULL,
   `to_world` varchar(50) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  KEY `id` (`id`,`from_world`(3),`to_world`(3))
+  UNIQUE KEY `id` (`id`,`from_world`,`to_world`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -669,4 +671,4 @@ CREATE TABLE `xp_gained` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-05-16  0:26:47
+-- Dump completed on 2015-05-18  2:21:38

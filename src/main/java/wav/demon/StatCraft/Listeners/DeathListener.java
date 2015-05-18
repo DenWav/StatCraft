@@ -45,6 +45,7 @@ public class DeathListener implements Listener {
         } else {
             EntityDamageEvent.DamageCause damageCause = damageEvent.getCause();
             cause = damageCause.name();
+            code = EntityCode.SKELETON; // default to 0
         }
 
         final String finalEntity = entity;
@@ -89,53 +90,28 @@ public class DeathListener implements Listener {
 
                     QDeathByCause c = QDeathByCause.deathByCause;
 
-                    if (finalCode != null) {
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(c);
+                    try {
+                        // INSERT
+                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(c);
 
-                            if (clause == null)
-                                return;
+                        if (clause == null)
+                            return;
 
-                            clause.columns(c.id, c.cause, c.type, c.world, c.amount)
-                                .values(id, finalEntity, finalCode.getCode(), world, 1).execute();
-                        } catch (QueryException ex) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(c);
+                        clause.columns(c.id, c.cause, c.type, c.world, c.amount)
+                            .values(id, finalEntity, finalCode.getCode(), world, 1).execute();
+                    } catch (QueryException ex) {
+                        // UPDATE
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(c);
 
-                            if (clause == null)
-                                return;
+                        if (clause == null)
+                            return;
 
-                            clause.where(
-                                c.id.eq(id),
-                                c.cause.eq(finalEntity),
-                                c.type.eq(finalCode.getCode()),
-                                c.world.eq(world)
-                            ).set(c.amount, c.amount.add(1)).execute();
-                        }
-                    } else {
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(c);
-
-                            if (clause == null)
-                                return;
-
-                            clause.columns(c.id, c.cause, c.world, c.amount)
-                                .values(id, finalEntity, world, 1).execute();
-                        } catch (QueryException ex) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(c);
-
-                            if (clause == null)
-                                return;
-
-                            clause.where(
-                                c.id.eq(id),
-                                c.cause.eq(finalEntity),
-                                c.world.eq(world)
-                            ).set(c.amount, c.amount.add(1)).execute();
-                        }
+                        clause.where(
+                            c.id.eq(id),
+                            c.cause.eq(finalEntity),
+                            c.type.eq(finalCode.getCode()),
+                            c.world.eq(world)
+                        ).set(c.amount, c.amount.add(1)).execute();
                     }
                 }
             });
@@ -150,14 +126,15 @@ public class DeathListener implements Listener {
                     try {
                         // INSERT
                         SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(c);
-                        clause.columns(c.id, c.cause, c.world, c.amount)
-                            .values(id, finalCause, world, 1);
+                        clause.columns(c.id, c.cause, c.type, c.world, c.amount)
+                            .values(id, finalCause, finalCode.getCode(), world, 1);
                     } catch (QueryException e) {
                         // UPDATE
                         SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(c);
                         clause.where(
                             c.id.eq(id),
                             c.cause.eq(finalCause),
+                            c.type.eq(finalCode.getCode()),
                             c.world.eq(world)
                         ).set(c.amount, c.amount.add(1)).execute();
                     }

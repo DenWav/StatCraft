@@ -3,11 +3,11 @@ package wav.demon.StatCraft.MySQL;
 import com.mysema.query.QueryException;
 import wav.demon.StatCraft.StatCraft;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *  This class ensures thread safety among tables, it will process each individual table on it's own thread,
@@ -19,8 +19,8 @@ public class WorkerThread implements Runnable {
 
     final private StatCraft plugin;
 
-    final private HashMap<Class<?>, List<Runnable>> map = new HashMap<>();
-    final private HashMap<Class<?>, Integer> work = new HashMap<>();
+    final private ConcurrentHashMap<Class<?>, List<Runnable>> map = new ConcurrentHashMap<>();
+    final private ConcurrentHashMap<Class<?>, Integer> work = new ConcurrentHashMap<>();
 
     public WorkerThread(StatCraft plugin) {
         this.plugin = plugin;

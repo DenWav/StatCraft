@@ -36,51 +36,27 @@ public class KillListener implements Listener {
 
                     QKills k = QKills.kills;
 
-                    if (code == null) {
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(k);
+                    try {
+                        // INSERT
+                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(k);
 
-                            if (clause == null)
-                                return;
+                        if (clause == null)
+                            return;
 
-                            clause.columns(k.id, k.entity, k.amount)
-                                .values(id, entity, 1).execute();
-                        } catch (QueryException e) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
+                        clause.columns(k.id, k.entity, k.type, k.amount)
+                            .values(id, entity, code.getCode(), 1).execute();
+                    } catch (QueryException e) {
+                        // UPDATE
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
 
-                            if (clause == null)
-                                return;
+                        if (clause == null)
+                            return;
 
-                            clause.where(
-                                k.id.eq(id),
-                                k.entity.eq(entity)
-                            ).set(k.amount, k.amount.add(1)).execute();
-                        }
-                    } else {
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(k);
-
-                            if (clause == null)
-                                return;
-
-                            clause.columns(k.id, k.entity, k.type, k.amount)
-                                .values(id, entity, code.getCode(), 1).execute();
-                        } catch (QueryException e) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
-
-                            if (clause == null)
-                                return;
-
-                            clause.where(
-                                k.id.eq(id),
-                                k.entity.eq(entity),
-                                k.type.eq(code.getCode())
-                            ).set(k.amount, k.amount.add(1)).execute();
-                        }
+                        clause.where(
+                            k.id.eq(id),
+                            k.entity.eq(entity),
+                            k.type.eq(code.getCode())
+                        ).set(k.amount, k.amount.add(1)).execute();
                     }
                 }
             });

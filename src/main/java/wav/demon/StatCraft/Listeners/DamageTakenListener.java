@@ -129,47 +129,23 @@ public class DamageTakenListener implements Listener {
                     // currently only skeletons and wither skeletons fall under this category
                     EntityCode code = EntityCode.fromEntity(entity);
 
-                    if (code == null) {
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
-
-                            if (clause == null)
-                                return;
-
-                            clause.columns(t.id, t.entity, t.amount)
-                                .values(id, entity.getName(), damageTaken).execute();
-                        } catch (QueryException e) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-
-                            if (clause == null)
-                                return;
-
-                            clause.where(
-                                t.id.eq(id),
-                                t.entity.eq(entity.getName())
-                            ).set(t.amount, t.amount.add(damageTaken)).execute();
-                        }
-                    } else {
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
-                            if (clause == null)
-                                return;
-                            clause.columns(t.id, t.entity, t.type, t.amount)
-                                .values(id, entity.getName(), code.getCode(), damageTaken).execute();
-                        } catch (QueryException e) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-                            if (clause == null)
-                                return;
-                            clause.where(
-                                t.id.eq(id),
-                                t.entity.eq(entity.getName()),
-                                t.type.eq(code.getCode())
-                            ).set(t.amount, t.amount.add(damageTaken)).execute();
-                        }
+                    try {
+                        // INSERT
+                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
+                        if (clause == null)
+                            return;
+                        clause.columns(t.id, t.entity, t.type, t.amount)
+                            .values(id, entity.getName(), code.getCode(), damageTaken).execute();
+                    } catch (QueryException e) {
+                        // UPDATE
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
+                        if (clause == null)
+                            return;
+                        clause.where(
+                            t.id.eq(id),
+                            t.entity.eq(entity.getName()),
+                            t.type.eq(code.getCode())
+                        ).set(t.amount, t.amount.add(damageTaken)).execute();
                     }
                 }
             });
