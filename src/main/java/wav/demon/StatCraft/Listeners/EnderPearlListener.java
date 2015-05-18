@@ -34,9 +34,6 @@ public class EnderPearlListener implements Listener {
             final double distance = fromLocation.distance(toLocation);
             final int finalDistance = (int) Math.round(distance * 100.0);
 
-            plugin.getLogger().info(distance + "");
-            plugin.getLogger().info(finalDistance + "");
-
             final UUID uuid = player.getUniqueId();
 
             plugin.getWorkerThread().schedule(EnderPearls.class, new Runnable() {
