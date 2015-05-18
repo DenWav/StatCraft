@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
@@ -32,27 +32,29 @@ public class WorldChangeListener implements Listener {
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
                 QWorldChange w = QWorldChange.worldChange;
 
-                if (query.from(w).where(
-                        w.id.eq(id)
-                        .and(w.toWorld.eq(toWorld))
-                        .and(w.fromWorld.eq(fromWorld))
-                    ).exists()) {
-
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
-                    clause.where(
-                        w.id.eq(id)
-                        .and(w.toWorld.eq(toWorld))
-                        .and(w.fromWorld.eq(fromWorld))
-                    ).set(w.amount, w.amount.add(1)).execute();
-                } else {
+                try {
+                    // INSERT
                     SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(w);
+
+                    if (clause == null)
+                        return;
+
                     clause.columns(w.id, w.toWorld, w.fromWorld, w.amount)
                         .values(id, toWorld, fromWorld, 1).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
+
+                    if (clause == null)
+                        return;
+
+                    clause.where(
+                        w.id.eq(id),
+                        w.toWorld.eq(toWorld),
+                        w.fromWorld.eq(fromWorld)
+                    ).set(w.amount, w.amount.add(1)).execute();
                 }
             }
         });

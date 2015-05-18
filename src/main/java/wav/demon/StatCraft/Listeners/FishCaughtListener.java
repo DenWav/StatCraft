@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.Item;
@@ -12,6 +12,7 @@ import wav.demon.StatCraft.Magic.FishCode;
 import wav.demon.StatCraft.Querydsl.FishCaught;
 import wav.demon.StatCraft.Querydsl.QFishCaught;
 import wav.demon.StatCraft.StatCraft;
+import wav.demon.StatCraft.Util;
 
 import java.util.UUID;
 
@@ -31,7 +32,7 @@ public class FishCaughtListener implements Listener {
             if (event.getCaught() instanceof Item) {
                 Item item = (Item) event.getCaught();
                 final short itemid = (short) item.getItemStack().getTypeId();
-                final short damage = item.getItemStack().getData().getData();
+                final short damage = Util.damageValue(itemid, item.getItemStack().getData().getData());
 
                 final FishCode code;
 
@@ -75,29 +76,30 @@ public class FishCaughtListener implements Listener {
                     public void run() {
                         int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                        if (query == null)
-                            return;
                         QFishCaught f = QFishCaught.fishCaught;
 
-                        if (query.from(f).where(
-                            f.id.eq(id)
-                                .and(f.item.eq(itemid))
-                                .and(f.damage.eq(damage))
-                                .and(f.type.eq(code.getCode()))
-                        ).exists()) {
-
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(f);
-                            clause.where(
-                                f.id.eq(id)
-                                    .and(f.item.eq(itemid))
-                                    .and(f.damage.eq(damage))
-                                    .and(f.type.eq(code.getCode()))
-                            ).set(f.amount, f.amount.add(1)).execute();
-                        } else {
+                        try {
+                            // INSERT
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(f);
+
+                            if (clause == null)
+                                return;
+
                             clause.columns(f.id, f.item, f.damage, f.type, f.amount)
                                 .values(id, itemid, damage, code.getCode(), 1).execute();
+                        } catch (QueryException e) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(f);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(
+                                f.id.eq(id),
+                                f.item.eq(itemid),
+                                f.damage.eq(damage),
+                                f.type.eq(code.getCode())
+                            ).set(f.amount, f.amount.add(1)).execute();
                         }
                     }
                 });

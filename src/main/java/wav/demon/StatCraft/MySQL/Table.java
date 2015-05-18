@@ -9,7 +9,7 @@ public enum Table {
             "id INT UNSIGNED NOT NULL, " +
             "animal VARCHAR(50) NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
-            "INDEX (id, animal(3))" +
+            "UNIQUE INDEX (id, animal)" +
             ")",
             Arrays.asList("id", "animal", "amount")),
     ARROWS_SHOT("(" +
@@ -54,7 +54,7 @@ public enum Table {
             "entity VARCHAR(50) NOT NULL, " +
             "type TINYINT, " +
             "amount INT UNSIGNED NOT NULL, " +
-            "INDEX (id, entity(3), type)" +
+            "UNIQUE INDEX (id, entity, type)" +
             ")",
             Arrays.asList("id", "entity", "type", "amount")),
     DAMAGE_TAKEN("(" +
@@ -62,31 +62,31 @@ public enum Table {
             "entity VARCHAR(50) NOT NULL, " +
             "type TINYINT, " +
             "amount INT UNSIGNED NOT NULL, " +
-            "INDEX (id, entity(3), type)" +
+            "UNIQUE INDEX (id, entity, type)" +
             ")",
             Arrays.asList("id", "entity", "type", "amount")),
-    DEATH_BY_ENTITY("(" +
+    DEATH_BY_CAUSE("(" +
             "id INT UNSIGNED NOT NULL, " +
-            "entity VARCHAR(50) NOT NULL, " +
+            "cause VARCHAR(50) NOT NULL, " +
             "type TINYINT, " +
             "world VARCHAR(50) NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
-            "INDEX (id, entity(3), type, world(3))" +
+            "UNIQUE INDEX (id, cause, type, world)" +
             ")",
-            Arrays.asList("id", "entity", "type", "world", "amount")),
+            Arrays.asList("id", "cause", "type", "world", "amount")),
     DEATH("(" +
             "id INT UNSIGNED NOT NULL, " +
             "message VARCHAR(200) NOT NULL, " +
             "world VARCHAR(50) NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
-            "INDEX (id, message(10), world(3))" +
+            "UNIQUE INDEX (id, message, world)" +
             ")",
             Arrays.asList("id", "message", "world", "amount")),
     EATING("(" +
             "id INT UNSIGNED NOT NULL, " +
             "food VARCHAR(20) NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
-            "INDEX (id, food(3))" +
+            "UNIQUE INDEX (id, food)" +
             ")",
             Arrays.asList("id", "food", "amount")),
     EGGS_THROWN("(" +
@@ -183,7 +183,7 @@ public enum Table {
             "entity VARCHAR(50) NOT NULL, " +
             "type TINYINT, " +
             "amount INT UNSIGNED NOT NULL, " +
-            "INDEX (id, entity(3), type)" +
+            "UNIQUE INDEX (id, entity, type)" +
             ")",
             Arrays.asList("id", "entity", "type", "amount")),
     LAST_JOIN_TIME("(" +
@@ -253,7 +253,7 @@ public enum Table {
             "id INT UNSIGNED NOT NULL, " +
             "word VARCHAR(100) NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
-            "INDEX (id, word(3))" +
+            "UNIQUE INDEX (id, word)" +
             ")",
             Arrays.asList("id", "word", "amount")),
     WORLD_CHANGE("(" +
@@ -261,7 +261,7 @@ public enum Table {
             "from_world VARCHAR(50) NOT NULL, " +
             "to_world VARCHAR(50) NOT NULL, " +
             "amount INT UNSIGNED NOT NULL, " +
-            "INDEX (id, from_world(3), to_world(3))" +
+            "UNIQUE INDEX (id, from_world, to_world)" +
             ")",
             Arrays.asList("id", "from_world", "to_world", "amount")),
     XP_GAINED(Table.simple,

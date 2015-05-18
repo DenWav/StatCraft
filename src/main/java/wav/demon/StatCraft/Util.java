@@ -19,6 +19,65 @@ public class Util {
     }
 
     /**
+     * Returns the damage value to be placed in the database for a specific id. This returns the given damage
+     * value for any id where the damage value represents a different distinct block or item. In all other cases,
+     * 0 is returned. Blocks or items whose damage value represents orientation, or lava/water level return 0. For
+     * blocks whose damage value determines both the block type <i>and</i> orientation are normalized to a standard
+     * value for representing that block type in the database. So far only the block type <i>log</i> and <i>log2</i>
+     * fall under this category (id's 17 and 162 respectively).
+     *
+     * @param id The id of the block or item to be normalized
+     * @param damage The given damage value for this block or item
+     * @return The normalized value to be placed into the database
+     */
+    public static short damageValue(short id, short damage) {
+        switch (id) {
+            case 1:     // Stone
+            case 3:     // Dirt
+            case 5:     // Wooden Planks
+            case 6:     // Saplings
+            case 12:    // Sand
+            case 18:    // Leaves
+            case 19:    // Sponges
+            case 24:    // Sandstone
+            case 31:    // Tall Grass
+            case 35:    // Wool
+            case 38:    // Flowers
+            case 43:    // Double Slabs
+            case 44:    // Slabs
+            case 95:    // Stained Glass
+            case 97:    // Monster Egg Blocks
+            case 98:    // Stone Bricks
+            case 125:   // Double New Wooden Slabs
+            case 126:   // New Wooden Slabs
+            case 139:   // Cobblestone Walls
+            case 144:   // Various Head Blocks
+            case 155:   // Quartz Blocks
+            case 159:   // Stained Clay
+            case 160:   // Stained Glass Panes
+            case 161:   // New LEaves
+            case 168:   // Prismarine Blocks
+            case 171:   // Carpet
+            case 175:   // Various Plants
+            case 179:   // Red Sandstone
+            case 263:   // Coal and Charcoal
+            case 349:   // Various Raw Fish
+            case 350:   // Various Cooked Fish
+            case 351:   // Dyes
+            case 373:   // All Potions
+            case 383:   // Mob Spawn Eggs
+            case 397:   // Various Heads
+            case 425:   // Colored Banners
+                return damage;
+            case 17:    // Wood
+            case 162:   // New Wood
+                return (short) ((damage >= 8) ? (damage - 8) : (damage >= 4) ? (damage - 4) : damage);
+            default:
+                return 0;
+        }
+    }
+
+    /**
      * Transform time held in seconds to human readable time
      *
      * @param seconds Length of time interval in seconds

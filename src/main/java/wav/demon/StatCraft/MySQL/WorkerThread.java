@@ -1,6 +1,7 @@
-package wav.demon.StatCraft;
+package wav.demon.StatCraft.MySQL;
 
 import com.mysema.query.QueryException;
+import wav.demon.StatCraft.StatCraft;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,7 +53,7 @@ public class WorkerThread implements Runnable {
         }
     }
 
-    public void schedule(Class<?> clazz, Runnable runnable) {
+    public synchronized void schedule(Class<?> clazz, Runnable runnable) {
         List<Runnable> list = map.get(clazz);
         if (list == null) {
             list = new LinkedList<>();

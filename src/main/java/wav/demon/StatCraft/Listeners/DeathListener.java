@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.Entity;
@@ -12,9 +12,9 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import wav.demon.StatCraft.Magic.EntityCode;
 import wav.demon.StatCraft.Querydsl.Death;
-import wav.demon.StatCraft.Querydsl.DeathByEntity;
+import wav.demon.StatCraft.Querydsl.DeathByCause;
 import wav.demon.StatCraft.Querydsl.QDeath;
-import wav.demon.StatCraft.Querydsl.QDeathByEntity;
+import wav.demon.StatCraft.Querydsl.QDeathByCause;
 import wav.demon.StatCraft.StatCraft;
 
 import java.util.UUID;
@@ -33,6 +33,7 @@ public class DeathListener implements Listener {
         final UUID uuid = event.getEntity().getUniqueId();
         final String world = event.getEntity().getLocation().getWorld().getName();
         String entity = null;
+        String cause = null;
         EntityCode code = null;
 
         EntityDamageEvent damageEvent = event.getEntity().getLastDamageCause();
@@ -41,83 +42,124 @@ public class DeathListener implements Listener {
             Entity killer = damageByEntityEvent.getDamager();
             entity = killer.getName();
             code = EntityCode.fromEntity(killer);
+        } else {
+            EntityDamageEvent.DamageCause damageCause = damageEvent.getCause();
+            cause = damageCause.name();
         }
 
         final String finalEntity = entity;
         final EntityCode finalCode = code;
+        final String finalCause = cause;
         plugin.getWorkerThread().schedule(Death.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
                 QDeath d = QDeath.death;
 
-                if (query.from(d).where(d.id.eq(id).and(d.message.eq(message)).and(d.world.eq(world))).exists()) {
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(d);
-                    clause.where(
-                        d.id.eq(id)
-                            .and(d.message.eq(message))
-                            .and(d.world.eq(world))
-                    ).set(d.amount, d.amount.add(1)).execute();
-                } else {
+                try {
+                    // INSERT
                     SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(d);
+
+                    if (clause == null)
+                        return;
+
                     clause.columns(d.id, d.message, d.world, d.amount).values(id, message, world, 1).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(d);
+
+                    if (clause == null)
+                        return;
+
+                    clause.where(
+                        d.id.eq(id),
+                        d.message.eq(message),
+                        d.world.eq(world)
+                    ).set(d.amount, d.amount.add(1)).execute();
                 }
             }
         });
 
         if (finalEntity != null) {
-            plugin.getWorkerThread().schedule(DeathByEntity.class, new Runnable() {
+            plugin.getWorkerThread().schedule(DeathByCause.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                    if (query == null)
-                        return;
-                    QDeathByEntity e = QDeathByEntity.deathByEntity;
+                    QDeathByCause c = QDeathByCause.deathByCause;
 
                     if (finalCode != null) {
-                        if (query.from(e).where(
-                            e.id.eq(id)
-                                .and(e.entity.eq(finalEntity))
-                                .and(e.type.eq(finalCode.getCode()))
-                                .and(e.world.eq(world))
-                        ).exists()) {
+                        try {
+                            // INSERT
+                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(c);
 
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(e);
-                            clause.where(
-                                e.id.eq(id)
-                                    .and(e.entity.eq(finalEntity))
-                                    .and(e.type.eq(finalCode.getCode()))
-                                    .and(e.world.eq(world))
-                            ).set(e.amount, e.amount.add(1)).execute();
-                        } else {
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(e);
-                            clause.columns(e.id, e.entity, e.type, e.world, e.amount)
+                            if (clause == null)
+                                return;
+
+                            clause.columns(c.id, c.cause, c.type, c.world, c.amount)
                                 .values(id, finalEntity, finalCode.getCode(), world, 1).execute();
+                        } catch (QueryException ex) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(c);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(
+                                c.id.eq(id),
+                                c.cause.eq(finalEntity),
+                                c.type.eq(finalCode.getCode()),
+                                c.world.eq(world)
+                            ).set(c.amount, c.amount.add(1)).execute();
                         }
                     } else {
-                        if (query.from(e).where(
-                            e.id.eq(id)
-                                .and(e.entity.eq(finalEntity))
-                                .and(e.world.eq(world))
-                        ).exists()) {
+                        try {
+                            // INSERT
+                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(c);
 
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(e);
-                            clause.where(
-                                e.id.eq(id)
-                                    .and(e.entity.eq(finalEntity))
-                                    .and(e.world.eq(world))
-                            ).set(e.amount, e.amount.add(1)).execute();
-                        } else {
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(e);
-                            clause.columns(e.id, e.entity, e.world, e.amount)
+                            if (clause == null)
+                                return;
+
+                            clause.columns(c.id, c.cause, c.world, c.amount)
                                 .values(id, finalEntity, world, 1).execute();
+                        } catch (QueryException ex) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(c);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(
+                                c.id.eq(id),
+                                c.cause.eq(finalEntity),
+                                c.world.eq(world)
+                            ).set(c.amount, c.amount.add(1)).execute();
                         }
+                    }
+                }
+            });
+        } else if (finalCause != null) {
+            plugin.getWorkerThread().schedule(DeathByCause.class, new Runnable() {
+                @Override
+                public void run() {
+                    int id = plugin.getDatabaseManager().getPlayerId(uuid);
+
+                    QDeathByCause c = QDeathByCause.deathByCause;
+
+                    try {
+                        // INSERT
+                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(c);
+                        clause.columns(c.id, c.cause, c.world, c.amount)
+                            .values(id, finalCause, world, 1);
+                    } catch (QueryException e) {
+                        // UPDATE
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(c);
+                        clause.where(
+                            c.id.eq(id),
+                            c.cause.eq(finalCause),
+                            c.world.eq(world)
+                        ).set(c.amount, c.amount.add(1)).execute();
                     }
                 }
             });

@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
@@ -30,17 +30,24 @@ public class TabCompleteListener implements Listener {
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
                 QTabComplete t = QTabComplete.tabComplete;
 
-                if (query.from(t).where(t.id.eq(id)).exists()) {
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-                    clause.where(t.id.eq(id)).set(t.amount, t.amount.add(1)).execute();
-                } else {
+                try {
+                    // INSERT
                     SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
+
+                    if (clause == null)
+                        return;
+
                     clause.columns(t.id, t.amount).values(id, 1).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
+
+                    if (clause == null)
+                        return;
+
+                    clause.where(t.id.eq(id)).set(t.amount, t.amount.add(1)).execute();
                 }
             }
         });

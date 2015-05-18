@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
@@ -43,18 +43,25 @@ public class BucketFillListener implements Listener {
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
                 QBucketFill f = QBucketFill.bucketFill;
 
-                if (query.from(f).where(f.id.eq(id).and(f.type.eq(code.getCode()))).exists()) {
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(f);
-                    clause.where(f.id.eq(id).and(f.type.eq(code.getCode()))).set(f.amount, f.amount.add(1)).execute();
-                } else {
+                try {
+                    // INSERT
                     SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(f);
+
+                    if (clause == null)
+                        return;
+
                     clause.columns(f.id, f.type, f.amount)
                         .values(id, code.getCode(), 1).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(f);
+
+                    if (clause == null)
+                        return;
+
+                    clause.where(f.id.eq(id), f.type.eq(code.getCode())).set(f.amount, f.amount.add(1)).execute();
                 }
             }
         });

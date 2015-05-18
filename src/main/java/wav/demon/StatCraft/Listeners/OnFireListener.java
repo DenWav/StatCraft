@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.Player;
@@ -38,17 +38,24 @@ public class OnFireListener implements Listener {
                     public void run() {
                         int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                        if (query == null)
-                            return;
                         QOnFire o = QOnFire.onFire;
 
-                        if (query.from(o).where(o.id.eq(id)).exists()) {
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(o);
-                            clause.where(o.id.eq(id)).set(o.time, o.time.add(1)).execute();
-                        } else {
+                        try {
+                            // INSERT
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(o);
+
+                            if (clause == null)
+                                return;
+
                             clause.columns(o.id, o.time).values(id, 1).execute();
+                        } catch (QueryException e) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(o);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(o.id.eq(id)).set(o.time, o.time.add(1)).execute();
                         }
                     }
                 });

@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.ChatColor;
@@ -38,25 +38,26 @@ public class DamageTakenListener implements Listener {
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                    if (query == null)
-                        return;
                     QDamageTaken t = QDamageTaken.damageTaken;
 
-                    if (query.from(t).where(
-                        t.id.eq(id)
-                            .and(t.entity.eq(event.getCause().name()))
-                    ).exists()) {
-
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-                        clause.where(
-                            t.id.eq(id)
-                                .and(t.entity.eq(event.getCause().name()))
-                        ).set(t.amount, t.amount.add(damageTaken)).execute();
-                    } else {
+                    try {
                         SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
+
+                        if (clause == null)
+                            return;
+
                         clause.columns(t.id, t.entity, t.amount)
                             .values(id, event.getCause().name(), damageTaken).execute();
+                    } catch (QueryException e) {
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
+
+                        if (clause == null)
+                            return;
+
+                        clause.where(
+                            t.id.eq(id),
+                            t.entity.eq(event.getCause().name())
+                        ).set(t.amount, t.amount.add(damageTaken)).execute();
                     }
                 }
             });
@@ -122,9 +123,6 @@ public class DamageTakenListener implements Listener {
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                    if (query == null)
-                        return;
                     QDamageTaken t = QDamageTaken.damageTaken;
 
                     // For special entities which are clumped together
@@ -132,38 +130,45 @@ public class DamageTakenListener implements Listener {
                     EntityCode code = EntityCode.fromEntity(entity);
 
                     if (code == null) {
-                        if (query.from(t).where(
-                            t.id.eq(id)
-                                .and(t.entity.eq(entity.getName()))
-                        ).exists()) {
-
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-                            clause.where(
-                                t.id.eq(id)
-                                    .and(t.entity.eq(entity.getName()))
-                            ).set(t.amount, t.amount.add(damageTaken)).execute();
-                        } else {
+                        try {
+                            // INSERT
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
+
+                            if (clause == null)
+                                return;
+
                             clause.columns(t.id, t.entity, t.amount)
                                 .values(id, entity.getName(), damageTaken).execute();
+                        } catch (QueryException e) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(
+                                t.id.eq(id),
+                                t.entity.eq(entity.getName())
+                            ).set(t.amount, t.amount.add(damageTaken)).execute();
                         }
                     } else {
-                        if (query.from(t).where(
-                            t.id.eq(id)
-                                .and(t.entity.eq(entity.getName()))
-                                .and(t.type.eq(code.getCode()))
-                        ).exists()) {
-
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-                            clause.where(
-                                t.id.eq(id)
-                                    .and(t.entity.eq(entity.getName()))
-                                    .and(t.type.eq(code.getCode()))
-                            ).set(t.amount, t.amount.add(damageTaken)).execute();
-                        } else {
+                        try {
+                            // INSERT
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
+                            if (clause == null)
+                                return;
                             clause.columns(t.id, t.entity, t.type, t.amount)
                                 .values(id, entity.getName(), code.getCode(), damageTaken).execute();
+                        } catch (QueryException e) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
+                            if (clause == null)
+                                return;
+                            clause.where(
+                                t.id.eq(id),
+                                t.entity.eq(entity.getName()),
+                                t.type.eq(code.getCode())
+                            ).set(t.amount, t.amount.add(damageTaken)).execute();
                         }
                     }
                 }

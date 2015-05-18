@@ -1,9 +1,11 @@
 package wav.demon.StatCraft;
 
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import wav.demon.StatCraft.Commands.BaseCommand;
@@ -60,6 +62,9 @@ import wav.demon.StatCraft.Listeners.WordsSpokenListener;
 import wav.demon.StatCraft.Listeners.WorldChangeListener;
 import wav.demon.StatCraft.Listeners.XpGainedListener;
 import wav.demon.StatCraft.MySQL.DatabaseManager;
+import wav.demon.StatCraft.MySQL.WorkerThread;
+import wav.demon.StatCraft.Querydsl.EnterBed;
+import wav.demon.StatCraft.Querydsl.LastJoinTime;
 import wav.demon.StatCraft.Querydsl.Players;
 import wav.demon.StatCraft.Querydsl.QEnterBed;
 import wav.demon.StatCraft.Querydsl.QLastJoinTime;
@@ -151,60 +156,63 @@ public class StatCraft extends JavaPlugin {
             @Override
             public void run() {
                 for (Player player : getServer().getOnlinePlayers()) {
-                    String name = player.getName();
-                    UUID uuid = player.getUniqueId();
-                    byte[] array = Util.UUIDToByte(uuid);
-
-                    // Check player / id listing
-                    QPlayers p = QPlayers.players;
-                    SQLQuery query = getDatabaseManager().getNewQuery();
-                    Players result = query.from(p).where(p.uuid.eq(array)).uniqueResult(p);
-
-                    if (result == null) {
-                        SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
-                        // Blank out any conflicting names
-                        update  .where(p.name.eq(name))
-                            .set(p.name, "")
-                            .execute();
-                        SQLInsertClause insert = getDatabaseManager().getInsertClause(p);
-                        // Insert new player listing
-                        insert  .columns(p.uuid, p.name)
-                            .values(array, name)
-                            .execute();
-                    } else if (!result.getName().equals(name)) {
-                        SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
-                        // Blank out any conflicting names
-                        update  .where(p.name.eq(name))
-                            .set(p.name, "")
-                            .execute();
-                        // Change name of UUID player
-                        update  .where(p.uuid.eq(array))
-                            .set(p.name, name)
-                            .execute();
-                    }
+                    setupPlayer(player);
 
                     // Insert game join / bed enter data
-                    int id = getDatabaseManager().getPlayerId(uuid);
+                    final int id = getDatabaseManager().getPlayerId(player.getUniqueId());
 
-                    QLastJoinTime j = QLastJoinTime.lastJoinTime;
-                    if (query.from(j).where(j.id.eq(id)).exists()) {
-                        SQLUpdateClause clause = getDatabaseManager().getUpdateClause(j);
-                        clause.where(j.id.eq(id)).set(j.time, currentTime).execute();
-                    } else {
-                        SQLInsertClause clause = getDatabaseManager().getInsertClause(j);
-                        clause.columns(j.id, j.time).values(id, currentTime).execute();
-                    }
+                    // Setup their current joins time here
+                    getWorkerThread().schedule(LastJoinTime.class, new Runnable() {
+                        @Override
+                        public void run() {
+                            QLastJoinTime j = QLastJoinTime.lastJoinTime;
 
-                    if (player.isSleeping()) {
-                        QEnterBed b = QEnterBed.enterBed;
+                            try {
+                                // INSERT
+                                SQLInsertClause clause = getDatabaseManager().getInsertClause(j);
 
-                        if (query.from(b).where(b.id.eq(id)).exists()) {
-                            SQLUpdateClause clause = getDatabaseManager().getUpdateClause(b);
-                            clause.where(b.id.eq(id)).set(b.time, currentTime).execute();
-                        } else {
-                            SQLInsertClause clause = getDatabaseManager().getInsertClause(b);
-                            clause.columns(b.id, b.time).values(id, currentTime).execute();
+                                if (clause == null)
+                                    return;
+
+                                clause.columns(j.id, j.time).values(id, currentTime).execute();
+                            } catch (QueryException e) {
+                                // UPDATE
+                                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(j);
+
+                                if (clause == null)
+                                    return;
+
+                                clause.where(j.id.eq(id)).set(j.time, currentTime).execute();
+                            }
                         }
+                    });
+
+                    // If the player is sleeping at the time, setup their enter bed time here
+                    if (player.isSleeping()) {
+                        getWorkerThread().schedule(EnterBed.class, new Runnable() {
+                            @Override
+                            public void run() {
+                                QEnterBed b = QEnterBed.enterBed;
+
+                                try {
+                                    // INSERT
+                                    SQLInsertClause clause = getDatabaseManager().getInsertClause(b);
+
+                                    if (clause == null)
+                                        return;
+
+                                    clause.columns(b.id, b.time).values(id, currentTime).execute();
+                                } catch (QueryException e) {
+                                    // UPDATE
+                                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(b);
+
+                                    if (clause == null)
+                                        return;
+
+                                    clause.where(b.id.eq(id)).set(b.time, currentTime).execute();
+                                }
+                            }
+                        });
                     }
                 }
             }
@@ -219,19 +227,24 @@ public class StatCraft extends JavaPlugin {
             UUID uuid = player.getUniqueId();
             int id = getDatabaseManager().getPlayerId(uuid);
 
-            SQLQuery query = getDatabaseManager().getNewQuery();
-
             // Set last leave time to now
             QLastLeaveTime l = QLastLeaveTime.lastLeaveTime;
-            if (query.from(l).where(l.id.eq(id)).exists()) {
-                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(l);
-                clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
-            } else {
+            try {
+                // INSERT
                 SQLInsertClause clause = getDatabaseManager().getInsertClause(l);
-                clause.columns(l.id, l.time).values(id, currentTime).execute();
+
+                if (clause != null)
+                    clause.columns(l.id, l.time).values(id, currentTime).execute();
+            } catch (QueryException e) {
+                // UPDATE
+                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(l);
+
+                if (clause != null)
+                    clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
             }
 
             // Add on to the playtime based on this "leave time"
+            SQLQuery query = getDatabaseManager().getNewQuery();
             QLastJoinTime j = QLastJoinTime.lastJoinTime;
             Integer lastJoinTime = query.from(j).where(j.id.eq(id)).uniqueResult(j.time);
             lastJoinTime = lastJoinTime == null ? 0 : lastJoinTime;
@@ -240,12 +253,18 @@ public class StatCraft extends JavaPlugin {
                 int playTime = currentTime - lastJoinTime;
 
                 QPlayTime p = QPlayTime.playTime;
-                if (query.from(p).where(p.id.eq(id)).exists()) {
-                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(p);
-                    clause.where(p.id.eq(id)).set(p.amount, p.amount.add(playTime)).execute();
-                } else {
+                try {
+                    // INSERT
                     SQLInsertClause clause = getDatabaseManager().getInsertClause(p);
-                    clause.columns(p.id, p.amount).values(id, playTime).execute();
+
+                    if (clause != null)
+                        clause.columns(p.id, p.amount).values(id, playTime).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(p);
+
+                    if (clause != null)
+                        clause.where(p.id.eq(id)).set(p.amount, p.amount.add(playTime)).execute();
                 }
             }
 
@@ -253,12 +272,18 @@ public class StatCraft extends JavaPlugin {
             if (player.isSleeping()) {
                 // Set the last leave bed time to now
                 QLeaveBed b = QLeaveBed.leaveBed;
-                if (query.from(b).where(b.id.eq(id)).exists()) {
-                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(b);
-                    clause.where(b.id.eq(id)).set(b.time, currentTime).execute();
-                } else {
+                try {
+                    // INSERT
                     SQLInsertClause clause = getDatabaseManager().getInsertClause(b);
-                    clause.columns(b.id, b.time).values(id, currentTime).execute();
+
+                    if (clause != null)
+                        clause.columns(b.id, b.time).values(id, currentTime).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(b);
+
+                    if (clause != null)
+                        clause.where(b.id.eq(id)).set(b.time, currentTime).execute();
                 }
 
                 // Add on to the sleeping time based on this "leave bed time"
@@ -270,12 +295,18 @@ public class StatCraft extends JavaPlugin {
                     int timeSlept = currentTime - enterBed;
 
                     QTimeSlept t = QTimeSlept.timeSlept;
-                    if (query.from(t).where(t.id.eq(id)).exists()) {
-                        SQLUpdateClause clause = getDatabaseManager().getUpdateClause(t);
-                        clause.where(t.id.eq(id)).set(t.amount, t.amount.add(timeSlept)).execute();
-                    } else {
+                    try {
+                        // INSERT
                         SQLInsertClause clause = getDatabaseManager().getInsertClause(t);
-                        clause.columns(t.id, t.amount).values(id, timeSlept).execute();
+
+                        if (clause != null)
+                            clause.columns(t.id, t.amount).values(id, timeSlept).execute();
+                    } catch (QueryException ex) {
+                        // UPDATE
+                        SQLUpdateClause clause = getDatabaseManager().getUpdateClause(t);
+
+                        if (clause != null)
+                            clause.where(t.id.eq(id)).set(t.amount, t.amount.add(timeSlept)).execute();
                     }
                 }
             }
@@ -466,6 +497,38 @@ public class StatCraft extends JavaPlugin {
         if (getDatabaseManager() != null)
             getDatabaseManager().close();
      }
+
+    public void setupPlayer(OfflinePlayer player) {
+        byte[] array = Util.UUIDToByte(player.getUniqueId());
+        String name = player.getName();
+        // Check player / id listing
+        QPlayers p = QPlayers.players;
+        SQLQuery query = getDatabaseManager().getNewQuery();
+        Players result = query.from(p).where(p.uuid.eq(array)).uniqueResult(p);
+
+        if (result == null) {
+            SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
+            // Blank out any conflicting names
+            update  .where(p.name.eq(name))
+                .set(p.name, "")
+                .execute();
+            SQLInsertClause insert = getDatabaseManager().getInsertClause(p);
+            // Insert new player listing
+            insert  .columns(p.uuid, p.name)
+                .values(array, name)
+                .execute();
+        } else if (!result.getName().equals(name)) {
+            SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
+            // Blank out any conflicting names
+            update  .where(p.name.eq(name))
+                .set(p.name, "")
+                .execute();
+            // Change name of UUID player
+            update  .where(p.uuid.eq(array))
+                .set(p.name, name)
+                .execute();
+        }
+    }
 
     /**
      * Returns the time zone.

@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
@@ -32,17 +32,24 @@ public class XpGainedListener implements Listener {
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                    if (query == null)
-                        return;
                     QXpGained x = QXpGained.xpGained;
 
-                    if (query.from(x).where(x.id.eq(id)).exists()) {
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(x);
-                        clause.where(x.id.eq(id)).set(x.amount, x.amount.add(amount)).execute();
-                    } else {
+                    try {
+                        // INSERT
                         SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(x);
+
+                        if (clause == null)
+                            return;
+
                         clause.columns(x.id, x.amount).values(id, amount).execute();
+                    } catch (QueryException e) {
+                        // UPDATE
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(x);
+
+                        if (clause == null)
+                            return;
+
+                        clause.where(x.id.eq(id)).set(x.amount, x.amount.add(amount)).execute();
                     }
                 }
             });

@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
@@ -31,19 +31,25 @@ public class HighestLevelListener implements Listener {
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
                 QHighestLevel h = QHighestLevel.highestLevel;
 
-                Integer currentLevel = query.from(h).where(h.id.eq(id)).uniqueResult(h.level);
-                if (currentLevel == null) {
+                try {
+                    // INSERT
                     SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(h);
+
+                    if (clause == null)
+                        return;
+
                     clause.columns(h.id, h.level)
                         .values(id, newLevel).execute();
-                } else if (currentLevel > newLevel) {
+                } catch (QueryException e) {
+                    // UPDATE
                     SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(h);
-                    clause.where(h.id.eq(id)).set(h.level, newLevel).execute();
+
+                    if (clause == null)
+                        return;
+
+                    clause.where(h.id.eq(id), h.level.lt(newLevel)).set(h.level, newLevel).execute();
                 }
             }
         });

@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
@@ -13,6 +13,8 @@ import wav.demon.StatCraft.Querydsl.QWordsSpoken;
 import wav.demon.StatCraft.Querydsl.WordsSpoken;
 import wav.demon.StatCraft.StatCraft;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 public class WordsSpokenListener implements Listener {
@@ -26,60 +28,87 @@ public class WordsSpokenListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSpokenMessage(AsyncPlayerChatEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final String[] message = event.getMessage().trim().split("\\s+");
+        final String[] message = event.getMessage().trim().split("\\s+|[\\-_]+");
 
         plugin.getWorkerThread().schedule(MessagesSpoken.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
                 QMessagesSpoken m = QMessagesSpoken.messagesSpoken;
 
-                if (query.from(m).where(m.id.eq(id)).exists()) {
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(m);
-                    clause.where(m.id.eq(id)).set(m.amount, m.amount.add(1)).execute();
-                } else {
+                try {
+                    // INSERT
                     SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(m);
+
+                    if (clause == null)
+                        return;
+
                     clause.columns(m.id, m.amount).values(id, 1).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(m);
+
+                    if (clause == null)
+                        return;
+
+                    clause.where(m.id.eq(id)).set(m.amount, m.amount.add(1)).execute();
                 }
-
-
             }
         });
 
         plugin.getWorkerThread().schedule(WordsSpoken.class, new Runnable() {
             @Override
             public void run() {
+                List<String> words = new LinkedList<>();
+
+                for (String word : message) {
+                    String modified = word.replaceAll("[^\\w]+", "").toLowerCase();
+                    if (modified.length() >= 2)
+                        words.add(modified);
+                }
+
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 QWordsSpoken w = QWordsSpoken.wordsSpoken;
 
                 if (plugin.config().stats.specific_words_spoken) {
-                    for (String word : message) {
-                        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                        if (query == null)
-                            return;
-                        if (query.from(w).where(w.id.eq(id).and(w.word.eq(word))).exists()) {
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
-                            clause.where(w.id.eq(id).and(w.word.eq(word))).set(w.amount, w.amount.add(1)).execute();
-                        } else {
+                    for (String word : words) {
+                        try {
+                            // INSERT
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(w);
+
+                            if (clause == null)
+                                return;
+
                             clause.columns(w.id, w.word, w.amount).values(id, word, 1).execute();
+                        } catch (QueryException e) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(w.id.eq(id), w.word.eq(word)).set(w.amount, w.amount.add(1)).execute();
                         }
                     }
                 } else {
-                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                    if (query == null)
-                        return;
-                    if (query.from(w).where(w.id.eq(id).and(w.word.eq("§"))).exists()) {
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
-                        clause.where(w.id.eq(id).and(w.word.eq("§"))).set(w.amount, w.amount.add(1)).execute();
-                    } else {
+                    try {
+                        // INSERT
                         SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(w);
+
+                        if (clause == null)
+                            return;
+
                         clause.columns(w.id, w.word, w.amount).values(id, "§", 1).execute();
+                    } catch (QueryException e) {
+                        // UPDATE
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
+
+                        if (clause == null)
+                            return;
+
+                        clause.where(w.id.eq(id), w.word.eq("§")).set(w.amount, w.amount.add(1)).execute();
                     }
                 }
             }

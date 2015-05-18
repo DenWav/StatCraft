@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.Entity;
@@ -41,9 +41,6 @@ public class DamageDealtListener implements Listener {
                     public void run() {
                         int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                        if (query == null)
-                            return;
                         QDamageDealt d = QDamageDealt.damageDealt;
 
                         // For special entities which are clumped together
@@ -51,38 +48,49 @@ public class DamageDealtListener implements Listener {
                         EntityCode code = EntityCode.fromEntity(entity);
 
                         if (code == null) {
-                            if (query.from(d).where(
-                                d.id.eq(id)
-                                    .and(d.entity.eq(entity.getName()))
-                            ).exists()) {
-
-                                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(d);
-                                clause.where(
-                                    d.id.eq(id)
-                                        .and(d.entity.eq(entity.getName()))
-                                ).set(d.amount, d.amount.add(damageDealt)).execute();
-                            } else {
+                            try {
+                                // INSERT
                                 SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(d);
+
+                                if (clause == null)
+                                    return;
+
                                 clause.columns(d.id, d.entity, d.amount)
                                     .values(id, entity.getName(), damageDealt).execute();
+                            } catch (QueryException e) {
+                                // UPDATE
+                                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(d);
+
+                                if (clause == null)
+                                    return;
+
+                                clause.where(
+                                    d.id.eq(id),
+                                    d.entity.eq(entity.getName())
+                                ).set(d.amount, d.amount.add(damageDealt)).execute();
                             }
                         } else {
-                            if (query.from(d).where(
-                                d.id.eq(id)
-                                    .and(d.entity.eq(entity.getName()))
-                                    .and(d.type.eq(code.getCode()))
-                            ).exists()) {
-
-                                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(d);
-                                clause.where(
-                                    d.id.eq(id)
-                                        .and(d.entity.eq(entity.getName()))
-                                        .and(d.type.eq(code.getCode()))
-                                ).set(d.amount, d.amount.add(damageDealt)).execute();
-                            } else {
+                            try {
+                                // INSERT
                                 SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(d);
+
+                                if (clause == null)
+                                    return;
+
                                 clause.columns(d.id, d.entity, d.type, d.amount)
                                     .values(id, entity.getName(), code.getCode(), damageDealt).execute();
+                            } catch (QueryException e) {
+                                // UPDATE
+                                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(d);
+
+                                if (clause == null)
+                                    return;
+
+                                clause.where(
+                                    d.id.eq(id),
+                                    d.entity.eq(entity.getName()),
+                                    d.type.eq(code.getCode())
+                                ).set(d.amount, d.amount.add(damageDealt)).execute();
                             }
                         }
                     }

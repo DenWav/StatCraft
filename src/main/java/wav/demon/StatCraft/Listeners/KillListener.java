@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
@@ -34,44 +34,52 @@ public class KillListener implements Listener {
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                    if (query == null)
-                        return;
                     QKills k = QKills.kills;
 
                     if (code == null) {
-                        if (query.from(k).where(
-                            k.id.eq(id)
-                                .and(k.entity.eq(entity))
-                        ).exists()) {
-
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
-                            clause.where(
-                                k.id.eq(id)
-                                    .and(k.entity.eq(entity))
-                            ).set(k.amount, k.amount.add(1)).execute();
-                        } else {
+                        try {
+                            // INSERT
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(k);
+
+                            if (clause == null)
+                                return;
+
                             clause.columns(k.id, k.entity, k.amount)
                                 .values(id, entity, 1).execute();
+                        } catch (QueryException e) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(
+                                k.id.eq(id),
+                                k.entity.eq(entity)
+                            ).set(k.amount, k.amount.add(1)).execute();
                         }
                     } else {
-                        if (query.from(k).where(
-                            k.id.eq(id)
-                                .and(k.entity.eq(entity))
-                                .and(k.type.eq(code.getCode()))
-                        ).exists()) {
-
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
-                            clause.where(
-                                k.id.eq(id)
-                                    .and(k.entity.eq(entity))
-                                    .and(k.type.eq(code.getCode()))
-                            ).set(k.amount, k.amount.add(1)).execute();
-                        } else {
+                        try {
+                            // INSERT
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(k);
+
+                            if (clause == null)
+                                return;
+
                             clause.columns(k.id, k.entity, k.type, k.amount)
                                 .values(id, entity, code.getCode(), 1).execute();
+                        } catch (QueryException e) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(
+                                k.id.eq(id),
+                                k.entity.eq(entity),
+                                k.type.eq(code.getCode())
+                            ).set(k.amount, k.amount.add(1)).execute();
                         }
                     }
                 }

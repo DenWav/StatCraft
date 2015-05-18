@@ -1,5 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
@@ -17,9 +18,7 @@ import wav.demon.StatCraft.Querydsl.QJoins;
 import wav.demon.StatCraft.Querydsl.QLastJoinTime;
 import wav.demon.StatCraft.Querydsl.QLastLeaveTime;
 import wav.demon.StatCraft.Querydsl.QPlayTime;
-import wav.demon.StatCraft.Querydsl.QPlayers;
 import wav.demon.StatCraft.StatCraft;
-import wav.demon.StatCraft.Util;
 
 import java.util.UUID;
 
@@ -32,77 +31,70 @@ public class PlayTimeListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onJoin(PlayerJoinEvent event) {
+    public void onJoin(final PlayerJoinEvent event) {
         final String name = event.getPlayer().getName();
         final UUID uuid = event.getPlayer().getUniqueId();
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
-        final byte[] array = Util.UUIDToByte(event.getPlayer().getUniqueId());
 
-        // This MUST be done before the other two jobs, so do it in the main thread
-        QPlayers p = QPlayers.players;
-        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-        if (query == null)
-            return;
-        Players result = query.from(p).where(p.uuid.eq(array)).uniqueResult(p);
-
-        if (result == null) {
-            SQLUpdateClause update = plugin.getDatabaseManager().getUpdateClause(p);
-            // Blank out any conflicting names
-            update.where(p.name.eq(name))
-                .set(p.name, "")
-                .execute();
-            SQLInsertClause insert = plugin.getDatabaseManager().getInsertClause(p);
-            // Insert new player listing
-            insert.columns(p.uuid, p.name)
-                .values(array, name)
-                .execute();
-        } else if (!result.getName().equals(name)) {
-            SQLUpdateClause update = plugin.getDatabaseManager().getUpdateClause(p);
-            // Blank out any conflicting names
-            update.where(p.name.eq(name))
-                .set(p.name, "")
-                .execute();
-            // Change name of UUID player
-            update.where(p.uuid.eq(array))
-                .set(p.name, name)
-                .execute();
-        }
-
-        plugin.players.put(name, uuid);
-
-        final int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-        plugin.getWorkerThread().schedule(Joins.class, new Runnable() {
+        plugin.getWorkerThread().schedule(Players.class, new Runnable() {
             @Override
             public void run() {
-                QJoins j = QJoins.joins;
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
-                if (query.from(j).where(j.id.eq(id)).exists()) {
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(j);
-                    clause.where(j.id.eq(id)).set(j.amount, j.amount.add(1)).execute();
-                } else {
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(j);
-                    clause.columns(j.id, j.amount).values(id, 1).execute();
-                }
-            }
-        });
+                // This MUST be done before the other two jobs
+                plugin.setupPlayer(event.getPlayer());
+                plugin.players.put(name, uuid);
 
-        plugin.getWorkerThread().schedule(LastJoinTime.class, new Runnable() {
-            @Override
-            public void run() {
-                QLastJoinTime l = QLastJoinTime.lastJoinTime;
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
-                if (query.from(l).where(l.id.eq(id)).exists()) {
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(l);
-                    clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
-                } else {
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(l);
-                    clause.columns(l.id, l.time).values(id, currentTime).execute();
-                }
+                // Get id to work with
+                final int id = plugin.getDatabaseManager().getPlayerId(uuid);
+
+                plugin.getWorkerThread().schedule(Joins.class, new Runnable() {
+                    @Override
+                    public void run() {
+                        QJoins j = QJoins.joins;
+
+                        try {
+                            // INSERT
+                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(j);
+
+                            if (clause == null)
+                                return;
+
+                            clause.columns(j.id, j.amount).values(id, 1).execute();
+                        } catch (QueryException e) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(j);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(j.id.eq(id)).set(j.amount, j.amount.add(1)).execute();
+                        }
+                    }
+                });
+
+                plugin.getWorkerThread().schedule(LastJoinTime.class, new Runnable() {
+                    @Override
+                    public void run() {
+                        QLastJoinTime l = QLastJoinTime.lastJoinTime;
+
+                        try {
+                            // INSERT
+                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(l);
+
+                            if (clause == null)
+                                return;
+
+                            clause.columns(l.id, l.time).values(id, currentTime).execute();
+                        } catch (QueryException e) {
+                            // UPDATE
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(l);
+
+                            if (clause == null)
+                                return;
+
+                            clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
+                        }
+                    }
+                });
             }
         });
     }
@@ -117,17 +109,24 @@ public class PlayTimeListener implements Listener {
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
-
                 QLastLeaveTime l = QLastLeaveTime.lastLeaveTime;
-                if (query.from(l).where(l.id.eq(id)).exists()) {
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(l);
-                    clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
-                } else {
+
+                try {
+                    // INSERT
                     SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(l);
+
+                    if (clause == null)
+                        return;
+
                     clause.columns(l.id, l.time).values(id, currentTime).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(l);
+
+                    if (clause == null)
+                        return;
+
+                    clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
                 }
             }
         });
@@ -149,12 +148,23 @@ public class PlayTimeListener implements Listener {
                     int playTime = currentTime - lastJoinTime;
 
                     QPlayTime p = QPlayTime.playTime;
-                    if (query.from(p).where(p.id.eq(id)).exists()) {
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(p);
-                        clause.where(p.id.eq(id)).set(p.amount, p.amount.add(playTime)).execute();
-                    } else {
+
+                    try {
+                        // INSERT
                         SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(p);
+
+                        if (clause == null)
+                            return;
+
                         clause.columns(p.id, p.amount).values(id, playTime).execute();
+                    } catch (QueryException e) {
+                        // UPDATE
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(p);
+
+                        if (clause == null)
+                            return;
+
+                        clause.where(p.id.eq(id)).set(p.amount, p.amount.add(playTime)).execute();
                     }
                 }
             }

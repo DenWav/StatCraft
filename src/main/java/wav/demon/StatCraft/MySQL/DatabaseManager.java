@@ -215,24 +215,24 @@ public class DatabaseManager {
         }
     }
 
-    public synchronized int getPlayerId(UUID uuid) {
+    public int getPlayerId(UUID uuid) {
         byte[] array = Util.UUIDToByte(uuid);
-
         SQLQuery query = new SQLQuery(getConnection(), SQLTemplates.DEFAULT);
         Integer res = query
-                .from(QPlayers.players)
-                .where(QPlayers.players.uuid.eq(array))
-                .uniqueResult(QPlayers.players.id);
+            .from(QPlayers.players)
+            .where(QPlayers.players.uuid.eq(array))
+            .uniqueResult(QPlayers.players.id);
+
         return res == null ? -1 : res;
     }
 
-    public synchronized int getPlayerId(String name) {
-        SQLQuery query = new SQLQuery(getConnection(), SQLTemplates.DEFAULT);
+    public int getPlayerId(String name) {
+        SQLQuery query = getNewQuery();
         QPlayers p = QPlayers.players;
         Integer res = query
-                .from(p)
-                .where(p.name.eq(name))
-                .uniqueResult(p.id);
+            .from(p)
+            .where(p.name.eq(name))
+            .uniqueResult(p.id);
 
         if (res == null) {
             // it failed to find a player by that name, so attempt to do a UUID lookup
@@ -243,19 +243,21 @@ public class DatabaseManager {
                 return -1;
 
             res = query
-                    .from(p)
-                    .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
-                    .uniqueResult(p.id);
+                .from(p)
+                .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
+                .uniqueResult(p.id);
 
             if (res == null)
                 return -1;
 
             // fix the UUID / name pairing
-            SQLUpdateClause clause = new SQLUpdateClause(getConnection(), SQLTemplates.DEFAULT, p);
-            clause
+            synchronized (this) {
+                SQLUpdateClause clause = new SQLUpdateClause(getConnection(), SQLTemplates.DEFAULT, p);
+                clause
                     .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
                     .set(p.name, name)
                     .execute();
+            }
 
             return res;
         } else {
@@ -263,21 +265,21 @@ public class DatabaseManager {
         }
     }
 
-    public synchronized SQLQuery getNewQuery() {
+    public SQLQuery getNewQuery() {
         if (!connecting)
             return new SQLQuery(getConnection(), MySQLTemplates.DEFAULT);
         else
             return null;
     }
 
-    public synchronized SQLUpdateClause getUpdateClause(RelationalPath path) {
+    public SQLUpdateClause getUpdateClause(RelationalPath path) {
         if (!connecting)
             return new SQLUpdateClause(getConnection(), MySQLTemplates.DEFAULT, path);
         else
             return null;
     }
 
-    public synchronized SQLInsertClause getInsertClause(RelationalPath path) {
+    public SQLInsertClause getInsertClause(RelationalPath path) {
         if (!connecting)
             return new SQLInsertClause(getConnection(), MySQLTemplates.DEFAULT, path);
         else

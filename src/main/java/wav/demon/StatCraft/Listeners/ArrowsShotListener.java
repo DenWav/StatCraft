@@ -1,6 +1,6 @@
 package wav.demon.StatCraft.Listeners;
 
-import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.Player;
@@ -38,22 +38,30 @@ public class ArrowsShotListener implements Listener {
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                    if (query == null)
-                        return;
                     QArrowsShot a = QArrowsShot.arrowsShot;
 
-                    if (query.from(a).where(a.id.eq(id).and(a.type.eq(code.getCode()))).exists()) {
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(a);
-                        clause.where(
-                            a.id.eq(id)
-                            .and(a.type.eq(code.getCode()))
-                        ).set(a.amount, a.amount.add(1)).execute();
-                    } else {
+                    try {
+                        // INSERT
                         SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(a);
+
+                        if (clause == null)
+                            return;
+
                         clause.columns(a.id, a.type, a.amount)
                             .values(id, code.getCode(), 1).execute();
+                    } catch (QueryException e) {
+                        // UPDATE
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(a);
+
+                        if (clause == null)
+                            return;
+
+                        clause.where(
+                            a.id.eq(id),
+                            a.type.eq(code.getCode())
+                        ).set(a.amount, a.amount.add(1)).execute();
                     }
+
                 }
             });
         }
