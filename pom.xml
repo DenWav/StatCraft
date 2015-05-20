@@ -88,6 +88,22 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*:*:*</artifact>
+                                    <excludes>
+                                        <exclude>**/**.java</exclude>
+                                        <exclude>AUTHORS</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>**.txt</exclude>
+                                        <exclude>OSGI-INF/**</exclude>
+                                        <exclude>META-INF/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -151,11 +167,6 @@
             <groupId>com.mysema.querydsl</groupId>
             <artifactId>querydsl-sql</artifactId>
             <version>3.6.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.12</version>
         </dependency>
     </dependencies>
 </project>

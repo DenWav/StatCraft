@@ -15,16 +15,16 @@ import wav.demon.StatCraft.Util;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SCEnderPearls extends SCTemplate {
+public class SCSnowballs extends SCTemplate {
 
-    public SCEnderPearls(StatCraft plugin) {
+    public SCSnowballs(StatCraft plugin) {
         super(plugin);
-        this.plugin.getBaseCommand().registerCommand("enderpearls", this);
+        this.plugin.getBaseCommand().registerCommand("snowballs", this);
     }
 
     @Override
     public boolean hasPermission(CommandSender sender, String[] args) {
-        return sender.hasPermission("statcraft.user.enderpearls");
+        return sender.hasPermission("statcraft.user.snowball");
     }
 
     @Override
@@ -37,7 +37,7 @@ public class SCEnderPearls extends SCTemplate {
             QProjectiles p = QProjectiles.projectiles;
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
 
-            Tuple tuple = query.from(p).where(p.id.eq(id), p.type.eq(ProjectilesCode.ENDER_PEARL.getCode()))
+            Tuple tuple = query.from(p).where(p.id.eq(id), p.type.eq(ProjectilesCode.SNOWBALL.getCode()))
                 .uniqueResult(p.amount, p.totalDistance, p.maxThrow);
 
             if (tuple == null)
@@ -53,7 +53,7 @@ public class SCEnderPearls extends SCTemplate {
 
             return new ResponseBuilder(plugin)
                 .setName(name)
-                .setStatName("Ender Pearls Thrown")
+                .setStatName("Snowballs Thrown")
                 .addStat("Thrown", df.format(amount))
                 .addStat("Distance", Util.distanceUnits(distance))
                 .addStat("Farthest Throw", Util.distanceUnits(maxThrow))
@@ -61,7 +61,7 @@ public class SCEnderPearls extends SCTemplate {
         } catch (Exception ex) {
             return new ResponseBuilder(plugin)
                 .setName(name)
-                .setStatName("Ender Pearls Thrown")
+                .setStatName("Snowballs Thrown")
                 .addStat("Thrown", String.valueOf(0))
                 .addStat("Distance", Util.distanceUnits(0))
                 .addStat("Farthest Throw", Util.distanceUnits(0))
@@ -80,8 +80,6 @@ public class SCEnderPearls extends SCTemplate {
         NumberPath<Integer> path;
         String title;
 
-        System.out.println(args.toString());
-
         String arg;
         if (args.size() > 0)
             arg = args.get(0);
@@ -91,23 +89,23 @@ public class SCEnderPearls extends SCTemplate {
         switch (arg) {
             case "distance":
                 path = p.totalDistance;
-                title = "Distance Traveled With Ender Pearls";
+                title = "Total Snowballs Thrown Distance";
                 distance = true;
                 break;
             case "farthest":
                 path = p.maxThrow;
-                title = "Farthest Ender Pearl Throw";
+                title = "Farthest Snowball Thrown";
                 distance = true;
                 break;
             default:
                 path = p.amount;
-                title = "Ender Pearls Thrown";
+                title = "Snowballs Thrown";
                 break;
         }
 
         List<Tuple> list = query
             .from(p)
-            .where(p.type.eq(ProjectilesCode.ENDER_PEARL.getCode()))
+            .where(p.type.eq(ProjectilesCode.SNOWBALL.getCode()))
             .leftJoin(pl)
             .on(p.id.eq(p.id))
             .groupBy(pl.name)

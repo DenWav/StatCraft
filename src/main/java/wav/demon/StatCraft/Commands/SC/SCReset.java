@@ -228,8 +228,8 @@ public class SCReset extends SCTemplate implements CustomResponse {
 
 
     @Override
-    public String playerStatResponse(String name) { return null; }
+    public String playerStatResponse(String name, List<String> args) { return null; }
 
     @Override
-    public String serverStatListResponse(int num) { return null; }
+    public String serverStatListResponse(int num, List<String> args) { return null; }
 }

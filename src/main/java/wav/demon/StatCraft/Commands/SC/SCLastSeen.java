@@ -10,6 +10,7 @@ import wav.demon.StatCraft.Util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class SCLastSeen extends SCTemplate {
     }
 
     @Override
-    public String playerStatResponse(String name) {
+    public String playerStatResponse(String name, List<String> args) {
         try {
             UUID uuid = plugin.players.get(name);
             OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
@@ -51,8 +52,6 @@ public class SCLastSeen extends SCTemplate {
                     throw new Exception();
                 }
 
-                plugin.getServer().getLogger().info(String.valueOf(result));
-
                 Date date = new Date(((long) result) * 1000L);
                 SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy, hh:mm aa zzz");
                 format.setTimeZone(TimeZone.getTimeZone(plugin.getTimeZone()));
@@ -75,7 +74,7 @@ public class SCLastSeen extends SCTemplate {
     }
 
     @Override
-    public String serverStatListResponse(int num) {
+    public String serverStatListResponse(int num, List<String> args) {
         return null;
     }
 }

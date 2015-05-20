@@ -28,6 +28,7 @@ permissions:
       statcraft.user.playtime: true
       statcraft.user.lastseen: true
       statcraft.user.joins: true
+      statcraft.user.firstjoin: true
       statcraft.user.itemscrafted: true
       statcraft.user.itemsbrewed: true
       statcraft.user.itemscooked: true
@@ -63,6 +64,7 @@ permissions:
       statcraft.user.repairsdone: true
       statcraft.user.damagedealt: true
       statcraft.user.firesstarted: true
+      statcraft.user.snowball: true
       statcraft.user.resetstats: true
   statcraft.user.deaths:
     description: Allows user to view number of deaths
@@ -84,6 +86,9 @@ permissions:
     default: not-op
   statcraft.user.joins:
     description: Allows user to view number of times a player has joined
+    default: not-op
+  statcraft.user.firstjoin:
+    description: Allows user to view when a player first joined the server
     default: not-op
   statcraft.user.itemscrafted:
     description: Allows user to view number of items crafted
@@ -189,6 +194,9 @@ permissions:
     default: not-op
   statcraft.user.firesstarted:
     description: Allows user to view number of fires started
+    default: not-op
+  statcraft.user.snowball:
+    description: Allows user to view stats on snowballs
     default: not-op
   statcraft.user.resetstats:
     description: Allows user to reset their own stats

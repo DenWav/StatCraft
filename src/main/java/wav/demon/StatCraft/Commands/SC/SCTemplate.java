@@ -46,9 +46,9 @@ public abstract class SCTemplate {
 
     public abstract boolean hasPermission(CommandSender sender, String[] args);
 
-    public abstract String playerStatResponse(String name);
+    public abstract String playerStatResponse(String name, List<String> args);
 
-    public abstract String serverStatListResponse(int num);
+    public abstract String serverStatListResponse(int num, List<String> args);
 
     protected String topListResponse(String name, List<Tuple> list) {
         StringBuilder sb = new StringBuilder();
@@ -112,6 +112,40 @@ public abstract class SCTemplate {
                     .append(ChatColor.valueOf(plugin.config().colors.stat_value))
                     .append(Util.transformTime(res == null ? 0 : res))
                     .append(ChatColor.RESET);
+        }
+
+        return sb.toString();
+    }
+
+    protected String topListDistanceResponse(String name, List<Tuple> list) {
+        StringBuilder sb = new StringBuilder();
+
+        sb  .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+            .append("- ").append(name).append(" ")
+            .append(ChatColor.valueOf(plugin.config().colors.stat_separator))
+            .append("| ")
+            .append(ChatColor.RESET)
+            .append("Top ")
+            .append(list.size())
+            .append(" -");
+
+        int i = 0;
+
+        for (Tuple tuple : list) {
+            Integer res = tuple.get(1, Integer.class);
+            sb      .append("\n")
+                .append(ChatColor.BOLD)
+                .append(ChatColor.valueOf(plugin.config().colors.list_number))
+                .append(++i)
+                .append(". ")
+                .append(ChatColor.RESET)
+                .append(ChatColor.valueOf(plugin.config().colors.player_name))
+                .append(tuple.get(0, String.class))
+                .append(ChatColor.WHITE)
+                .append(": ")
+                .append(ChatColor.valueOf(plugin.config().colors.stat_value))
+                .append(Util.distanceUnits(res == null ? 0 : res))
+                .append(ChatColor.RESET);
         }
 
         return sb.toString();

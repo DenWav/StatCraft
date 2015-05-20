@@ -47,6 +47,13 @@ public class DamageDealtListener implements Listener {
                         // currently only skeletons and wither skeletons fall under this category
                         EntityCode code = EntityCode.fromEntity(entity);
 
+                        String entityValue;
+                        if (entity instanceof Player) {
+                            entityValue = String.valueOf(plugin.getDatabaseManager().getPlayerId(entity.getUniqueId()));
+                        } else {
+                            entityValue = entity.getName();
+                        }
+
                         try {
                             // INSERT
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(d);
@@ -55,7 +62,7 @@ public class DamageDealtListener implements Listener {
                                 return;
 
                             clause.columns(d.id, d.entity, d.type, d.amount)
-                                .values(id, entity.getName(), code.getCode(), damageDealt).execute();
+                                .values(id, entityValue, code.getCode(), damageDealt).execute();
                         } catch (QueryException e) {
                             // UPDATE
                             SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(d);
@@ -65,7 +72,7 @@ public class DamageDealtListener implements Listener {
 
                             clause.where(
                                 d.id.eq(id),
-                                d.entity.eq(entity.getName()),
+                                d.entity.eq(entityValue),
                                 d.type.eq(code.getCode())
                             ).set(d.amount, d.amount.add(damageDealt)).execute();
                         }

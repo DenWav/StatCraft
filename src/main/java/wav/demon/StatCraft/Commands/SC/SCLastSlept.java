@@ -10,6 +10,7 @@ import wav.demon.StatCraft.Util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class SCLastSlept extends SCTemplate {
     }
 
     @Override
-    public String playerStatResponse(String name) {
+    public String playerStatResponse(String name, List<String> args) {
         try {
             UUID uuid = plugin.players.get(name);
             OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
@@ -75,7 +76,7 @@ public class SCLastSlept extends SCTemplate {
     }
 
     @Override
-    public String serverStatListResponse(int num) {
+    public String serverStatListResponse(int num, List<String> args) {
         return null;
     }
 }

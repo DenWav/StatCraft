@@ -40,36 +40,35 @@ public class PlayTimeListener implements Listener {
             @Override
             public void run() {
                 // This MUST be done before the other two jobs
-                plugin.setupPlayer(event.getPlayer());
+                final int id = plugin.setupPlayer(event.getPlayer());
                 plugin.players.put(name, uuid);
 
-                // Get id to work with
-                final int id = plugin.getDatabaseManager().getPlayerId(uuid);
+                if (plugin.config().stats.joins) {
+                    plugin.getWorkerThread().schedule(Joins.class, new Runnable() {
+                        @Override
+                        public void run() {
+                            QJoins j = QJoins.joins;
 
-                plugin.getWorkerThread().schedule(Joins.class, new Runnable() {
-                    @Override
-                    public void run() {
-                        QJoins j = QJoins.joins;
+                            try {
+                                // INSERT
+                                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(j);
 
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(j);
+                                if (clause == null)
+                                    return;
 
-                            if (clause == null)
-                                return;
+                                clause.columns(j.id, j.amount).values(id, 1).execute();
+                            } catch (QueryException e) {
+                                // UPDATE
+                                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(j);
 
-                            clause.columns(j.id, j.amount).values(id, 1).execute();
-                        } catch (QueryException e) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(j);
+                                if (clause == null)
+                                    return;
 
-                            if (clause == null)
-                                return;
-
-                            clause.where(j.id.eq(id)).set(j.amount, j.amount.add(1)).execute();
+                                clause.where(j.id.eq(id)).set(j.amount, j.amount.add(1)).execute();
+                            }
                         }
-                    }
-                });
+                    });
+                }
 
                 plugin.getWorkerThread().schedule(LastJoinTime.class, new Runnable() {
                     @Override

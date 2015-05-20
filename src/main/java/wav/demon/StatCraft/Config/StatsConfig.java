@@ -25,6 +25,8 @@ public class StatsConfig extends AnnotatedConfig {
     @ConfigComment({"Keep track of the number of times a player joins the server.",
                     "play_time must be true to enable this."})
     public boolean joins = true;
+    @ConfigComment("Record the date when a player first joined joined the server.")
+    public boolean first_join_time = true;
 
     @NewLine
     @ConfigComment("Record number of items a player has crafted.")
@@ -148,8 +150,10 @@ public class StatsConfig extends AnnotatedConfig {
     public boolean chicken_hatches = true;
 
     @NewLine
-    @ConfigComment("Record how many ender pearls have been thrown.")
+    @ConfigComment("Record stats on ender pearls.")
     public boolean ender_pearls = true;
+    @ConfigComment("Record stats on snowballs.")
+    public boolean snow_balls = true;
 
     @NewLine
     @ConfigComment("Record how many animals a player has killed.")

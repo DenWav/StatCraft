@@ -80,7 +80,7 @@ public class Util {
 
     public static String distanceUnits(int distance) {
         double distanceM = distance / 100.0;
-        DecimalFormat df = new DecimalFormat("#,##0.0");
+        DecimalFormat df = new DecimalFormat("#,##0.00");
 
         if (distanceM > 1000) {
             distanceM /= 1000;

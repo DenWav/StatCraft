@@ -11,6 +11,8 @@ import wav.demon.StatCraft.Commands.ResponseBuilder;
 import wav.demon.StatCraft.Querydsl.QBlockBreak;
 import wav.demon.StatCraft.StatCraft;
 
+import java.util.List;
+
 public class SCMined extends SCTemplate implements CustomResponse {
 
     public SCMined(StatCraft plugin) {
@@ -24,12 +26,12 @@ public class SCMined extends SCTemplate implements CustomResponse {
     }
 
     @Override
-    public String playerStatResponse(String name) {
+    public String playerStatResponse(String name, List<String> args) {
         return null;
     }
 
     @Override
-    public String serverStatListResponse(int num) {
+    public String serverStatListResponse(int num, List<String> args) {
         return null;
     }
 

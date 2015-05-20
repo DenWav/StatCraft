@@ -30,6 +30,14 @@ public class WordsSpokenListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String[] message = event.getMessage().trim().split("\\s+|[\\-_]+");
 
+        final List<String> words = new LinkedList<>();
+
+        for (String word : message) {
+            String modified = word.replaceAll("[^\\w]+", "").toLowerCase();
+            if (modified.length() >= 2)
+                words.add(modified);
+        }
+
         plugin.getWorkerThread().schedule(MessagesSpoken.class, new Runnable() {
             @Override
             public void run() {
@@ -44,7 +52,7 @@ public class WordsSpokenListener implements Listener {
                     if (clause == null)
                         return;
 
-                    clause.columns(m.id, m.amount).values(id, 1).execute();
+                    clause.columns(m.id, m.amount, m.wordsSpoken).values(id, 1, words.size()).execute();
                 } catch (QueryException e) {
                     // UPDATE
                     SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(m);
@@ -52,7 +60,8 @@ public class WordsSpokenListener implements Listener {
                     if (clause == null)
                         return;
 
-                    clause.where(m.id.eq(id)).set(m.amount, m.amount.add(1)).execute();
+                    clause.where(m.id.eq(id)).set(m.amount, m.amount.add(1))
+                        .set(m.wordsSpoken, m.wordsSpoken.add(words.size())).execute();
                 }
             }
         });
@@ -60,14 +69,6 @@ public class WordsSpokenListener implements Listener {
         plugin.getWorkerThread().schedule(WordFrequency.class, new Runnable() {
             @Override
             public void run() {
-                List<String> words = new LinkedList<>();
-
-                for (String word : message) {
-                    String modified = word.replaceAll("[^\\w]+", "").toLowerCase();
-                    if (modified.length() >= 2)
-                        words.add(modified);
-                }
-
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                 QWordFrequency w = QWordFrequency.wordFrequency;

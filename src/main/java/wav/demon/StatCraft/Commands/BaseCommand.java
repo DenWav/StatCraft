@@ -9,6 +9,8 @@ import org.bukkit.event.Listener;
 import wav.demon.StatCraft.Commands.SC.SCTemplate;
 import wav.demon.StatCraft.StatCraft;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -74,6 +76,8 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
             // control variables
             boolean publicCmd = false;
             boolean top = false;
+            String[] secondaryArgs = null;
+            final List<String> secondaryArgsList = new LinkedList<>();
             final List<String> players = new LinkedList<>();
             // if top == true, this is how many to display
             int topNumber = 0;
@@ -95,10 +99,31 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
                         sender.sendMessage("Not a valid \"-top\" value. Please use \"-top#\" with # being an integer.");
                         return;
                     }
-                } else {
+                } else if (!arg.startsWith("-")) {
                     players.add(arg);
+                } else {
+                    secondaryArgsList.add(arg.substring(1));
                 }
             }
+
+            Class<? extends SCTemplate> clazz = command.getClass();
+            try {
+                Method method;
+                if (top) {
+                    method = clazz.getMethod("serverStatListResponse", int.class, List.class);
+                } else {
+                    method = clazz.getMethod("playerStatResponse", String.class, List.class);
+                }
+                SecondaryArgument annotation = method.getAnnotation(SecondaryArgument.class);
+                if (annotation != null) {
+                    secondaryArgs = annotation.value();
+                }
+            } catch (NoSuchMethodException e) {/*Won't happen*/e.printStackTrace();}
+
+            if (secondaryArgs != null)
+                secondaryArgsList.retainAll(Arrays.asList(secondaryArgs));
+            else
+                secondaryArgsList.retainAll(Collections.emptyList());
 
             if (players.size() == 0)
                 players.add(sender.getName());
@@ -111,8 +136,9 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
                 @Override
                 public void run() {
                     if (finalTop) {
+
                         // the top argument takes precedence over player's names listed
-                        final String response = command.serverStatListResponse(finalTopNumber);
+                        final String response = command.serverStatListResponse(finalTopNumber, secondaryArgsList);
 
                         plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
                             @Override
@@ -135,7 +161,7 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
                             plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
                                 @Override
                                 public void run() {
-                                    final String response = command.playerStatResponse(player);
+                                    final String response = command.playerStatResponse(player, secondaryArgsList);
 
                                     if (finalPublicCmd) {
                                         String endResponse = ChatColor.valueOf(plugin.config().colors.public_identifier)

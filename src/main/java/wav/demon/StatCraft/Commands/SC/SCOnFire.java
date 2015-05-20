@@ -23,7 +23,7 @@ public class SCOnFire extends SCTemplate {
     }
 
     @Override
-    public String playerStatResponse(String name) {
+    public String playerStatResponse(String name, List<String> args) {
         try {
             int id = plugin.getDatabaseManager().getPlayerId(name);
             if (id < 0)
@@ -51,7 +51,7 @@ public class SCOnFire extends SCTemplate {
     }
 
     @Override
-    public String serverStatListResponse(int num) {
+    public String serverStatListResponse(int num, List<String> args) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
         if (query == null)
             return "Sorry, there seems to be an issue connecting to the database right now.";

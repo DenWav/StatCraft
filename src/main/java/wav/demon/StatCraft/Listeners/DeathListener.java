@@ -4,6 +4,7 @@ import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -34,7 +35,8 @@ public class DeathListener implements Listener {
         final String world = event.getEntity().getLocation().getWorld().getName();
         String entity = null;
         String cause = null;
-        EntityCode code = null;
+        EntityCode code;
+        String causeValue;
 
         EntityDamageEvent damageEvent = event.getEntity().getLastDamageCause();
         if (damageEvent instanceof EntityDamageByEntityEvent) {
@@ -42,15 +44,21 @@ public class DeathListener implements Listener {
             Entity killer = damageByEntityEvent.getDamager();
             entity = killer.getName();
             code = EntityCode.fromEntity(killer);
+            if (killer instanceof Player) {
+                causeValue = String.valueOf(plugin.getDatabaseManager().getPlayerId(killer.getUniqueId()));
+            } else {
+                causeValue = killer.getName();
+            }
         } else {
             EntityDamageEvent.DamageCause damageCause = damageEvent.getCause();
             cause = damageCause.name();
             code = EntityCode.SKELETON; // default to 0
+            causeValue = cause;
         }
 
         final String finalEntity = entity;
         final EntityCode finalCode = code;
-        final String finalCause = cause;
+        final String finalCause = causeValue;
         plugin.getWorkerThread().schedule(Death.class, new Runnable() {
             @Override
             public void run() {

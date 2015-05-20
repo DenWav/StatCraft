@@ -19,6 +19,7 @@ import wav.demon.StatCraft.Commands.SC.SCDamageTaken;
 import wav.demon.StatCraft.Commands.SC.SCDeaths;
 import wav.demon.StatCraft.Commands.SC.SCEggsThrown;
 import wav.demon.StatCraft.Commands.SC.SCEnderPearls;
+import wav.demon.StatCraft.Commands.SC.SCFirstJoin;
 import wav.demon.StatCraft.Commands.SC.SCFishCaught;
 import wav.demon.StatCraft.Commands.SC.SCHighestLevel;
 import wav.demon.StatCraft.Commands.SC.SCItemsCrafted;
@@ -32,6 +33,7 @@ import wav.demon.StatCraft.Commands.SC.SCMessagesSpoken;
 import wav.demon.StatCraft.Commands.SC.SCMined;
 import wav.demon.StatCraft.Commands.SC.SCOnFire;
 import wav.demon.StatCraft.Commands.SC.SCPlayTime;
+import wav.demon.StatCraft.Commands.SC.SCSnowballs;
 import wav.demon.StatCraft.Commands.SC.SCTabCompletes;
 import wav.demon.StatCraft.Commands.SC.SCTimeSlept;
 import wav.demon.StatCraft.Commands.SC.SCToolsBroken;
@@ -60,6 +62,7 @@ import wav.demon.StatCraft.Listeners.KillListener;
 import wav.demon.StatCraft.Listeners.OnFireListener;
 import wav.demon.StatCraft.Listeners.PlayTimeListener;
 import wav.demon.StatCraft.Listeners.SleepyTimeListener;
+import wav.demon.StatCraft.Listeners.SnowballListener;
 import wav.demon.StatCraft.Listeners.TabCompleteListener;
 import wav.demon.StatCraft.Listeners.ToolsBrokenListener;
 import wav.demon.StatCraft.Listeners.WordsSpokenListener;
@@ -71,6 +74,7 @@ import wav.demon.StatCraft.Querydsl.EnterBed;
 import wav.demon.StatCraft.Querydsl.LastJoinTime;
 import wav.demon.StatCraft.Querydsl.Players;
 import wav.demon.StatCraft.Querydsl.QEnterBed;
+import wav.demon.StatCraft.Querydsl.QFirstJoinTime;
 import wav.demon.StatCraft.Querydsl.QLastJoinTime;
 import wav.demon.StatCraft.Querydsl.QLastLeaveTime;
 import wav.demon.StatCraft.Querydsl.QLeaveBed;
@@ -160,10 +164,8 @@ public class StatCraft extends JavaPlugin {
             @Override
             public void run() {
                 for (Player player : getServer().getOnlinePlayers()) {
-                    setupPlayer(player);
-
                     // Insert game join / bed enter data
-                    final int id = getDatabaseManager().getPlayerId(player.getUniqueId());
+                    final int id = setupPlayer(player);
 
                     // Setup their current joins time here
                     getWorkerThread().schedule(LastJoinTime.class, new Runnable() {
@@ -358,7 +360,7 @@ public class StatCraft extends JavaPlugin {
             }
         }
 
-        if (config.stats.play_time) {
+        if (config.stats.play_time || config.stats.first_join_time) {
             getServer().getPluginManager().registerEvents(new PlayTimeListener(this), this);
             if (config.stats.last_seen) {
                 statsEnabled.append(" last_seen");
@@ -371,6 +373,10 @@ public class StatCraft extends JavaPlugin {
             if (config.stats.joins) {
                 statsEnabled.append(" joins");
                 new SCJoins(this);
+            }
+            if (config.stats.first_join_time) {
+                statsEnabled.append(" first_join_time");
+                new SCFirstJoin(this);
             }
         }
 
@@ -497,6 +503,12 @@ public class StatCraft extends JavaPlugin {
             new SCEnderPearls(this);
         }
 
+        if (config.stats.snow_balls) {
+            getServer().getPluginManager().registerEvents(new SnowballListener(this), this);
+            statsEnabled.append(" snow_balls");
+            new SCSnowballs(this);
+        }
+
         getLogger().info("Successfully enabled:" + statsEnabled);
 
         new SCReset(this);
@@ -514,7 +526,7 @@ public class StatCraft extends JavaPlugin {
             getDatabaseManager().close();
      }
 
-    public void setupPlayer(OfflinePlayer player) {
+    public int setupPlayer(OfflinePlayer player) {
         byte[] array = Util.UUIDToByte(player.getUniqueId());
         String name = player.getName();
         // Check player / id listing
@@ -525,12 +537,14 @@ public class StatCraft extends JavaPlugin {
         if (result == null) {
             SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
             // Blank out any conflicting names
-            update  .where(p.name.eq(name))
+            update
+                .where(p.name.eq(name))
                 .set(p.name, "")
                 .execute();
             SQLInsertClause insert = getDatabaseManager().getInsertClause(p);
             // Insert new player listing
-            insert  .columns(p.uuid, p.name)
+            insert
+                .columns(p.uuid, p.name)
                 .values(array, name)
                 .execute();
         } else if (!result.getName().equals(name)) {
@@ -540,10 +554,31 @@ public class StatCraft extends JavaPlugin {
                 .set(p.name, "")
                 .execute();
             // Change name of UUID player
-            update  .where(p.uuid.eq(array))
+            update
+                .where(p.uuid.eq(array))
                 .set(p.name, name)
                 .execute();
         }
+
+        int id = getDatabaseManager().getPlayerId(player.getUniqueId());
+
+        if (config.stats.first_join_time) {
+            query = getDatabaseManager().getNewQuery();
+            QFirstJoinTime f = QFirstJoinTime.firstJoinTime;
+            Integer time = query.from(f).where(f.id.eq(id)).uniqueResult(f.time);
+            time = time == null ? 0 : time;
+            if (time != (int)(player.getFirstPlayed() / 1000L)) {
+                try {
+                    SQLInsertClause clause = getDatabaseManager().getInsertClause(f);
+                    clause.columns(f.id, f.time).values(id, (int)(player.getFirstPlayed() / 1000L)).execute();
+                } catch (QueryException e) {
+                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(f);
+                    clause.where(f.id.eq(id)).set(f.time, (int)(player.getFirstPlayed() / 1000L)).execute();
+                }
+            }
+        }
+
+        return id;
     }
 
     /**

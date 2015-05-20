@@ -44,7 +44,7 @@ Statistics Supported
 | Eggs Thrown                                     | **Implemented**                                    |
 | Chickens Hatched                                | **Implemented**                                    |
 | Ender Pearls Thrown                             | **Implemented**                                    |
-| Snow Balls Thrown                               | Unimplemented                                      |
+| Snow Balls Thrown                               | **Implemented**                                      |
 | Animals Bred                                    | Unimplemented                                      |
 | TNT Detonated                                   | Unimplemented                                      |
 | Enchants Done                                   | Unimplemented                                      |

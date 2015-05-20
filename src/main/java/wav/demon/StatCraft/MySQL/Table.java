@@ -12,13 +12,6 @@ public enum Table {
             "UNIQUE INDEX (id, animal)" +
             ")",
             Arrays.asList("id", "animal", "amount")),
-    ARROWS_SHOT("(" +
-            "id INT UNSIGNED NOT NULL, " +
-            "type TINYINT NOT NULL, " +
-            "amount INT UNSIGNED NOT NULL, " +
-            "UNIQUE INDEX (id, type)" +
-            ")",
-            Arrays.asList("id", "type", "amount")),
     BLOCK_BREAK("(" +
             "id INT UNSIGNED NOT NULL, " +
             "blockid SMALLINT NOT NULL, " +
@@ -89,13 +82,6 @@ public enum Table {
             "UNIQUE INDEX (id, food)" +
             ")",
             Arrays.asList("id", "food", "amount")),
-    EGGS_THROWN("(" +
-            "id INT UNSIGNED NOT NULL, " +
-            "hatched BOOL NOT NULL, " +
-            "amount INT UNSIGNED NOT NULL, " +
-            "UNIQUE INDEX (id, hatched)" +
-            ")",
-            Arrays.asList("id", "hatched", "amount")),
     ENCHANTS_DONE("(" +
             "id INT UNSIGNED NOT NULL, " +
             "item SMALLINT NOT NULL, " +
@@ -103,14 +89,6 @@ public enum Table {
             "UNIQUE INDEX (id, item)" +
             ")",
             Arrays.asList("id", "item", "amount")),
-    ENDER_PEARLS("(" +
-            "id INT UNSIGNED NOT NULL, " +
-            "amount INT UNSIGNED NOT NULL, " +
-            "distance INT UNSIGNED NOT NULL, " +
-            "max_throw INT UNSIGNED NOT NULL, " +
-            "UNIQUE INDEX (id)" +
-            ")",
-            Arrays.asList("id", "amount", "distance", "max_throw")),
     ENTER_BED("(" +
             "id INT UNSIGNED NOT NULL, " +
             "time INT NOT NULL, " +
@@ -125,6 +103,12 @@ public enum Table {
             Arrays.asList("id", "distance")),
     FIRES_STARTED(Table.simple,
             Arrays.asList("id", "amount")),
+    FIRST_JOIN_TIME("(" +
+            "id INT UNSIGNED NOT NULL, " +
+            "time INT NOT NULL, " +
+            "UNIQUE INDEX (id)" +
+            ")",
+            Arrays.asList("id", "time")),
     FISH_CAUGHT("(" +
             "id INT UNSIGNED NOT NULL, " +
             "item SMALLINT NOT NULL, " +
@@ -210,8 +194,13 @@ public enum Table {
             "UNIQUE INDEX (id)" +
             ")",
             Arrays.asList("id", "time")),
-    MESSAGES_SPOKEN(Table.simple,
-            Arrays.asList("id", "amount")),
+    MESSAGES_SPOKEN("(" +
+            "id INT UNSIGNED NOT NULL, " +
+            "amount INT UNSIGNED NOT NULL, " +
+            "words_spoken INT UNSIGNED NOT NULL, " +
+            "UNIQUE INDEX (id)" +
+            ")",
+            Arrays.asList("id", "amount", "words_spoken")),
     MOVE("(" +
             "id INT UNSIGNED NOT NULL, " +
             "vehicle TINYINT NOT NULL, " +
@@ -235,6 +224,15 @@ public enum Table {
             Arrays.asList("uuid", "name", "id")),
     PLAY_TIME(Table.simple,
             Arrays.asList("id", "amount")),
+    PROJECTILES("(" +
+            "id INT UNSIGNED, " +
+            "type SMALLINT UNSIGNED, " +
+            "amount INT UNSIGNED, " +
+            "total_distance INT UNSIGNED, " +
+            "max_throw INT UNSIGNED, " +
+            "UNIQUE INDEX (id, type)" +
+            ")",
+            Arrays.asList("id", "type", "amount", "total_distance", "max_throw")),
     SHEARING("(" +
             "id INT UNSIGNED NOT NULL, " +
             "color TINYINT NOT NULL, " +

@@ -3,6 +3,8 @@ package wav.demon.StatCraft.Listeners;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -26,13 +28,22 @@ public class KillListener implements Listener {
     public void onKill(EntityDeathEvent event) {
         if (event.getEntity().getKiller() != null) {
             final UUID uuid = event.getEntity().getKiller().getUniqueId();
-            final String entity = event.getEntity().getName();
+            final LivingEntity entity = event.getEntity();
             final EntityCode code = EntityCode.fromEntity(event.getEntity());
+
+
 
             plugin.getWorkerThread().schedule(Kills.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
+
+                    String entityValue;
+                    if (entity instanceof Player) {
+                        entityValue = String.valueOf(plugin.getDatabaseManager().getPlayerId(entity.getUniqueId()));
+                    } else {
+                        entityValue = entity.getName();
+                    }
 
                     QKills k = QKills.kills;
 
@@ -44,7 +55,7 @@ public class KillListener implements Listener {
                             return;
 
                         clause.columns(k.id, k.entity, k.type, k.amount)
-                            .values(id, entity, code.getCode(), 1).execute();
+                            .values(id, entityValue, code.getCode(), 1).execute();
                     } catch (QueryException e) {
                         // UPDATE
                         SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
@@ -54,7 +65,7 @@ public class KillListener implements Listener {
 
                         clause.where(
                             k.id.eq(id),
-                            k.entity.eq(entity),
+                            k.entity.eq(entityValue),
                             k.type.eq(code.getCode())
                         ).set(k.amount, k.amount.add(1)).execute();
                     }
