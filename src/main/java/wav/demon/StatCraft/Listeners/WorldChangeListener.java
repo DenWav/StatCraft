@@ -27,7 +27,7 @@ public class WorldChangeListener implements Listener {
         final String fromWorld = event.getFrom().getName();
         final String toWorld = event.getPlayer().getWorld().getName();
 
-        plugin.getWorkerThread().schedule(WorldChange.class, new Runnable() {
+        plugin.getThreadManager().schedule(WorldChange.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

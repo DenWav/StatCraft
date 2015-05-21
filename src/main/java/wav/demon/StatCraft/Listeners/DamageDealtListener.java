@@ -36,7 +36,7 @@ public class DamageDealtListener implements Listener {
             if (damagee instanceof LivingEntity) {
                 final LivingEntity entity = (LivingEntity) event.getEntity();
 
-                plugin.getWorkerThread().schedule(DamageDealt.class, new Runnable() {
+                plugin.getThreadManager().schedule(DamageDealt.class, new Runnable() {
                     @Override
                     public void run() {
                         int id = plugin.getDatabaseManager().getPlayerId(uuid);

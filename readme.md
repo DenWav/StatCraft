@@ -15,7 +15,7 @@ Statistics Supported
 | Player Deaths                                   | **Implemented**                                    |
 | Blocks Broken                                   | **Implemented**                                    |
 | Blocks Placed                                   | **Implemented**                                    |
-| Time Played                                     | Implementation In Progress - Will Use Server Stats |
+| Time Played                                     | **Implemented**                                    |
 | Items Crafted                                   | **Implemented**                                    |
 | Time On Fire                                    | **Implemented**                                    |
 | World Changes (Nether Portal, End Portal, etc.) | **Implemented**                                    |
@@ -36,15 +36,15 @@ Statistics Supported
 | Fish Caught                                     | **Implemented**                                    |
 | Number Of Joins                                 | **Implemented**                                    |
 | XP Gained                                       | **Implemented**                                    |
-| Distance Traveled                               | Unimplemented - Will Use Server Stats              |
+| Distance Traveled                               | **Implemented**                                    |
 | Number Of Kills                                 | **Implemented**                                    |
-| Number Of Times Jumped                          | Unimplemented                                      |
-| Distance Fallen                                 | Unimplemented - Will Use Server Stats              |
+| Number Of Times Jumped                          | **Implemented**                                    |
+| Distance Fallen                                 | **Implemented**                                    |
 | Number Of Deaths In Each World                  | **Implemented**                                    |
 | Eggs Thrown                                     | **Implemented**                                    |
 | Chickens Hatched                                | **Implemented**                                    |
 | Ender Pearls Thrown                             | **Implemented**                                    |
-| Snow Balls Thrown                               | **Implemented**                                      |
+| Snow Balls Thrown                               | **Implemented**                                    |
 | Animals Bred                                    | Unimplemented                                      |
 | TNT Detonated                                   | Unimplemented                                      |
 | Enchants Done                                   | Unimplemented                                      |

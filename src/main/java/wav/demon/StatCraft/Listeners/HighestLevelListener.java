@@ -26,7 +26,7 @@ public class HighestLevelListener implements Listener {
         final int newLevel = event.getNewLevel();
         final UUID uuid = event.getPlayer().getUniqueId();
 
-        plugin.getWorkerThread().schedule(HighestLevel.class, new Runnable() {
+        plugin.getThreadManager().schedule(HighestLevel.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

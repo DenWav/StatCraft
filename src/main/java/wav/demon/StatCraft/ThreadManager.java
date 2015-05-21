@@ -1,7 +1,6 @@
-package wav.demon.StatCraft.MySQL;
+package wav.demon.StatCraft;
 
 import com.mysema.query.QueryException;
-import wav.demon.StatCraft.StatCraft;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -15,14 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
  *  This will prevent multiple events firing for multiple players and multiple locations from causing thread
  *  errors on frequently accessed tables.
  */
-public class WorkerThread implements Runnable {
+public class ThreadManager implements Runnable {
 
     final private StatCraft plugin;
 
     final private ConcurrentHashMap<Class<?>, List<Runnable>> map = new ConcurrentHashMap<>();
     final private ConcurrentHashMap<Class<?>, Integer> work = new ConcurrentHashMap<>();
 
-    public WorkerThread(StatCraft plugin) {
+    public ThreadManager(StatCraft plugin) {
         this.plugin = plugin;
     }
 
@@ -77,28 +76,30 @@ public class WorkerThread implements Runnable {
         }
         map.clear();
     }
-}
 
-class WorkerInstance implements Runnable {
+    private class WorkerInstance implements Runnable {
 
-    final private List<Runnable> list;
-    final private StatCraft plugin;
+        final private List<Runnable> list;
+        final private StatCraft plugin;
 
-    public WorkerInstance(List<Runnable> list, StatCraft plugin) {
-        this.list = list;
-        this.plugin = plugin;
-    }
+        public WorkerInstance(List<Runnable> list, StatCraft plugin) {
+            this.list = list;
+            this.plugin = plugin;
+        }
 
-    @Override
-    public void run() {
-        for (Runnable runnable : list) {
-            try {
-                runnable.run();
-            } catch (QueryException e) {
-                // This is more than likely cause by a connection exception
-                plugin.incrementError();
-                e.printStackTrace();
+        @Override
+        public void run() {
+            for (Runnable runnable : list) {
+                try {
+                    runnable.run();
+                } catch (QueryException e) {
+                    // This is more than likely cause by a connection exception
+                    plugin.incrementError();
+                    e.printStackTrace();
+                }
             }
         }
     }
+
 }
+

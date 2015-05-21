@@ -26,7 +26,7 @@ public class ToolsBrokenListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final short item = (short) event.getBrokenItem().getType().getId();
 
-        plugin.getWorkerThread().schedule(ToolsBroken.class, new Runnable() {
+        plugin.getThreadManager().schedule(ToolsBroken.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

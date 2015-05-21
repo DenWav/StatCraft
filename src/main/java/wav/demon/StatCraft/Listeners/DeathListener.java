@@ -59,7 +59,7 @@ public class DeathListener implements Listener {
         final String finalEntity = entity;
         final EntityCode finalCode = code;
         final String finalCause = causeValue;
-        plugin.getWorkerThread().schedule(Death.class, new Runnable() {
+        plugin.getThreadManager().schedule(Death.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -91,7 +91,7 @@ public class DeathListener implements Listener {
         });
 
         if (finalEntity != null) {
-            plugin.getWorkerThread().schedule(DeathByCause.class, new Runnable() {
+            plugin.getThreadManager().schedule(DeathByCause.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -124,7 +124,7 @@ public class DeathListener implements Listener {
                 }
             });
         } else if (finalCause != null) {
-            plugin.getWorkerThread().schedule(DeathByCause.class, new Runnable() {
+            plugin.getThreadManager().schedule(DeathByCause.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);

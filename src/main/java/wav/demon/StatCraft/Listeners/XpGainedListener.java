@@ -27,7 +27,7 @@ public class XpGainedListener implements Listener {
         if (amount > 0) {
             final UUID uuid = event.getPlayer().getUniqueId();
 
-            plugin.getWorkerThread().schedule(XpGained.class, new Runnable() {
+            plugin.getThreadManager().schedule(XpGained.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);

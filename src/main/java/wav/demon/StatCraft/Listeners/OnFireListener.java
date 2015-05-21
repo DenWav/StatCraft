@@ -3,6 +3,7 @@ package wav.demon.StatCraft.Listeners;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -33,7 +34,7 @@ public class OnFireListener implements Listener {
 
                 final UUID uuid = event.getEntity().getUniqueId();
 
-                plugin.getWorkerThread().schedule(OnFire.class, new Runnable() {
+                plugin.getThreadManager().schedule(OnFire.class, new Runnable() {
                     @Override
                     public void run() {
                         int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -75,7 +76,13 @@ public class OnFireListener implements Listener {
                         giveWarning = false;
                 }
                 if (giveWarning) {
-                    event.getEntity().getServer().broadcastMessage("§c" + event.getEntity().getName() + " is on fire! Oh no!");
+                    event.getEntity().getServer().broadcastMessage(
+                        ChatColor.RED +
+                        plugin.config().stats.on_fire_announce_message.replaceAll(
+                            "~",
+                            ((Player) event.getEntity()).getDisplayName() + ChatColor.RED
+                        )
+                    );
                     plugin.setLastFireTime(uuid, (int) (System.currentTimeMillis() / 1000));
                 }
             }

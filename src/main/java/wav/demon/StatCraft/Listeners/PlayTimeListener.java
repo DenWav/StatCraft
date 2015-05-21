@@ -1,23 +1,26 @@
 package wav.demon.StatCraft.Listeners;
 
 import com.mysema.query.QueryException;
-import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+import org.bukkit.Statistic;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import wav.demon.StatCraft.Querydsl.Joins;
+import wav.demon.StatCraft.Querydsl.Jumps;
 import wav.demon.StatCraft.Querydsl.LastJoinTime;
 import wav.demon.StatCraft.Querydsl.LastLeaveTime;
+import wav.demon.StatCraft.Querydsl.Move;
 import wav.demon.StatCraft.Querydsl.PlayTime;
 import wav.demon.StatCraft.Querydsl.Players;
 import wav.demon.StatCraft.Querydsl.QJoins;
 import wav.demon.StatCraft.Querydsl.QLastJoinTime;
 import wav.demon.StatCraft.Querydsl.QLastLeaveTime;
 import wav.demon.StatCraft.Querydsl.QPlayTime;
+import wav.demon.StatCraft.ServerStatUpdater;
 import wav.demon.StatCraft.StatCraft;
 
 import java.util.UUID;
@@ -36,7 +39,7 @@ public class PlayTimeListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
-        plugin.getWorkerThread().schedule(Players.class, new Runnable() {
+        plugin.getThreadManager().schedule(Players.class, new Runnable() {
             @Override
             public void run() {
                 // This MUST be done before the other two jobs
@@ -44,7 +47,7 @@ public class PlayTimeListener implements Listener {
                 plugin.players.put(name, uuid);
 
                 if (plugin.config().stats.joins) {
-                    plugin.getWorkerThread().schedule(Joins.class, new Runnable() {
+                    plugin.getThreadManager().schedule(Joins.class, new Runnable() {
                         @Override
                         public void run() {
                             QJoins j = QJoins.joins;
@@ -70,7 +73,7 @@ public class PlayTimeListener implements Listener {
                     });
                 }
 
-                plugin.getWorkerThread().schedule(LastJoinTime.class, new Runnable() {
+                plugin.getThreadManager().schedule(LastJoinTime.class, new Runnable() {
                     @Override
                     public void run() {
                         QLastJoinTime l = QLastJoinTime.lastJoinTime;
@@ -94,6 +97,9 @@ public class PlayTimeListener implements Listener {
                         }
                     }
                 });
+
+                plugin.getThreadManager().schedule(Move.class, new ServerStatUpdater.Move(plugin));
+                plugin.getThreadManager().schedule(Jumps.class, new ServerStatUpdater.Jump(plugin));
             }
         });
     }
@@ -103,7 +109,7 @@ public class PlayTimeListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
-        plugin.getWorkerThread().schedule(LastLeaveTime.class, new Runnable() {
+        plugin.getThreadManager().schedule(LastLeaveTime.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -130,41 +136,31 @@ public class PlayTimeListener implements Listener {
             }
         });
 
-        plugin.getWorkerThread().schedule(PlayTime.class, new Runnable() {
+        final int currentPlayTime = (int) Math.round(event.getPlayer().getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
+
+        plugin.getThreadManager().schedule(PlayTime.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                if (query == null)
-                    return;
+                QPlayTime p = QPlayTime.playTime;
 
-                QLastJoinTime j = QLastJoinTime.lastJoinTime;
-                Integer lastJoinTime = query.from(j).where(j.id.eq(id)).uniqueResult(j.time);
-                lastJoinTime = lastJoinTime == null ? 0 : lastJoinTime;
+                try {
+                    // INSERT
+                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(p);
 
-                if (lastJoinTime != 0) {
-                    int playTime = currentTime - lastJoinTime;
+                    if (clause == null)
+                        return;
 
-                    QPlayTime p = QPlayTime.playTime;
+                    clause.columns(p.id, p.amount).values(id, currentPlayTime).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(p);
 
-                    try {
-                        // INSERT
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(p);
+                    if (clause == null)
+                        return;
 
-                        if (clause == null)
-                            return;
-
-                        clause.columns(p.id, p.amount).values(id, playTime).execute();
-                    } catch (QueryException e) {
-                        // UPDATE
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(p);
-
-                        if (clause == null)
-                            return;
-
-                        clause.where(p.id.eq(id)).set(p.amount, p.amount.add(playTime)).execute();
-                    }
+                    clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute();
                 }
             }
         });

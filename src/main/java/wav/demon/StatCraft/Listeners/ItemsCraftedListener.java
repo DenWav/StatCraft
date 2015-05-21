@@ -57,7 +57,7 @@ public class ItemsCraftedListener implements Listener {
 
     private void updateData(final short itemid, short initDamage, final UUID uuid, final int amount) {
         final short damage = Util.damageValue(itemid, initDamage);
-        plugin.getWorkerThread().schedule(ItemsCrafted.class, new Runnable() {
+        plugin.getThreadManager().schedule(ItemsCrafted.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

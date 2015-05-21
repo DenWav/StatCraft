@@ -31,7 +31,7 @@ public class BlockListener implements Listener {
         final short damage = Util.damageValue(blockid, event.getBlock().getData());
         final UUID uuid = event.getPlayer().getUniqueId();
 
-        plugin.getWorkerThread().schedule(BlockBreak.class, new Runnable() {
+        plugin.getThreadManager().schedule(BlockBreak.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -70,7 +70,7 @@ public class BlockListener implements Listener {
         final short damage = Util.damageValue(blockid, event.getBlock().getData());
         final UUID uuid = event.getPlayer().getUniqueId();
 
-        plugin.getWorkerThread().schedule(BlockPlace.class, new Runnable() {
+        plugin.getThreadManager().schedule(BlockPlace.class, new Runnable() {
             @SuppressWarnings("deprecation")
             @Override
             public void run() {

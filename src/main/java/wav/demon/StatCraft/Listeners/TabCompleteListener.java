@@ -25,7 +25,7 @@ public class TabCompleteListener implements Listener {
     public void onTabComplete(PlayerChatTabCompleteEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
 
-        plugin.getWorkerThread().schedule(TabComplete.class, new Runnable() {
+        plugin.getThreadManager().schedule(TabComplete.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

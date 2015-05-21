@@ -29,7 +29,7 @@ public class ItemPickUpListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final int amount = event.getItem().getItemStack().getAmount();
 
-        plugin.getWorkerThread().schedule(ItemPickups.class, new Runnable() {
+        plugin.getThreadManager().schedule(ItemPickups.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

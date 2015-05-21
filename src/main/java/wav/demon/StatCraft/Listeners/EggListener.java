@@ -36,7 +36,7 @@ public class EggListener implements Listener {
         final double distance = playerLocation.distance(eggLocation);
         final int finalDistance = (int) Math.round(distance * 100.0);
 
-        plugin.getWorkerThread().schedule(Projectiles.class, new Runnable() {
+        plugin.getThreadManager().schedule(Projectiles.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

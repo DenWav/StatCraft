@@ -71,7 +71,7 @@ public class FishCaughtListener implements Listener {
                         break;
                 }
 
-                plugin.getWorkerThread().schedule(FishCaught.class, new Runnable() {
+                plugin.getThreadManager().schedule(FishCaught.class, new Runnable() {
                     @Override
                     public void run() {
                         int id = plugin.getDatabaseManager().getPlayerId(uuid);

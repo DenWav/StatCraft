@@ -29,7 +29,7 @@ public class ItemDropListener implements Listener {
         final short damage = Util.damageValue(itemid, event.getItemDrop().getItemStack().getData().getData());
         final int amount = event.getItemDrop().getItemStack().getAmount();
 
-        plugin.getWorkerThread().schedule(ItemDrops.class, new Runnable() {
+        plugin.getThreadManager().schedule(ItemDrops.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

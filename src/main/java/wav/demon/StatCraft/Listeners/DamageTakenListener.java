@@ -33,7 +33,7 @@ public class DamageTakenListener implements Listener {
             final UUID uuid = event.getEntity().getUniqueId();
             final int damageTaken = (int) Math.round(event.getFinalDamage());
 
-            plugin.getWorkerThread().schedule(DamageTaken.class, new Runnable() {
+            plugin.getThreadManager().schedule(DamageTaken.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -69,10 +69,10 @@ public class DamageTakenListener implements Listener {
                 if ((System.currentTimeMillis() / 1000) - plugin.getLastDrownTime(uuid) > 120) {
 
                     event.getEntity().getServer().broadcastMessage(
-                            ChatColor.BLUE.toString() +
+                            ChatColor.BLUE +
                             plugin.config().stats.drown_announce_message.replaceAll(
                                     "~",
-                                    ((Player) event.getEntity()).getDisplayName() + ChatColor.BLUE.toString()
+                                    ((Player) event.getEntity()).getDisplayName() + ChatColor.BLUE
                             )
                     );
                     plugin.setLastDrowningTime(uuid, (int) (System.currentTimeMillis() / 1000));
@@ -84,10 +84,10 @@ public class DamageTakenListener implements Listener {
                 if ((System.currentTimeMillis() / 1000) - plugin.getLastPoisonTime(uuid) > 120) {
 
                     event.getEntity().getServer().broadcastMessage(
-                            ChatColor.GREEN.toString() +
+                            ChatColor.GREEN +
                             plugin.config().stats.poison_announce_message.replaceAll(
                                     "~",
-                                    ((Player) event.getEntity()).getDisplayName() + ChatColor.GREEN.toString()
+                                    ((Player) event.getEntity()).getDisplayName() + ChatColor.GREEN
                             )
                     );
                     plugin.setLastPoisonTime(uuid, (int) (System.currentTimeMillis() / 1000));
@@ -99,10 +99,10 @@ public class DamageTakenListener implements Listener {
                     if ((System.currentTimeMillis() / 1000) - plugin.getLastWitherTime(uuid) > 120) {
 
                         event.getEntity().getServer().broadcastMessage(
-                                ChatColor.DARK_GRAY.toString() +
+                                ChatColor.DARK_GRAY +
                                 plugin.config().stats.wither_announce_message.replaceAll(
                                         "~",
-                                        ((Player) event.getEntity()).getDisplayName() + ChatColor.DARK_GRAY.toString()
+                                        ((Player) event.getEntity()).getDisplayName() + ChatColor.DARK_GRAY
                                 )
                         );
                         plugin.setLastWitherTime(uuid, (int) (System.currentTimeMillis() / 1000));
@@ -118,7 +118,7 @@ public class DamageTakenListener implements Listener {
             final int damageTaken = (int) Math.round(event.getFinalDamage());
             final Entity entity = event.getDamager();
 
-            plugin.getWorkerThread().schedule(DamageTaken.class, new Runnable() {
+            plugin.getThreadManager().schedule(DamageTaken.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);

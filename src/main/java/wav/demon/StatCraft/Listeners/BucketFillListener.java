@@ -38,7 +38,7 @@ public class BucketFillListener implements Listener {
                 break;
         }
 
-        plugin.getWorkerThread().schedule(BucketFill.class, new Runnable() {
+        plugin.getThreadManager().schedule(BucketFill.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

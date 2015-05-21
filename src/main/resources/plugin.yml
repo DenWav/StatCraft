@@ -156,17 +156,11 @@ permissions:
   statcraft.user.move:
     description: Allows user to view how far a player has moved
     default: not-op
-  statcraft.user.movetype:
-    description: Allows user to view how far a player has moved in specific modes of transport
-    default: not-op
   statcraft.user.kills:
     description: Allows user to view number of kills
     default: not-op
   statcraft.user.jumps:
     description: Allows user to view number of jumps
-    default: not-op
-  statcraft.user.fallen:
-    description: Allows user to view how far a player has fallen
     default: not-op
   statcraft.user.eggsthrown:
     description: Allows user to view number of eggs thrown

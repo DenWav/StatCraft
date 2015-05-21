@@ -33,7 +33,7 @@ public class BucketEmptyListener implements Listener {
         else // default to water
             code = BucketCode.WATER;
 
-        plugin.getWorkerThread().schedule(BucketEmpty.class, new Runnable() {
+        plugin.getThreadManager().schedule(BucketEmpty.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -71,7 +71,7 @@ public class BucketEmptyListener implements Listener {
             final UUID uuid = event.getPlayer().getUniqueId();
             final BucketCode code = BucketCode.MILK;
 
-            plugin.getWorkerThread().schedule(BucketEmpty.class, new Runnable() {
+            plugin.getThreadManager().schedule(BucketEmpty.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);

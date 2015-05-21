@@ -38,7 +38,7 @@ public class SnowballListener implements Listener {
 
             final UUID uuid = player.getUniqueId();
 
-            plugin.getWorkerThread().schedule(Projectiles.class, new Runnable() {
+            plugin.getThreadManager().schedule(Projectiles.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);

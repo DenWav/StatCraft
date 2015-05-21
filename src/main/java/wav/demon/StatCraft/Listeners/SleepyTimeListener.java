@@ -32,7 +32,7 @@ public class SleepyTimeListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
 
-        plugin.getWorkerThread().schedule(EnterBed.class, new Runnable() {
+        plugin.getThreadManager().schedule(EnterBed.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -61,7 +61,7 @@ public class SleepyTimeListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
 
-        plugin.getWorkerThread().schedule(LeaveBed.class, new Runnable() {
+        plugin.getThreadManager().schedule(LeaveBed.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -88,7 +88,7 @@ public class SleepyTimeListener implements Listener {
             }
         });
 
-        plugin.getWorkerThread().schedule(TimeSlept.class, new Runnable() {
+        plugin.getThreadManager().schedule(TimeSlept.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

@@ -38,7 +38,7 @@ public class WordsSpokenListener implements Listener {
                 words.add(modified);
         }
 
-        plugin.getWorkerThread().schedule(MessagesSpoken.class, new Runnable() {
+        plugin.getThreadManager().schedule(MessagesSpoken.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -66,7 +66,7 @@ public class WordsSpokenListener implements Listener {
             }
         });
 
-        plugin.getWorkerThread().schedule(WordFrequency.class, new Runnable() {
+        plugin.getThreadManager().schedule(WordFrequency.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);

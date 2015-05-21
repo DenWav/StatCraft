@@ -33,7 +33,7 @@ public class KillListener implements Listener {
 
 
 
-            plugin.getWorkerThread().schedule(Kills.class, new Runnable() {
+            plugin.getThreadManager().schedule(Kills.class, new Runnable() {
                 @Override
                 public void run() {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);

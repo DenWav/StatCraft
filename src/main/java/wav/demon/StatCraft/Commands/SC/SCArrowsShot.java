@@ -13,7 +13,7 @@ import wav.demon.StatCraft.Querydsl.QProjectiles;
 import wav.demon.StatCraft.StatCraft;
 import wav.demon.StatCraft.Util;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class SCArrowsShot extends SCTemplate {
@@ -125,6 +125,8 @@ public class SCArrowsShot extends SCTemplate {
         QProjectiles p = QProjectiles.projectiles;
         QPlayers pl = QPlayers.players;
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
 
         NumberPath<Integer> path = null;
         String titlePrefix = "";
@@ -183,8 +185,8 @@ public class SCArrowsShot extends SCTemplate {
                 if (s.startsWith("-top"))
                     top = true;
             }
-            List<String> result = new ArrayList<>();
-            List<String> list = new ArrayList<>();
+            List<String> result = new LinkedList<>();
+            List<String> list = new LinkedList<>();
             list.add("-all");
             list.add("-distance");
             list.add("-farthest");

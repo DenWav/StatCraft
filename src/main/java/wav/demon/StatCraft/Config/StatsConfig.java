@@ -126,9 +126,6 @@ public class StatsConfig extends AnnotatedConfig {
     @NewLine
     @ConfigComment("Keep track of how far a player has moved (uses server stats).")
     public boolean move = true;
-    @ConfigComment({"Keep track of how far a player has moved in different modes of transportation.",
-                    "move must be true to enable this."})
-    public boolean move_type = true;
 
     @NewLine
     @ConfigComment("Record when a player kills a mob or another player.")
@@ -139,15 +136,8 @@ public class StatsConfig extends AnnotatedConfig {
     public boolean jumps = true;
 
     @NewLine
-    @ConfigComment("Keep track of how far a player has fallen (uses server stats).")
-    public boolean fallen = true;
-
-    @NewLine
     @ConfigComment("Track the number of eggs thrown.")
     public boolean eggs_thrown = true;
-    @ConfigComment({"Track how many chickens have hatched from thrown eggs.",
-                    "eggs_thrown must be true to enable this."})
-    public boolean chicken_hatches = true;
 
     @NewLine
     @ConfigComment("Record stats on ender pearls.")

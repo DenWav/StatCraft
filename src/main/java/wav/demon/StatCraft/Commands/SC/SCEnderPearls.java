@@ -12,7 +12,7 @@ import wav.demon.StatCraft.Querydsl.QProjectiles;
 import wav.demon.StatCraft.StatCraft;
 import wav.demon.StatCraft.Util;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class SCEnderPearls extends SCTemplate {
@@ -36,6 +36,8 @@ public class SCEnderPearls extends SCTemplate {
 
             QProjectiles p = QProjectiles.projectiles;
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            if (query == null)
+                return "Sorry, there seems to be an issue connecting to the database right now.";
 
             Tuple tuple = query.from(p).where(p.id.eq(id), p.type.eq(ProjectilesCode.ENDER_PEARL.getCode()))
                 .uniqueResult(p.amount, p.totalDistance, p.maxThrow);
@@ -76,6 +78,8 @@ public class SCEnderPearls extends SCTemplate {
         QProjectiles p = QProjectiles.projectiles;
         QPlayers pl = QPlayers.players;
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
 
         NumberPath<Integer> path;
         String title;
@@ -130,8 +134,8 @@ public class SCEnderPearls extends SCTemplate {
                     top = true;
             }
             if (top) {
-                List<String> result = new ArrayList<>();
-                List<String> list = new ArrayList<>();
+                List<String> result = new LinkedList<>();
+                List<String> list = new LinkedList<>();
                 list.add("-all");
                 list.add("-distance");
                 list.add("-farthest");
