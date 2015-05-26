@@ -5,16 +5,44 @@
  * @return resource Database handle
  */
 function getDatabase() {
-	//return false;
 	require('database.php');
-	// TODO:Convert to mysqli & change all mysql queries to prepared statements
-	if (!$db = @mysql_connect($SERVER,$USERNAME,$PASSWORD)) {
-		die("{\"error\":\"Could not connect to database\"}");
-	}
-	if (!@mysql_select_db($DATABASE,$db)) {
-		die("{\"error\":\"Could not open database\"}");
-	}
+	$db = new mysqli($SERVER,$USERNAME,$PASSWORD,$DATABASE) or die("{\"error\":\"Could not connect to database\"}");
 	return $db;
+}
+
+/**
+ * Returns reference values for the given array. Via http://php.net/manual/en/mysqli-stmt.bind-param.php#96770
+ *
+ * @return array of reference values
+ */
+function refValues($arr)
+{ 
+    if (strnatcmp(phpversion(),'5.3') >= 0) //Reference is required for PHP 5.3+ 
+    { 
+        $refs = array(); 
+        foreach($arr as $key => $value) 
+            $refs[$key] = &$arr[$key]; 
+         return $refs; 
+     } 
+     return $arr; 
+}
+
+/**
+ * Executes a prepared statement with multiple rows returned
+ *
+ * @return array of results
+ */
+function executeMultiParam($db,$query,$bind_types,$binds,$false=FALSE) {
+		$res = $db->prepare($query) or die("prepare failed: ".mysqli_error($db));
+		$params = array_merge(array($bind_types),$binds);
+		call_user_func_array(array($res,'bind_param'),refValues($params));
+		$res->execute();
+		$fetch = $res->get_result();
+		while ($result = $fetch->fetch_assoc()) {
+			$data[] = $result;
+		}
+		if (empty($data)) { return $false; }
+		else { return $data; }
 }
 
 /**
@@ -51,10 +79,12 @@ function getMagicNumber($type,$string) {
  */
 function getUserID($username) {
 	$db = getDatabase();
-	$username = mysql_real_escape_string($username);
-	$data = mysql_query("SELECT id FROM players WHERE name = '{$username}'",$db);
-	$data = mysql_fetch_array($data,MYSQL_ASSOC);
-	if (isset($data['id'])) return $data['id'];
+	$data = $db->prepare("SELECT id FROM players WHERE name=?");
+	$data->bind_param("s",$username);
+	$data->execute();
+	$data->bind_result($data);
+	$data->fetch();
+	if (isset($data)) return $data;
 	else return FALSE;
 }
 
@@ -66,10 +96,12 @@ function getUserID($username) {
 function getUsername($id) {
 	if (is_numeric($id)) {
 		$db = getDatabase();
-		$username = mysql_real_escape_string($id);
-		$data = mysql_query("SELECT name FROM players WHERE id = '{$id}'",$db);
-		$data = mysql_fetch_array($data,MYSQL_ASSOC);
-		return $data['name'];
+		$data = $db->prepare("SELECT name FROM players WHERE id=?");
+		$data->bind_param("i",$id);
+		$data->execute();
+		$data->bind_result($data);
+		$data->fetch();
+		return $data;
 	}
 	else {
 		return FALSE;
@@ -100,15 +132,13 @@ function validStatType($type,$subtype=FALSE) {
  * @return An array of subtypes if input type has subtypes, or NULL if not
  */
 function getSubtypes($type) {
-	$validTypes = "blocks,buckets,damage,deaths,items";
-	$validTypes = explode(",", $validTypes);
-	if (in_array($type, $validTypes)) { // has subtypes
-		$subtypes['blocks'] = 	array("broken","placed");
-		$subtypes['buckets'] = 	array("filled","emptied");
-		$subtypes['damage'] = 	array("taken","dealt");
-		$subtypes['deaths'] = 	array("world","type");
-		$subtypes['items'] = 	array("dropped","pickedup","brewed","cooked","crafted");
-	}
+	$subtypes['blocks'] = 	array("broken","placed");
+	$subtypes['buckets'] = 	array("filled","emptied");
+	$subtypes['damage'] = 	array("taken","dealt");
+	$subtypes['deaths'] = 	array("world","type");
+	$subtypes['fish'] = 	array("fish","junk","treasure");
+	$subtypes['item'] = 	array("dropped","pickedup","brewed","cooked","crafted");
+	if (isset($subtypes[$type])) { return $subtypes[$type]; }
 	else {
 		// Type does not have a subtype.
 		return NULL;
@@ -123,15 +153,17 @@ function getSubtypes($type) {
 function convertUsernamestoIDs($arr) {
 	$db = getDatabase();
 	$query = "SELECT name,id FROM players WHERE "; // start a query
+	$binds = array();
 	foreach ($arr as $i=>$name) { // for each term
-		$name = mysql_real_escape_string($name); // escape for the love of FSM!
-		$query .= "name = '".$name."' OR "; // add a term to find this potential username
+		$query .= "name = ? OR "; // add a term to find this potential username
+			$bind_types .= "s";
+			array_push($binds,$name);
 	}
 	$query = substr($query,0,-4); // drop the hanging OR
-	$result = mysql_query($query.";",$db); // execute query
+	$result = executeMultiParam($db,$query,$bind_types,$binds); // execute query
 	$replace = array();
-	while ($data = mysql_fetch_assoc($result)) { // grab all results
-		$replace[strtolower($data['name'])] = $data['id']; // set up replacement array
+	foreach ($result as $i=>$data) { // set up replacement array
+		$replace[strtolower($data['name'])] = $data['id']; 
 	}
 	foreach ($arr as $key=>$name) { // for each username in the list
 		if (isset($replace[$name])) $arr[$key] = $replace[$name]; // replace it with the ID if one was found
@@ -147,16 +179,20 @@ function convertUsernamestoIDs($arr) {
 function convertIDstoUsernames($arr) {
 	$db = getDatabase();
 	$query = "SELECT name,id FROM players WHERE "; // start a query
+	$binds = array();
 	foreach ($arr as $i=>$amt) { // for each term
-		$id = mysql_real_escape_string($i); // escape for the love of Zeus!
-		$query .= "id = '".$id."' OR "; // add a term to find this potential username
+		$query .= "id = ? OR "; // add a term to find this potential username
+			$bind_types .= "s";
+			array_push($binds,$i);
 	}
 	$query = substr($query,0,-4); // drop the hanging OR
-	$result = mysql_query($query.";",$db); // execute query
+	$result = executeMultiParam($db,$query,$bind_types,$binds); // execute query
+	if ($_GET['debug']) { print_r($result); } 
 	$replace = array();
-	while ($data = mysql_fetch_assoc($result)) { // grab all results
-		$replace[$data['id']] = $data['name']; // set up replacement array
+	foreach ((array)$result as $i=>$data) { // set up replacement array
+		$replace[$data['id']] = $data['name']; 
 	}
+	if ($_GET['debug']) { print_r($replace); }
 	foreach ($arr as $id=>$amt) { // for each ID in the list
 		if (isset($replace[$id])) {
 			$arr[$replace[$id]] = $amt; // replace it with the username if one was found
@@ -171,6 +207,7 @@ function convertIDstoUsernames($arr) {
  *
  * @return Array of requested user stats
  */
+ 
 function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 	$uid = (int)$uid; // TODO:Error check UID
 	$type = strtolower($type);
@@ -179,11 +216,13 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 	if ($result == 1) {
 		// valid type/subtype
 		$db = getDatabase();
-		$query = "SELECT * FROM {$type} WHERE id = '{$uid}'"; // start a query string
+		$query = "SELECT * FROM {$type} WHERE id =?"; // start a query string
+			$bind_types = "i";
+			$binds = array($uid);
 		
 		// STAT:BLOCKS
 		if ($type == "blocks") {
-		
+			
 			// determine subtype
 			if ((strtolower($subtype) == "broken")) $type = "block_break";
 			elseif ((strtolower($subtype) == "placed")) $type = "block_place";
@@ -191,19 +230,24 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 				$parameters = $subtype; // no valid subtype, so assume this is a block list
 				$type = "block_break"; // default to broken
 			}
-			$query = "SELECT * FROM {$type} WHERE id = '{$uid}'"; // update query string
-
+			$query = "SELECT * FROM {$type} WHERE id = ?"; // update query string
+				$bind_types = "i";
+				$binds = array($uid);
 			if (isset($parameters)) { // we have a list of specific block(s)
 				$query .= " AND ("; // add onto query
 				$parameters = explode(",",$parameters); // explode into array
 				foreach ($parameters as $i=>$val) { // For each block in list
-					$val = array_map('mysql_real_escape_string',explode("-",$val)); // more explosions, and escaping!
+					$val = explode("-",$val); // more explosions, and escaping!
 					if (!isset($val[1])) $val[1] = 0; // default to 0 if damage is unspecified 
-					$query .= "(blockid = '".$val[0]; // get this block
+					$query .= "(blockid = ?"; // get this block
+						$bind_types .= "i";
+						array_push($binds,$val[0]);
 					if (strtolower($val[1]) != "all") { // if we're not looking for "all"
-						$query .= "' AND damage = '".$val[1]; // get this damage
+						$query .= " AND damage = ?"; // get this damage
+							$bind_types .= "i";
+							array_push($binds,$val[1]);
 					}
-					$query .= "') OR "; // prepare for next term
+					$query .= ") OR "; // prepare for next term
 				}
 				$query = substr($query,0,-4); // drop the hanging OR
 				$query .= ")"; // close the parenthesis
@@ -218,13 +262,16 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 			else {
 				$parameters = $subtype; // no valid subtype, so assume this is a bucket type list (so useful)
 			}
-			$query = "SELECT * FROM {$type} WHERE id = '{$uid}'"; // update query string
+			$query = "SELECT * FROM {$type} WHERE id = ?"; // update query string
+				$bind_types = "i";
+				$binds = array($uid);
 			if (isset($parameters)) {
 				$query .= " AND ("; // but wait!
 				$thistype = explode(",",$parameters); // explode
 				foreach ($thistype as $i=>$thissubtype) { // for each type
-					$thissubtype = mysql_real_escape_string($thissubtype); // escape for the love of Allah!
-					$query .= "type = '".$thissubtype."' OR "; // get this type
+					$query .= "type = ? OR "; // get this type
+						$bind_types .= "s";
+						array_push($binds,$thissubtype);
 				}
 				$query = substr($query,0,-4); // drop the hanging OR
 				$query .= ")"; // close the parenthesis
@@ -239,14 +286,17 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 			else {
 				$parameters = $subtype; // no valid subtype, so assume this is a damage cause list
 			}
-			$query = "SELECT * FROM {$type} WHERE id = '{$uid}'"; // update query string
+			$query = "SELECT * FROM {$type} WHERE id = ?"; // update query string
+				$bind_types = "i";
+				$binds = array($uid);
 			if (isset($parameters)) {
 				$query .= " AND ("; // but wait!
 				$thistype = explode(",",$parameters); // explode
 				$thistype = convertUsernamestoIDs($thistype); // convert usernames in array to IDs
 				foreach ($thistype as $i=>$thissubtype) { // for each type
-					$thissubtype = mysql_real_escape_string($thissubtype); // escape for the love of Buddha!
-					$query .= "entity = '".$thissubtype."' OR "; // get this type
+					$query .= "entity = ? OR "; // get this type
+						$bind_types .= "s";
+						array_push($binds,$thissubtype);
 				}
 				$query = substr($query,0,-4); // drop the hanging OR
 				$query .= ")"; // close the parenthesis
@@ -269,8 +319,9 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 			$subtype = explode(",",$subtype); // explode
 			$subtype = convertUsernamestoIDs($subtype); // convert usernames to IDs
 			foreach ($subtype as $i=>$thissubtype) { // for each type
-				$thissubtype = mysql_real_escape_string($thissubtype); // escape for the love of God!
-				$query .= "entity = '".$thissubtype."' OR "; // get this type
+				$query .= "entity = ? OR "; // get this type
+					$bind_types .= "s";
+					array_push($binds,$thissubtype);
 			}
 			$query = substr($query,0,-4); // drop the hanging OR
 			$query .= ")"; // close the parenthesis
@@ -278,12 +329,16 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 		
 		// STAT:FISH_CAUGHT
 		elseif (($type == "fish_caught") && (isset($subtype))) {
+
+		
+		
 			$query .= " AND ("; // but wait!
 			$subtype = explode(",",$subtype); // explode
 			foreach ($subtype as $i=>$thissubtype) { // for each type
 				$thissubtype = getMagicNumber("fish",$thissubtype);
-				$thissubtype = mysql_real_escape_string($thissubtype); // escape for the love of Shiva!
-				$query .= "type = '".$thissubtype."' OR "; // get this type
+				$query .= "type = ? OR "; // get this type
+					$bind_types .= "i";
+					array_push($binds,$thissubtype);
 			}
 			$query = substr($query,0,-4); // drop the hanging OR
 			$query .= ")"; // close the parenthesis .... mmmmm delicious copypasta
@@ -294,26 +349,31 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 			// determine subtype
 			if ((strtolower($subtype) == "dropped")) $type = "item_drops";
 			elseif ((strtolower($subtype) == "pickedup")) $type = "item_pickups";
-			elseif ((strtolower($subtype) == "brewed")) $type = "item_brewed";
-			elseif ((strtolower($subtype) == "cooked")) $type = "item_cooked";
-			elseif ((strtolower($subtype) == "crafted")) $type = "item_crafted";
+			elseif ((strtolower($subtype) == "brewed")) $type = "items_brewed";
+			elseif ((strtolower($subtype) == "cooked")) $type = "items_cooked";
+			elseif ((strtolower($subtype) == "crafted")) $type = "items_crafted";
 			else {
 				$parameters = $subtype; // no valid subtype, so assume this is an item type list
 				$type = "item_pickups"; // default to pickups
 			}
-			$query = "SELECT * FROM {$type} WHERE id = '{$uid}'"; // update query string
-			
+			$query = "SELECT * FROM {$type} WHERE id = ?"; // update query string
+				$bind_types = "i";
+				$binds = array($uid);
 			if (isset($parameters)) { // we have a list of specific block(s)
 				$query .= " AND ("; // add onto query
 				$parameters = explode(",",$parameters); // explode into array
 				foreach ($parameters as $i=>$val) { // For each block in list
-					$val = array_map('mysql_real_escape_string',explode("-",$val)); // more explosions, and escaping!
+					$val = explode("-",$val); // more explosions!
 					if (!isset($val[1])) $val[1] = 0; // default to 0 if damage is unspecified 
-					$query .= "(item = '".$val[0]; // get this block
+					$query .= "(item = ?"; // get this block
+						$bind_types .= "i";
+						array_push($binds,$val[0]);
 					if (strtolower($val[1]) != "all") { // if we're not looking for "all"
-						$query .= "' AND damage = '".$val[1]; // get this damage
+						$query .= " AND damage = ?"; // get this damage
+							$bind_types .= "i";
+							array_push($binds,$val[1]);
 					}
-					$query .= "') OR "; // prepare for next term
+					$query .= ") OR "; // prepare for next term
 				}
 				$query = substr($query,0,-4); // drop the hanging OR
 				$query .= ")"; // close the parenthesis
@@ -325,21 +385,16 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 			$subtype = explode(",",$subtype); // explode
 			foreach ($subtype as $i=>$thissubtype) { // for each type
 				$thissubtype = getMagicNumber("move",$thissubtype);
-				$thissubtype = mysql_real_escape_string($thissubtype); // escape for the love of Vishnu!
-				$query .= "vehicle = '".$thissubtype."' OR "; // get this type
+				$query .= "vehicle = ? OR "; // get this type
+					$bind_types .= "i";
+					array_push($binds,$thissubtype);
 			}
 			$query = substr($query,0,-4); // drop the hanging OR
 			$query .= ")"; // close the parenthesiss
 		}
 		
-		if (isset($_GET['debug'])) { print $query."\n"; }
-		$result = mysql_query($query.";",$db);
-		if ((!isset($result)) || ($result == NULL) || ($result == "")) { return 0; }
-		else {
-			for($i = 0; $data[$i] = mysql_fetch_assoc($result); $i++);
-			array_pop($data);
-			return $data;
-		}
+		if (isset($_GET['debug'])) { print $query."\n"; print $bind_types."\n"; print_r($binds); }
+		return executeMultiParam($db,$query,$bind_types,$binds,0);
 	}
 	//elseif ($result == -1) { die("{\"error\":\"Invalid subtype\"}"); }
 	else { die("{\"error\":\"Invalid type\"}"); }

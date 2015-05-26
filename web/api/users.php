@@ -55,8 +55,7 @@
 				}
 								
 				//TODO:result handler
-				$allresult = json_encode($allresult,JSON_NUMERIC_CHECK);
-				print $allresult;
+				print json_encode($allresult,JSON_NUMERIC_CHECK);
 			}
 			
 			// STAT:BUCKETS			
@@ -79,14 +78,14 @@
 					// add to final results
 					$allresult[$key] = $result;
 				}
-				$allresult = json_encode($allresult,JSON_NUMERIC_CHECK);
-				print $allresult;
+				// TODO:result handler
+				print json_encode($allresult,JSON_NUMERIC_CHECK);
 			}
 
 			// STAT:DAMAGE			
 			elseif ($type == "damage") {
 			
-				if (in_array($subtype,array("taken","dealt"))) { // if this is a valid subtype, use it
+				if (in_array($subtype,getSubtypes($type))) { // if this is a valid subtype, use it
 					$stats[$subtype] = getUserStats($uid,$type,$subtype,$sstype);
 				}
 				else { // otherwise default to both
@@ -105,8 +104,8 @@
 					// add to final results
 					$allresult[$key] = $result;
 				}
-				$allresult = json_encode($allresult,JSON_NUMERIC_CHECK);
-				print $allresult;
+				// TODO:result handler
+				print json_encode($allresult,JSON_NUMERIC_CHECK);
 			}
 			
 			// STAT:DEATHS
@@ -125,48 +124,42 @@
 				}
 				$result = convertIDstoUsernames($result); // convert IDs to usernamess
 				// TODO:result handler
-				$result = json_encode($result,JSON_NUMERIC_CHECK);
-				print $result;
+				print json_encode($result,JSON_NUMERIC_CHECK);
 			}
 			
 			// STAT:FIRST_JOIN_TIME
 			elseif ($type == "first_join_time") {
 				$stats = getUserStats($uid,$type,$subtype,$sstype);
-				$result = array();
-				$result['time'] = $stats[0]['time'];
 				// TODO:Result handler
-				$result = json_encode($result,JSON_NUMERIC_CHECK);
-				print $result;
+				print json_encode($stats[0]['time'],JSON_NUMERIC_CHECK);
 			}
 			
 			// STAT:FISH_CAUGHT
 			elseif ($type == "fish_caught") {
+				if (!in_array($subtype,getSubtypes($type))) { $subtype = NULL;	}
 				$stats = getUserStats($uid,$type,$subtype,$sstype);
 				$fish = array();
-				foreach ($stats as $i=>$data) {
+				foreach ((array)$stats as $i=>$data) {
 					$fish[getMagicString("fish",$data['type'])][$data['item'].":".$data['damage']] = $data['amount'];
 				}
 				// TODO:Result handler
-				$result = json_encode($fish,JSON_NUMERIC_CHECK);
-				print $result;
+				print json_encode($fish,JSON_NUMERIC_CHECK);
 			}
 			
 			// STAT:HIGHEST_LEVEL
 			elseif ($type == "highest_level") {
 				$stats = getUserStats($uid,$type,$subtype,$sstype);
-				$result = array();
-				$result['level'] = $stats[0]['level'];
-				$result = json_encode($result,JSON_NUMERIC_CHECK);
-				print $result;
+				// TODO:Result handler
+				print json_encode($stats[0]['level'],JSON_NUMERIC_CHECK);
 			}
 			
 			// STAT:ITEM
 			elseif ($type == "item") {
 				// TODO:Abstract these subtype selections
-				if (in_array($subtype,array("dropped","pickedup","brewed","cooked","crafted"))) { // if this is a valid subtype, use it
+				if (in_array($subtype,getSubtypes($type))) { // if this is a valid subtype, use it
 					$stats[$subtype] = getUserStats($uid,$type,$subtype,$sstype);
 				}
-				else { // otherwise default to ... ? [All]
+				else { // otherwise default to all
 					if (isset($subtype)) $sstype = $subtype; // and this is now a possible item list
 					$stats['dropped'] = getUserStats($uid,$type,dropped,$sstype);
 					$stats['pickedup'] = getUserStats($uid,$type,pickedup,$sstype);
@@ -187,8 +180,7 @@
 					$allresult[$key] = $result;
 				}
 				// TODO:result handler
-				$allresult = json_encode($allresult,JSON_NUMERIC_CHECK);
-				print $allresult;
+				print json_encode($allresult,JSON_NUMERIC_CHECK);
 			}
 			
 			// STAT:MESSAGES_SPOKEN			
@@ -198,8 +190,7 @@
 				$result['messages'] = $stats[0]['amount'];
 				$result['words'] = $stats[0]['words_spoken'];
 				// Todo:result handler
-				$result = json_encode($result,JSON_NUMERIC_CHECK);
-				print $result;
+				print json_encode($result,JSON_NUMERIC_CHECK);
 			}
 			
 			// STAT:MOVE
@@ -212,8 +203,7 @@
 					$result['total'] += $data['distance'];
 				}
 				// Todo:result handler
-				$result = json_encode($result,48); // 48 = JSON_NUMERIC_CHECK[32] + JSON_FORCE_OBJECT[16]
-				print $result;			
+				print json_encode($result,48); // 48 = JSON_NUMERIC_CHECK[32] + JSON_FORCE_OBJECT[16]			
 			}
 			
 			// STAT:ON_FIRE
@@ -221,8 +211,7 @@
 				$stats = getUserStats($uid,$type,$subtype,$sstype);
 				if (empty($stats[0]['time'])) { $stats[0]['time'] = 0; }
 				// Todo:result handler
-				$result = json_encode($stats[0]['time'],JSON_NUMERIC_CHECK);
-				print $result;	
+				print json_encode($stats[0]['time'],JSON_NUMERIC_CHECK);
 			}
 			
 			// STAT:PLAY_TIME
@@ -230,8 +219,7 @@
 				$stats = getUserStats($uid,$type,$subtype,$sstype);
 				if (empty($stats[0]['amount'])) { $stats[0]['amount'] = 0; }
 				// Todo:result handler
-				$result = json_encode($stats[0]['amount'],JSON_NUMERIC_CHECK);
-				print $result;					
+				print json_encode($stats[0]['amount'],JSON_NUMERIC_CHECK);
 			}
 			
 			else {
