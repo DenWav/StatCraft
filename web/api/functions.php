@@ -50,12 +50,14 @@ function executeMultiParam($db,$query,$bind_types,$binds,$false=FALSE) {
  *
  * @return The string associated with a given magic type and number
  */
-function getMagicString($type,$val) {
+function getMagicString($type,$val=NULL) {
 	// Todo:Check valid type
 	$magic = array();
 	$magic['move'] = array("walking","crouching","sprinting","swimming","falling","climbing","flying","diving","minecart","boat","pig","horse");
 	$magic['fish'] = array("fish","treasure","junk");
-	if (isset($magic[$type][$val])) { return $magic[$type][$val]; }
+	$magic['projectile'] = array("normal","flaming","pearl","unhatched","hatched","snowball","4hatched");
+	if (!isset($val) && isset($magic[$type])) { return $magic[$type]; }
+	elseif (isset($magic[$type][$val])) { return $magic[$type][$val]; }
 	else { return NULL; }
 }
 
@@ -64,11 +66,11 @@ function getMagicString($type,$val) {
  *
  * @return The number associated with the given type and string
  */
-function getMagicNumber($type,$string) {
+function getMagicNumber($type,$string=NULL) {
 	$magic = array();
-	$magic['move'] = array("walking"=>0,"crouching"=>1,"sprinting"=>2,"swimming"=>3,"falling"=>4,"climbing"=>5,"flying"=>6,"diving"=>7,"minecart"=>8,"boat"=>9,"pig"=>10,"horse"=>11);
-	$magic['fish'] = array("fish"=>0,"treasure"=>1,"junk"=>2);
-	if (isset($magic[$type][$string])) { return $magic[$type][$string]; }
+	if ($magic[$type] = getMagicString($type)) { $magic[$type] = array_flip($magic[$type]); }
+	if ((!isset($string)) && isset($magic[$type])) { return $magic[$type]; }
+	elseif (isset($magic[$type][$string])) { return $magic[$type][$string]; }
 	else { return NULL; }
 }
 
@@ -113,9 +115,9 @@ function getUsername($id) {
  *
  * @return boolean 1 if type is valid, 0 if the type is invalid, and -1 if the type is valid but subtype is invalid.
  */
-function validStatType($type,$subtype=FALSE) {
+function validStatType($type) {
 	// Check validity of requested stat type/subtype
-	$validTables = "animals_bred,blocks,buckets,damage,deaths,eating,enchants_done,enter_bed,fallen,fires_started,first_join_time,fish_caught,highest_level,item,joins,jumps,kills,last_join_time,last_leave_time,leave_bed,messages_spoken,move,on_fire,play_time,projectile,shearing,tab_complete,time_slept,tnt_detonated,tools_broken,word_frequency,words_spoken,world_change,xp_gained";
+	$validTables = "animals_bred,blocks,buckets,damage,deaths,death_by_cause,eating,enchants_done,enter_bed,fallen,fires_started,fish_caught,highest_level,item,joins,jumps,kills,leave_bed,messages,move,on_fire,play_time,projectile,seen,first_join_time,last_join_time,last_leave_time,last_spoken_time,sleep,shearing,tab_complete,tnt_detonated,tools_broken,words_spoken,world_change,xp_gained";
 	$validTables = explode(",", $validTables);
 	if (in_array($type, $validTables)) {
 		return 1;
@@ -136,13 +138,14 @@ function getSubtypes($type) {
 	$subtypes['buckets'] = 	array("filled","emptied");
 	$subtypes['damage'] = 	array("taken","dealt");
 	$subtypes['deaths'] = 	array("world","type");
-	$subtypes['fish'] = 	array("fish","junk","treasure");
+	$subtypes['fish_caught'] = 	array("fish","junk","treasure");
 	$subtypes['item'] = 	array("dropped","pickedup","brewed","cooked","crafted");
+	$subtypes['projectile'] = array("arrow","egg","pearl","snowball");
+	$subtypes['arrow'] = array("normal","flaming");
+	$subtypes['egg'] = array("unhatched","hatched","4hatched");
+	$subtypes['seen'] = array("first_join_time","last_join_time","last_leave_time","last_spoke_time");
 	if (isset($subtypes[$type])) { return $subtypes[$type]; }
-	else {
-		// Type does not have a subtype.
-		return NULL;
-	}
+	else { return NULL;	} // No subtype.
 }
 
 /**
@@ -208,11 +211,11 @@ function convertIDstoUsernames($arr) {
  * @return Array of requested user stats
  */
  
-function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
+function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL,$subpath=NULL,$subparameters=NULL) {
 	$uid = (int)$uid; // TODO:Error check UID
 	$type = strtolower($type);
 	
-	$result = validStatType($type,$subtype); // Check validity of type
+	$result = validStatType($type); // Check validity of type
 	if ($result == 1) {
 		// valid type/subtype
 		$db = getDatabase();
@@ -303,11 +306,7 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 			}
 		}
 		
-		// STAT:DEATHS
-		elseif ($type == "deaths") {
-		
-		}
-		
+
 		// STAT:EATING
 		elseif (($type == "eating") && (isset($subtype))) {
 		
@@ -327,11 +326,61 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 			$query .= ")"; // close the parenthesis
 		}
 		
+		/// STAT:MESSAGES
+		elseif ($type == "messages") { // if we rename the database or endpoint we can remove this block
+			$query = "SELECT * from messages_spoken WHERE id = ?";
+		}
+		
+		// STAT:SLEEP
+		elseif ($type == "sleep") { // .. and this one
+			$query = "SELECT * from time_slept WHERE id = ?";
+		}
+		
+		// STAT:DEATHS
+		elseif ($type == "deaths") {
+			$query = "SELECT * from death_by_cause WHERE id = ?";
+			if (isset($subtype)) {
+				if ($subtype == "world") {
+					if (isset($parameters)) {
+						$query .= " AND (";
+						// world id
+						$query .= "(world = ?";
+							$bind_types .= "s";
+							array_push($binds,$parameters);
+						if (isset($subpath)) {
+							// cause
+							$query .= ") AND (cause = ?";
+								$bind_types .="s";
+								array_push($binds,$subpath);
+						}					
+						$query .= "));";
+					}
+				}
+				elseif ($subtype == "cause") {
+					if (isset($parameters)) {
+						$query .= " AND (";
+						// cause
+						$query .= "(cause = ?";
+							$bind_types .= "s";
+							array_push($binds,$parameters);
+						if (isset($subpath)) {
+							// world id
+							$query .= ") AND (world = ?";
+								$bind_types .="s";
+								array_push($binds,$subpath);
+						}
+						$query .= "));";
+					}
+				}
+			}
+			else {
+				$query = "SELECT * from death WHERE id = ?";
+			}
+		}
+		
+		
 		// STAT:FISH_CAUGHT
 		elseif (($type == "fish_caught") && (isset($subtype))) {
-
-		
-		
 			$query .= " AND ("; // but wait!
 			$subtype = explode(",",$subtype); // explode
 			foreach ($subtype as $i=>$thissubtype) { // for each type
@@ -380,6 +429,7 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 			}
 		}
 		
+		// STAT:MOVE
 		elseif (($type == "move") && (isset($subtype))) {
 			$query .= " AND ("; // but wait!
 			$subtype = explode(",",$subtype); // explode
@@ -393,11 +443,75 @@ function getUserStats($uid,$type,$subtype=NULL,$parameters=NULL) {
 			$query .= ")"; // close the parenthesiss
 		}
 		
+		// STAT:PROJECTILE
+		elseif ($type == "projectile" && (isset($subtype))) {
+			if (isset($parameters)) { // arrow or egg types
+				$getsubtypes = explode(",",$parameters); // make array of parameters
+			}
+			$query = "SELECT * from projectiles WHERE id = ?";
+			if (!isset($getsubtypes)) { $getsubtypes = getSubtypes($subtype); } // get defaults if nothing was specified
+			if (isset($getsubtypes)){ // could be null for snowballs etc.
+				$query .= " AND ("; // add onto query
+				foreach ($getsubtypes as $i=>$thissubtype) { // for each projectile type
+					$subtypes[$i] = getMagicNumber($type,$thissubtype); // convert to magic numbers
+					$query .= "(type = ?"; // get this projectile type
+						$bind_types .= "i";
+						array_push($binds,$subtypes[$i]);
+					$query .= ") OR "; // prepare for next term
+				}
+				$query = substr($query,0,-4); // drop the hanging OR
+				$query .= ")"; // close the parenthesis
+			}
+			else { // snowballs etc.
+				$query = "SELECT * from projectiles WHERE id = ? AND type = ?";
+					$bind_types .= "i";
+					array_push($binds,getMagicNumber($type,$subtype));
+			}
+		}
+		
+		// STAT:LAST_SPOKEN_TIME
+		elseif ($type == "last_spoken_time") { // Todo: Remove this block upon plugin implementation
+			return NULL;
+		}
+		
+		// STAT:TOOLS_BROKEN
+		elseif (($type == "tools_broken") && isset($subtype)) { // I really feel like this should be an /item endpoint instead
+			if (isset($subtype)) { // we have a list of specific block(s)
+				$query .= " AND ("; // add onto query
+				$subtype = explode(",",$subtype); // explode into array
+				foreach ($subtype as $i=>$val) { // For each item in list
+					$query .= "(item = ?"; // get this item
+						$bind_types .= "i";
+						array_push($binds,$val);
+					$query .= ") OR "; // prepare for next term
+				}
+				$query = substr($query,0,-4); // drop the hanging OR
+				$query .= ")"; // close the parenthesis
+			}
+		}
+		
+		// STAT:WORDS_SPOKEN
+		elseif ($type == "words_spoken") {
+			$query = "SELECT * FROM word_frequency WHERE id = ?";
+			if (isset($subtype)) { // words!
+				$words = explode(",",$subtype);
+				$query .= " AND (";
+				foreach ($words as $word) {
+					$query .= "(word = ?";
+						$bind_types .= "s";
+						array_push($binds,$word); // yay prepared statements
+					$query .= ") OR "; // prepare for next term
+				}
+				$query = substr($query,0,-4); // drop the hanging OR
+				$query .= ")"; // close the parenthesis
+			}
+		}
+		
 		if (isset($_GET['debug'])) { print $query."\n"; print $bind_types."\n"; print_r($binds); }
 		return executeMultiParam($db,$query,$bind_types,$binds,0);
 	}
 	//elseif ($result == -1) { die("{\"error\":\"Invalid subtype\"}"); }
-	else { die("{\"error\":\"Invalid type\"}"); }
+	else { die("{\"error\":\"Invalid type 1\"}"); }
 }
 
 /**

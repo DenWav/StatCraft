@@ -18,7 +18,6 @@
 		$type = $terms[4];
 		$subtype = $terms[5];
 		$sstype = $terms[6];
-		$ssstype = $terms[7]; // I could do this all day!
 	
 	// Check validity of type
 	$result = validStatType($type);
@@ -110,7 +109,40 @@
 			
 			// STAT:DEATHS
 			elseif ($type == "deaths") {
-			
+
+					$result = array("total"=>0);
+					if (($subtype == "world") && ($stats['deaths'] = getUserStats($uid,deaths,$subtype,$sstype,$terms[7],$terms[8]))) {
+						foreach ($stats['deaths'] as $i=>$data) {
+							if ($subtype == "world") {
+								print_r($data);
+								if ($i == 0) { $result[$world['data']] = array(); $count[$data['world']] = -1; }
+								$count[$data['world']] += 1;
+								$result[$data['world']][$count[$data['world']]]['cause'] = htmlspecialchars(utf8_encode($data['cause']));
+								$result[$data['world']][$count[$data['world']]]['amount'] = $data['amount'];
+							}
+							else {
+								$result['deaths'][$i]['message'] = htmlspecialchars(utf8_encode($data['message']));
+								$result['deaths'][$i]['world'] = $data['world'];
+								$result['deaths'][$i]['amount'] = $data['amount'];
+							}
+							$result['total'] += $data['amount'];
+						}
+					}
+					if (($subtype == "cause") && ($stats['cause'] = getUserStats($uid,death_by_cause,$subtype,$sstype,$terms[7],$terms[8]))) {
+						foreach ($stats['cause'] as $i=>$data) {
+							if ($subtype == "world") {
+								$result[$data['world']][$i]['cause'] = $data['cause'];
+								$result[$data['world']][$i]['amount'] = $data['amount'];
+							}
+							else {
+								if ($i == 0) $result['cause']['cause'] = $data['cause'];
+								$result['cause'][$i]['world'] = $data['world'];
+								$result['cause'][$i]['amount'] = $data['amount'];
+							}
+						}
+					}
+				
+				print json_encode($result,32);
 			}
 			
 			// STAT:KILLS
@@ -183,8 +215,8 @@
 				print json_encode($allresult,JSON_NUMERIC_CHECK);
 			}
 			
-			// STAT:MESSAGES_SPOKEN			
-			elseif ($type == "messages_spoken") {
+			// STAT:MESSAGES		
+			elseif ($type == "messages") {
 				$stats = getUserStats($uid,$type,$subtype,$sstype);
 				$result = array();
 				$result['messages'] = $stats[0]['amount'];
@@ -214,19 +246,90 @@
 				print json_encode($stats[0]['time'],JSON_NUMERIC_CHECK);
 			}
 			
-			// STAT:PLAY_TIME
-			elseif ($type == "play_time") {
+			// STAT:PROJECTILE
+			elseif ($type == "projectile") {
+				// determine subtype copypasta ..
+				if (in_array($subtype,getSubtypes($type))) { // if this is a valid subtype, use it
+					$stats[$subtype] = getUserStats($uid,$type,$subtype,$sstype);
+				}
+				else { // otherwise default to all
+					if (isset($subtype)) $sstype = $subtype; // and this is now a possible item list
+					$stats['arrow'] = getUserStats($uid,$type,arrow,$sstype);
+					$stats['egg'] = getUserStats($uid,$type,egg,$sstype);
+					$stats['pearl'] = getUserStats($uid,$type,pearl,$sstype);
+					$stats['snowball'] = getUserStats($uid,$type,snowball,$sstype);
+				}
+				$result = array(); // initializing arrays makes me feel like a good person
+				foreach ($stats as $i=>$data) { 
+					foreach ((array)$data as $j=>$moredata) {
+						if (!empty($moredata)) {
+							if ($res = getSubtypes($i)) { // eww.. I do not like this
+								$result[$i][getMagicString($type,$moredata['type'])]['amount'] = $moredata['amount'];
+								$result[$i][getMagicString($type,$moredata['type'])]['total_distance'] = $moredata['total_distance'];
+								$result[$i][getMagicString($type,$moredata['type'])]['max_throw'] = $moredata['max_throw'];
+							}
+							else { // there must be a cleaner way
+								$result[$i]['amount'] = $moredata['amount'];
+								$result[$i]['total_distance'] = $moredata['total_distance'];
+								$result[$i]['max_throw'] = $moredata['max_throw'];
+							}
+						}
+					}
+				}
+				// TODO:Result handler
+				print json_encode($result,JSON_NUMERIC_CHECK);
+			}
+
+			// STAT:SEEN
+			elseif ($type == "seen") {
+				$result = array();
+				if (in_array($subtype,getSubtypes($type))) { // if this is a valid subtype, use it
+					$stats[] = getUserStats($uid,$subtype,NULL,$sstype);
+					$result = $stats[0][0]['time'];
+				}
+				else { // otherwise default to all
+					$stats['fjoin'] = getUserStats($uid,first_join_time,NULL,$sstype);
+					$stats['ljoin'] = getUserStats($uid,last_join_time,NULL,$sstype);
+					$stats['lquit'] = getUserStats($uid,last_leave_time,NULL,$sstype);
+					$stats['lspoke'] = getUserStats($uid,last_spoken_time,NULL,$sstype);
+					$result['first_join_time'] = $stats['fjoin'][0]['time'];
+					$result['last_join_time'] = $stats['ljoin'][0]['time'];
+					$result['last_leave_time'] = $stats['lquit'][0]['time'];
+					$result['last_spoken_time'] = $stats['lspoke'][0]['time'];
+				}
+				print json_encode($result,JSON_NUMERIC_CHECK);
+			}
+			 
+			// STAT:TOOLS_BROKEN
+			elseif ($type == "tools_broken") {
 				$stats = getUserStats($uid,$type,$subtype,$sstype);
-				if (empty($stats[0]['amount'])) { $stats[0]['amount'] = 0; }
-				// Todo:result handler
-				print json_encode($stats[0]['amount'],JSON_NUMERIC_CHECK);
+				$result = array();
+				foreach ($stats as $i=>$data) {
+					$result[$data['item']] = $data['amount'];
+				}
+				// TODO:result handler
+				print json_encode($result,JSON_NUMERIC_CHECK );
+			}
+			
+			// STAT:WORDS_SPOKEN
+			elseif ($type == "words_spoken") {
+				$stats = getUserStats($uid,$type,$subtype,$sstype);
+				$result = array();
+				$result['unique'] = 0;
+				$result['total'] = 0;
+				foreach ($stats as $i=>$data) {
+					$result['words'][$i]['word'] = htmlspecialchars($data['word']);
+					$result['words'][$i]['amount'] = $data['amount'];
+					$result['unique'] += 1;
+					$result['total'] += $data['amount'];
+				}
+				print json_encode($result,JSON_NUMERIC_CHECK);
 			}
 			
 			else {
-				// Default
+				// default .. works for 4 or 5 stats!
 				$stats = getUserStats($uid,$type,$subtype,$sstype);
-				$stats = json_encode($stats,JSON_NUMERIC_CHECK);
-				print $stats;
+				print json_encode(($res=$stats[0]['amount'])?$res:0,JSON_NUMERIC_CHECK); // dirty
 			}
 			
 		}
@@ -237,7 +340,7 @@
 	}
 	elseif ($result == 0) {
 		// TODO:Error handler
-		die("{\"error\":\"Invalid type\"}");
+		die("{\"error\":\"Invalid type 2\"}");
 	}
 	else {
 		// invalid result
