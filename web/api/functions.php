@@ -15,16 +15,15 @@ function getDatabase() {
  *
  * @return array of reference values
  */
-function refValues($arr)
-{ 
-    if (strnatcmp(phpversion(),'5.3') >= 0) //Reference is required for PHP 5.3+ 
-    { 
+function refValues($arr) { 
+    if (strnatcmp(phpversion(),'5.3') >= 0) { //Reference is required for PHP 5.3+  
         $refs = array(); 
-        foreach($arr as $key => $value) 
-            $refs[$key] = &$arr[$key]; 
-         return $refs; 
-     } 
-     return $arr; 
+        foreach ($arr as $key => $value) {
+			$refs[$key] = &$arr[$key]; 
+		}
+        return $refs; 
+    } 
+    return $arr; 
 }
 
 /**
@@ -33,16 +32,16 @@ function refValues($arr)
  * @return array of results
  */
 function executeMultiParam($db,$query,$bind_types,$binds,$false=FALSE) {
-		$res = $db->prepare($query) or die("prepare failed: ".mysqli_error($db));
-		$params = array_merge(array($bind_types),$binds);
-		call_user_func_array(array($res,'bind_param'),refValues($params));
-		$res->execute();
-		$fetch = $res->get_result();
-		while ($result = $fetch->fetch_assoc()) {
-			$data[] = $result;
-		}
-		if (empty($data)) { return $false; }
-		else { return $data; }
+	$res = $db->prepare($query) or die("prepare failed: ".mysqli_error($db));
+	$params = array_merge(array($bind_types),$binds);
+	call_user_func_array(array($res,'bind_param'),refValues($params));
+	$res->execute();
+	$fetch = $res->get_result();
+	while ($result = $fetch->fetch_assoc()) {
+		$data[] = $result;
+	}
+	if (empty($data)) { return $false; }
+	else { return $data; }
 }
 
 /**
@@ -535,5 +534,4 @@ function getTotalStats($type,$subtype=NULL,$parameters=NULL) {
 		die("{\"error\":\"Invalid type\"}");
 	}
 }
-
 ?>
