@@ -2,11 +2,15 @@ package wav.demon.StatCraft.Commands.SC;
 
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
+
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+
 import wav.demon.StatCraft.Commands.ResponseBuilder;
 import wav.demon.StatCraft.Commands.SecondaryArgument;
 import wav.demon.StatCraft.Magic.MoveCode;
+import wav.demon.StatCraft.Querydsl.Move;
 import wav.demon.StatCraft.Querydsl.QMove;
 import wav.demon.StatCraft.Querydsl.QPlayers;
 import wav.demon.StatCraft.StatCraft;
@@ -29,7 +33,7 @@ public class SCMove extends SCTemplate {
 
     @Override
     @SecondaryArgument({"walking", "crouching", "sprinting", "swimming", "falling", "climbing",
-                        "flying", "diving", "minecart", "boat", "pig", "horse"})
+                        "flying", "diving", "minecart", "boat", "pig", "horse", "breakdown"})
     public String playerStatResponse(String name, List<String> args) {
         String arg = null;
         try {
@@ -52,16 +56,45 @@ public class SCMove extends SCTemplate {
                     .toString();
             } else {
                 arg = args.get(0);
-                MoveCode code = MoveCode.valueOf(arg.toUpperCase());
-                Integer result = query.from(m).where(m.id.eq(id), m.vehicle.eq(code.getCode())).uniqueResult(m.distance);
-                if (result == null)
-                    throw new Exception();
+                if (arg.equalsIgnoreCase("breakdown")) {
+                    List<Move> list = query.from(m).where(m.id.eq(id)).orderBy(m.distance.desc()).list(m);
 
-                return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Move")
-                    .addStat(WordUtils.capitalizeFully(arg), Util.distanceUnits(result))
-                    .toString();
+                    StringBuilder sb = new StringBuilder();
+
+                    sb  .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+                        .append("- ")
+                        .append(ChatColor.valueOf(plugin.config().colors.player_name))
+                        .append(name).append(" ")
+                        .append(ChatColor.valueOf(plugin.config().colors.stat_separator))
+                        .append("| ")
+                        .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+                        .append("Move Breakdown")
+                        .append(" -");
+
+                    for (Move move : list) {
+                        MoveCode code = MoveCode.fromCode(move.getVehicle());
+                        if (code != null)
+                        sb  .append("\n")
+                            .append(ChatColor.valueOf(plugin.config().colors.stat_label))
+                            .append(WordUtils.capitalizeFully(code.name()))
+                            .append(": ")
+                            .append(ChatColor.valueOf(plugin.config().colors.stat_value))
+                            .append(Util.distanceUnits(move.getDistance()));
+                    }
+                    return sb.toString();
+                } else {
+                    MoveCode code = MoveCode.valueOf(arg.toUpperCase());
+                    Integer result = query.from(m).where(m.id.eq(id), m.vehicle.eq(code.getCode())).uniqueResult(m.distance);
+                    if (result == null)
+                        throw new Exception();
+
+                    return new ResponseBuilder(plugin)
+                        .setName(name)
+                        .setStatName("Move")
+                        .addStat(WordUtils.capitalizeFully(arg), Util.distanceUnits(result))
+                        .toString();
+                }
+
             }
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
@@ -118,6 +151,7 @@ public class SCMove extends SCTemplate {
             List<String> list = new LinkedList<>();
             list.add("-all");
             list.add("-boat");
+            list.add("-breakdown");
             list.add("-climbing");
             list.add("-crouching");
             list.add("-diving");

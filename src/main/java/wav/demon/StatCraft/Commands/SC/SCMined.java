@@ -1,11 +1,13 @@
 package wav.demon.StatCraft.Commands.SC;
 
 import com.mysema.query.sql.SQLQuery;
+
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.material.MaterialData;
+
 import wav.demon.StatCraft.Commands.CustomResponse;
 import wav.demon.StatCraft.Commands.ResponseBuilder;
 import wav.demon.StatCraft.Querydsl.QBlockBreak;

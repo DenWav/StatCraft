@@ -3,8 +3,10 @@ package wav.demon.StatCraft;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
+
 import wav.demon.StatCraft.Magic.MoveCode;
 import wav.demon.StatCraft.Querydsl.Jumps;
 import wav.demon.StatCraft.Querydsl.QJumps;

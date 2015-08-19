@@ -4,12 +4,14 @@ import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import com.mysema.query.types.expr.CaseBuilder;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerEggThrowEvent;
+
 import wav.demon.StatCraft.Magic.ProjectilesCode;
 import wav.demon.StatCraft.Querydsl.Projectiles;
 import wav.demon.StatCraft.Querydsl.QProjectiles;
@@ -32,6 +34,7 @@ public class EggListener implements Listener {
         final Location eggLocation = event.getEgg().getLocation();
         final Location playerLocation = player.getLocation();
         final boolean hatched = event.isHatching();
+        final byte numberHatched = event.getNumHatches();
 
         final double distance = playerLocation.distance(eggLocation);
         final int finalDistance = (int) Math.round(distance * 100.0);
@@ -43,8 +46,10 @@ public class EggListener implements Listener {
 
                 ProjectilesCode code;
 
-                if (hatched) {
+                if (hatched && numberHatched == 1) {
                     code = ProjectilesCode.HATCHED_EGG;
+                } else if (hatched) {
+                    code = ProjectilesCode.FOUR_HATCHED_EGG;
                 } else {
                     code = ProjectilesCode.UNHATCHED_EGG;
                 }

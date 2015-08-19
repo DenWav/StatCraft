@@ -1,10 +1,11 @@
 package wav.demon.StatCraft.Config;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import wav.demon.StatCraft.Config.com.md_5.config.AnnotatedConfig;
 import wav.demon.StatCraft.Config.com.md_5.config.ConfigComment;
 import wav.demon.StatCraft.Config.com.md_5.config.NewLine;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)

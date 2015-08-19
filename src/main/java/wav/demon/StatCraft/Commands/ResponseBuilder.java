@@ -1,6 +1,7 @@
 package wav.demon.StatCraft.Commands;
 
 import org.bukkit.ChatColor;
+
 import wav.demon.StatCraft.StatCraft;
 
 import java.util.Iterator;

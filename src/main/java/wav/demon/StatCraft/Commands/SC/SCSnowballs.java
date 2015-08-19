@@ -3,7 +3,9 @@ package wav.demon.StatCraft.Commands.SC;
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.types.path.NumberPath;
+
 import org.bukkit.command.CommandSender;
+
 import wav.demon.StatCraft.Commands.ResponseBuilder;
 import wav.demon.StatCraft.Commands.SecondaryArgument;
 import wav.demon.StatCraft.Magic.ProjectilesCode;
@@ -109,9 +111,9 @@ public class SCSnowballs extends SCTemplate {
 
         List<Tuple> list = query
             .from(p)
-            .where(p.type.eq(ProjectilesCode.SNOWBALL.getCode()))
             .leftJoin(pl)
-            .on(p.id.eq(p.id))
+            .on(p.id.eq(pl.id))
+            .where(p.type.eq(ProjectilesCode.SNOWBALL.getCode()))
             .groupBy(pl.name)
             .orderBy(path.desc())
             .limit(num)

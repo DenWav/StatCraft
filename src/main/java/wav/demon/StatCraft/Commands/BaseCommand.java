@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.event.Listener;
+
 import wav.demon.StatCraft.Commands.SC.SCTemplate;
 import wav.demon.StatCraft.StatCraft;
 
@@ -207,8 +208,3 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
     }
 }
 
-class CommandAlreadyDefinedException extends RuntimeException {
-    public CommandAlreadyDefinedException(String s) {
-        super(s + " has already been defined.");
-    }
-}

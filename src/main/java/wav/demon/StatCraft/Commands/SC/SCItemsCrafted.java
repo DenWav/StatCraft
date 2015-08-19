@@ -2,7 +2,9 @@ package wav.demon.StatCraft.Commands.SC;
 
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
+
 import org.bukkit.command.CommandSender;
+
 import wav.demon.StatCraft.Commands.ResponseBuilder;
 import wav.demon.StatCraft.Querydsl.QItemsCrafted;
 import wav.demon.StatCraft.Querydsl.QPlayers;

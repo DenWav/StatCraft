@@ -3,11 +3,13 @@ package wav.demon.StatCraft.Listeners;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+
 import wav.demon.StatCraft.Querydsl.BlockBreak;
 import wav.demon.StatCraft.Querydsl.BlockPlace;
 import wav.demon.StatCraft.Querydsl.QBlockBreak;
@@ -25,6 +27,7 @@ public class BlockListener implements Listener {
         this.plugin = plugin;
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(final BlockBreakEvent event) {
         final short blockid = (short) event.getBlock().getTypeId();
@@ -64,6 +67,7 @@ public class BlockListener implements Listener {
         });
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(final BlockPlaceEvent event) {
         final short blockid = (short) event.getBlock().getTypeId();

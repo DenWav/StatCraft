@@ -7,7 +7,8 @@ public enum ProjectilesCode {
     ENDER_PEARL((short)2),
     UNHATCHED_EGG((short)3),
     HATCHED_EGG((short)4),
-    SNOWBALL((short)5);
+    SNOWBALL((short)5),
+    FOUR_HATCHED_EGG((short)6);
 
     private short code;
 

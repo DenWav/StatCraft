@@ -3,12 +3,15 @@ package wav.demon.StatCraft.Listeners;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
+import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+
 import wav.demon.StatCraft.Magic.EntityCode;
 import wav.demon.StatCraft.Querydsl.Kills;
 import wav.demon.StatCraft.Querydsl.QKills;
@@ -42,7 +45,11 @@ public class KillListener implements Listener {
                     if (entity instanceof Player) {
                         entityValue = String.valueOf(plugin.getDatabaseManager().getPlayerId(entity.getUniqueId()));
                     } else {
-                        entityValue = entity.getName();
+                        if (entity instanceof EnderPearl) {
+                            entityValue = "Ender Pearl";
+                        } else {
+                            entityValue = entity.getName();
+                        }
                     }
 
                     QKills k = QKills.kills;

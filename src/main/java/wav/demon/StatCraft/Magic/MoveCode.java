@@ -28,7 +28,7 @@ public enum MoveCode {
         return code;
     }
 
-    public static MoveCode fromCode(short code) {
+    public static MoveCode fromCode(byte code) {
         for (MoveCode moveCode : values()) {
             if (code == moveCode.getCode())
                 return moveCode;

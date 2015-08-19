@@ -3,7 +3,9 @@ package wav.demon.StatCraft.Listeners;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.ChatColor;
+import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,6 +13,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+
 import wav.demon.StatCraft.Magic.EntityCode;
 import wav.demon.StatCraft.Querydsl.DamageTaken;
 import wav.demon.StatCraft.Querydsl.QDamageTaken;
@@ -131,9 +134,13 @@ public class DamageTakenListener implements Listener {
 
                     String entityValue;
                     if (entity instanceof Player) {
-                        entityValue = String.valueOf(plugin.getDatabaseManager().getPlayerId(entity.getUniqueId()));
+                        entityValue = String.valueOf(plugin.getDatabaseManager().getPlayerId(uuid));
                     } else {
-                        entityValue = entity.getName();
+                        if (entity instanceof EnderPearl) {
+                            entityValue = "Ender Pearl";
+                        } else {
+                            entityValue = entity.getName();
+                        }
                     }
 
                     try {

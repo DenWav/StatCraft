@@ -2,8 +2,10 @@ package wav.demon.StatCraft.Commands.SC;
 
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
+
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+
 import wav.demon.StatCraft.Commands.TimeResponseBuilder;
 import wav.demon.StatCraft.Querydsl.QEnterBed;
 import wav.demon.StatCraft.Querydsl.QPlayers;

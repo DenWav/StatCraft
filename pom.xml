@@ -16,41 +16,36 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.author>DemonWav</project.author>
+        <project.jdbcUrl>jdbc:mysql://localhost:3306/statcraft</project.jdbcUrl>
+        <project.jdbcUser>statcraft</project.jdbcUser>
+        <project.jdbcDriver>com.mysql.jdbc.Driver</project.jdbcDriver>
     </properties>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>com.mysema.querydsl</groupId>
-                <artifactId>querydsl-maven-plugin</artifactId>
-                <version>3.6.3</version>
+                <groupId>wav.demon.statcraft</groupId>
+                <artifactId>statcraft-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>export</goal>
+                            <goal>generate-files</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <jdbcDriver>com.mysql.jdbc.Driver</jdbcDriver>
-                    <jdbcUrl>jdbc:mysql://localhost:3306/statcraft</jdbcUrl>
-                    <jdbcUser>statcraft</jdbcUser>
-                    <packageName>${project.groupId}.Querydsl</packageName>
-                    <targetFolder>${project.basedir}/target/generated-sources/java</targetFolder>
-                    <exportBeans>true</exportBeans>
+                    <!--    This first set of settings is only for the generate-sql goal -->
+                    <jdbcUrl>${project.jdbcUrl}</jdbcUrl>
+                    <jdbcUser>${project.jdbcUser}</jdbcUser>
+                    <!--    <jdbcDriver> Define a different driver, default = com.mysql.jdbc.Driver -->
+                    <!--    <jdbcPassword> Define a different password, default is blank -->
+                    <!--    <outputFile> Define a different SQL output file, default = statcraft.sql -->
+                    <!--    This is only for the generate-files goal -->
+                    <!--    <inputFile> Define a different SQL input file, default = statcraft.sql -->
+                    <!--    <generatedSourceLocation> Define a different source output location, -->
+                    <!--        default = target/generated-sources/java/ -->
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>mysql</groupId>
-                        <artifactId>mysql-connector-java</artifactId>
-                        <version>5.1.6</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-jdk14</artifactId>
-                        <version>1.7.12</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <version>3.1</version>
@@ -147,12 +142,18 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>demonwav-repo</id>
+            <url>http://nexus.demonwav.com/content/repositories/snapshots/</url>
+        </pluginRepository>
+    </pluginRepositories>
     <dependencies>
         <!-- Bukkit API -->
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.8.3-R0.1-SNAPSHOT</version>
+            <version>1.8.8-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
@@ -172,6 +173,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.12</version>
+        </dependency>
+        <!-- JUnit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

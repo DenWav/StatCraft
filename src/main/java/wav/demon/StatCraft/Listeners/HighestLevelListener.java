@@ -3,10 +3,12 @@ package wav.demon.StatCraft.Listeners;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
+
 import wav.demon.StatCraft.Querydsl.HighestLevel;
 import wav.demon.StatCraft.Querydsl.QHighestLevel;
 import wav.demon.StatCraft.StatCraft;

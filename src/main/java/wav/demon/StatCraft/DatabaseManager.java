@@ -1,4 +1,4 @@
-package wav.demon.StatCraft.MySQL;
+package wav.demon.StatCraft;
 
 import com.mysema.query.sql.MySQLTemplates;
 import com.mysema.query.sql.RelationalPath;
@@ -6,10 +6,10 @@ import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.SQLTemplates;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.OfflinePlayer;
+
 import wav.demon.StatCraft.Querydsl.QPlayers;
-import wav.demon.StatCraft.StatCraft;
-import wav.demon.StatCraft.Util;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -50,6 +50,7 @@ public class DatabaseManager {
             connection = DriverManager.getConnection(url, plugin.config().mysql.username, plugin.config().mysql.password);
         } catch (SQLException e) {
             plugin.getLogger().warning("StatCraft is having issues connecting to the database. Will try to reconnect in 10 seconds.");
+            e.printStackTrace();
             for (int i = 0 ; i < 1000; i++) {
                 try {
                     Thread.sleep(10);
@@ -58,7 +59,6 @@ public class DatabaseManager {
                 }
             }
             reconnect();
-            e.printStackTrace();
         }
     }
 
@@ -198,8 +198,7 @@ public class DatabaseManager {
     }
 
     public void createTable(Table table) {
-        try (PreparedStatement pst = getConnection().prepareStatement(
-                "CREATE TABLE IF NOT EXISTS " + table.getName() + table.getCreate() + " ENGINE=InnoDB;")) {
+        try (PreparedStatement pst = getConnection().prepareStatement(table.getCreate())) {
             pst.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -236,6 +235,7 @@ public class DatabaseManager {
 
         if (res == null) {
             // it failed to find a player by that name, so attempt to do a UUID lookup
+            @SuppressWarnings("deprecation")
             OfflinePlayer player = plugin.getServer().getOfflinePlayer(name);
 
             // Check if it's an offline UUID

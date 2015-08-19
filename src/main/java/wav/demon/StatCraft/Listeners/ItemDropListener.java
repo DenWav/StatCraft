@@ -3,10 +3,12 @@ package wav.demon.StatCraft.Listeners;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerDropItemEvent;
+
 import wav.demon.StatCraft.Querydsl.ItemDrops;
 import wav.demon.StatCraft.Querydsl.QItemDrops;
 import wav.demon.StatCraft.StatCraft;
@@ -22,6 +24,7 @@ public class ItemDropListener implements Listener {
         this.plugin = plugin;
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemDrop(PlayerDropItemEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();

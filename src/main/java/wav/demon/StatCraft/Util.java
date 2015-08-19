@@ -97,6 +97,9 @@ public class Util {
      * @return String of time in a more human readable format, for example 219 seconds would read as "3 minutes, 39 seconds"
      */
     public static String transformTime(int seconds) {
+        if (seconds < 0)
+            throw new IllegalArgumentException("Time must not be negative");
+
         // Figure out the playtime in a human readable format
         final int secondsInMinute = 60;
         final int secondsInHour = 60 * secondsInMinute;

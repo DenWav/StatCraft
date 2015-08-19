@@ -4,11 +4,13 @@ import com.mysema.query.QueryException;
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
+
 import wav.demon.StatCraft.Querydsl.EnterBed;
 import wav.demon.StatCraft.Querydsl.LeaveBed;
 import wav.demon.StatCraft.Querydsl.QEnterBed;

@@ -1,9 +1,11 @@
 package wav.demon.StatCraft.Commands.SC;
 
 import com.mysema.query.Tuple;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 import wav.demon.StatCraft.StatCraft;
 import wav.demon.StatCraft.Util;
 
@@ -57,7 +59,7 @@ public abstract class SCTemplate {
                 .append("- ").append(name).append(" ")
                 .append(ChatColor.valueOf(plugin.config().colors.stat_separator))
                 .append("| ")
-                .append(ChatColor.RESET)
+                .append(ChatColor.valueOf(plugin.config().colors.stat_title))
                 .append("Top ")
                 .append(list.size())
                 .append(" -");
@@ -66,6 +68,7 @@ public abstract class SCTemplate {
 
         for (Tuple tuple : list) {
             sb      .append("\n")
+                    .append(ChatColor.RESET)
                     .append(ChatColor.BOLD)
                     .append(ChatColor.valueOf(plugin.config().colors.list_number))
                     .append(++i)
@@ -90,7 +93,7 @@ public abstract class SCTemplate {
                 .append("- ").append(name).append(" ")
                 .append(ChatColor.valueOf(plugin.config().colors.stat_separator))
                 .append("| ")
-                .append(ChatColor.RESET)
+                .append(ChatColor.valueOf(plugin.config().colors.stat_title))
                 .append("Top ")
                 .append(list.size())
                 .append(" -");
@@ -100,6 +103,7 @@ public abstract class SCTemplate {
         for (Tuple tuple : list) {
             Integer res = tuple.get(1, Integer.class);
             sb      .append("\n")
+                    .append(ChatColor.RESET)
                     .append(ChatColor.BOLD)
                     .append(ChatColor.valueOf(plugin.config().colors.list_number))
                     .append(++i)
@@ -124,7 +128,7 @@ public abstract class SCTemplate {
             .append("- ").append(name).append(" ")
             .append(ChatColor.valueOf(plugin.config().colors.stat_separator))
             .append("| ")
-            .append(ChatColor.RESET)
+            .append(ChatColor.valueOf(plugin.config().colors.stat_title))
             .append("Top ")
             .append(list.size())
             .append(" -");
@@ -133,7 +137,8 @@ public abstract class SCTemplate {
 
         for (Tuple tuple : list) {
             Integer res = tuple.get(1, Integer.class);
-            sb      .append("\n")
+            sb  .append("\n")
+                .append(ChatColor.RESET)
                 .append(ChatColor.BOLD)
                 .append(ChatColor.valueOf(plugin.config().colors.list_number))
                 .append(++i)

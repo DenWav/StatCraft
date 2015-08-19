@@ -3,15 +3,17 @@ package wav.demon.StatCraft.Commands.SC;
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 import wav.demon.StatCraft.Commands.CustomResponse;
-import wav.demon.StatCraft.MySQL.Table;
 import wav.demon.StatCraft.Querydsl.QEnterBed;
 import wav.demon.StatCraft.Querydsl.QLastJoinTime;
 import wav.demon.StatCraft.StatCraft;
+import wav.demon.StatCraft.Table;
 
 import java.sql.SQLException;
 import java.sql.Statement;

@@ -4,11 +4,13 @@ import com.mysema.query.QueryException;
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
 import wav.demon.StatCraft.Commands.BaseCommand;
 import wav.demon.StatCraft.Commands.SC.SCArrowsShot;
 import wav.demon.StatCraft.Commands.SC.SCBlocksBroken;
@@ -71,7 +73,6 @@ import wav.demon.StatCraft.Listeners.ToolsBrokenListener;
 import wav.demon.StatCraft.Listeners.WordsSpokenListener;
 import wav.demon.StatCraft.Listeners.WorldChangeListener;
 import wav.demon.StatCraft.Listeners.XpGainedListener;
-import wav.demon.StatCraft.MySQL.DatabaseManager;
 import wav.demon.StatCraft.Querydsl.EnterBed;
 import wav.demon.StatCraft.Querydsl.LastJoinTime;
 import wav.demon.StatCraft.Querydsl.Players;
@@ -531,6 +532,11 @@ public class StatCraft extends JavaPlugin {
             statsEnabled.append(" jumps");
             new SCJumps(this);
         }
+
+//        if (config.stats.animals_bred) {
+//            getServer().getPluginManager().registerEvents(new AnimalsBredListener(this), this);
+//            statsEnabled.append(" animals_bred");
+//        }
 
         getLogger().info("Successfully enabled:" + statsEnabled);
 

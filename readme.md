@@ -64,23 +64,7 @@ Compiling
 
 #### JDK 8 is recommended.
 
-Unfortunately there is a bit of setup for the first build before you can actually start working with the code, but
-just remember you only have to do it once.
-
-First, you need to have a MySQL server installed on your build machine. This is needed for the build process as
-Querydsl uses a template table to generate its classes. Until your first build you won't be able to work with the code
-correctly because it will be filled with errors, as the Querydsl classes haven't been generated yet. You can download
-MySQL [here](http://dev.mysql.com/downloads/mysql/).
-
-Once you have MySQL installed, execute the `statcraft.sql` file in this project in MySQL. This will create the
-`statcraft` database and all of the tables that go in it. Next, you either need to create a `statcraft` user that is
-only accessible by `localhost`, with no password, modify the `pom.xml` to reflect the login information you want to use
-for Querydsl to reach the `statcraft` database. If you decide to not modify the `pom.xml`, then I would advise you to
-make sure the `statcraft` user is only accessibly by `localhost`, for security reasons.
-
-Once you have MySQL setup properly, and the `statcraft` database created, with all of the tables, and the `statcraft`
-user created, or modified the `pom.xml` to allow the Querydsl plugin to access the `statcraft` database, you can finally
-build the project.
+If you are just modifying the plugin without changing any of the database structure, then there is no setup needed.
 
 Make sure you are in StatCraft's root directory and run the command:
 
@@ -88,7 +72,22 @@ Make sure you are in StatCraft's root directory and run the command:
 
 When that is finished, look in the `target/` folder, and it will have the compiled .jar file.
 
-Note, once you have the MySQL setup correctly, you won't need to worry about it again.
+If you need to modify the database structure, execute `statcraft.sql` in MySQL to create the correct database structure
+to begin with, or just run a currently working version of StatCraft so it will create the database. Once you have done
+this, modify the pom.xml to allow it to connect to the database. Once you have done that, make the changes to the
+database structure directly on the database itself. After you have made the necessary changes, run this command:
+
+`mvn clean statcraft:generate-sql package`
+
+for full build, or just:
+
+`mvn statcraft:generate-sql`
+
+if you just want to create the sql file.
+
+This will generate the `statcraft.sql` file that the StatCraft Maven plugin uses to generate the classes and Table enum,
+this is so that changes to the database are automatically represented in the code, and any errors will result in
+compile-time issues, rather than hard to debug runtime problems.
 
 Further Info
 ------------

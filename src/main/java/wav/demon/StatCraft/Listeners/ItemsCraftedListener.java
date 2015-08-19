@@ -4,12 +4,14 @@ import com.google.common.base.Objects;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.inventory.ItemStack;
+
 import wav.demon.StatCraft.Querydsl.ItemsCrafted;
 import wav.demon.StatCraft.Querydsl.QItemsCrafted;
 import wav.demon.StatCraft.StatCraft;
@@ -29,6 +31,7 @@ public class ItemsCraftedListener implements Listener {
     }
 
     /** this method is Comphenix's code */
+    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemCraft(final CraftItemEvent event) {
         HumanEntity player = event.getWhoClicked();
@@ -103,6 +106,7 @@ public class ItemsCraftedListener implements Listener {
         }
 
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @SuppressWarnings("deprecation")
             @Override
             public void run() {
                 final ItemStack[] postInv = player.getInventory().getContents();
@@ -129,6 +133,7 @@ public class ItemsCraftedListener implements Listener {
         }, ticks);
     }
 
+    @SuppressWarnings("deprecation")
     private boolean hasSameItem(ItemStack a, ItemStack b) {
         if (a == null)
             return b == null;

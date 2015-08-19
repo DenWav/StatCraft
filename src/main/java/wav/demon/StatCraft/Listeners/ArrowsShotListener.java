@@ -4,6 +4,7 @@ import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import com.mysema.query.types.expr.CaseBuilder;
+
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -11,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
+
 import wav.demon.StatCraft.Magic.ProjectilesCode;
 import wav.demon.StatCraft.Querydsl.Projectiles;
 import wav.demon.StatCraft.Querydsl.QProjectiles;

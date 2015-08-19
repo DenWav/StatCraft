@@ -1,8 +1,10 @@
 package wav.demon.StatCraft.Commands.SC;
 
 import com.mysema.query.sql.SQLQuery;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+
 import wav.demon.StatCraft.Querydsl.QFirstJoinTime;
 import wav.demon.StatCraft.StatCraft;
 import wav.demon.StatCraft.Util;
