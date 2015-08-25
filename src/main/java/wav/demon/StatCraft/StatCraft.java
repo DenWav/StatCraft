@@ -10,6 +10,9 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import wav.demon.StatCraft.Commands.BaseCommand;
 import wav.demon.StatCraft.Commands.SC.SCArrowsShot;
@@ -85,8 +88,13 @@ import wav.demon.StatCraft.Querydsl.QPlayTime;
 import wav.demon.StatCraft.Querydsl.QPlayers;
 import wav.demon.StatCraft.Querydsl.QTimeSlept;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -146,15 +154,21 @@ public class StatCraft extends JavaPlugin {
 
             getCommand("sc").setExecutor(baseCommand);
 
-            /* **************************************************************** */
-            /*      To protect against NoClassDefFoundError in onDisable()      */
-            /* */QLastLeaveTime lastLeaveTime = QLastLeaveTime.lastLeaveTime;/* */
-            /* */QLastJoinTime lastJoinTime = QLastJoinTime.lastJoinTime;    /* */
-            /* */QPlayTime playTime = QPlayTime.playTime;                    /* */
-            /* */QLeaveBed leaveBed = QLeaveBed.leaveBed;                    /* */
-            /* */QEnterBed enterBed = QEnterBed.enterBed;                    /* */
-            /* */QTimeSlept timeSlept = QTimeSlept.timeSlept;                /* */
-            /* **************************************************************** */
+            /* *********************************************************** */
+            /*    To protect against NoClassDefFoundError in onDisable()   */
+            /* *///noinspection unused                                  /* */
+            QLastLeaveTime lastLeaveTime = QLastLeaveTime.lastLeaveTime;/* */
+            /* *///noinspection unused                                  /* */
+            QLastJoinTime lastJoinTime = QLastJoinTime.lastJoinTime;    /* */
+            /* *///noinspection unused                                  /* */
+            QPlayTime playTime = QPlayTime.playTime;                    /* */
+            /* *///noinspection unused                                  /* */
+            QLeaveBed leaveBed = QLeaveBed.leaveBed;                    /* */
+            /* *///noinspection unused                                  /* */
+            QEnterBed enterBed = QEnterBed.enterBed;                    /* */
+            /* *///noinspection unused                                  /* */
+            QTimeSlept timeSlept = QTimeSlept.timeSlept;                /* */
+            /* *********************************************************** */
 
             createListeners();
             initializePlaytimeAndBed();
@@ -173,7 +187,7 @@ public class StatCraft extends JavaPlugin {
 
     private void initializePlaytimeAndBed() {
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
-        enabler = true;
+
         getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
             @Override
             public void run() {
@@ -235,6 +249,7 @@ public class StatCraft extends JavaPlugin {
                         });
                     }
                 }
+                enabler = true;
             }
         });
     }
@@ -580,10 +595,13 @@ public class StatCraft extends JavaPlugin {
                 .columns(p.uuid, p.name)
                 .values(array, name)
                 .execute();
+
+            checkBlanks();
         } else if (!result.getName().equals(name)) {
             SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
             // Blank out any conflicting names
-            update  .where(p.name.eq(name))
+            update
+                .where(p.name.eq(name))
                 .set(p.name, "")
                 .execute();
             // Change name of UUID player
@@ -591,6 +609,8 @@ public class StatCraft extends JavaPlugin {
                 .where(p.uuid.eq(array))
                 .set(p.name, name)
                 .execute();
+
+            checkBlanks();
         }
 
         int id = getDatabaseManager().getPlayerId(player.getUniqueId());
@@ -741,5 +761,93 @@ public class StatCraft extends JavaPlugin {
 
     public synchronized void clearError() {
         errors = 0;
+    }
+
+    public static String getCurrentName(UUID uuid) {
+        // Get JSON from Mojang API
+        final String url = "https://api.mojang.com/user/profiles/" + uuid.toString().replaceAll("-", "") + "/names";
+        HttpURLConnection conn;
+        BufferedReader rd = null;
+        String line;
+        StringBuilder sb = new StringBuilder();
+        try {
+            conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setRequestMethod("GET");
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (rd != null) {
+                try {
+                    rd.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        // Parse the JSON, checking for errors as we go
+        final String s = sb.toString();
+        if (s.isEmpty()) {
+            throw new IllegalStateException("No response from Mojang API.");
+        }
+        Object list = JSONValue.parse(s);
+        if (!(list instanceof JSONArray))
+            throw new IllegalStateException("Mojang API returned incorrect JSON: " + s);
+        JSONArray names = (JSONArray) list;
+
+        Object last = names.get(names.size() - 1);
+        if (!(last instanceof JSONObject))
+            throw new IllegalStateException("Mojant API returned incorrect JSON: " + s);
+
+        JSONObject name = (JSONObject) last;
+        if (name.isEmpty()) {
+            throw new IllegalStateException("Mojang API returned bad name object: " + s);
+        }
+
+        Object fin = name.get("name");
+        if (!(fin instanceof String)) {
+            throw new IllegalStateException("Mojang API returned bad name object: " + s);
+        }
+
+        String n = (String) fin;
+        if (n.isEmpty()) {
+            throw new IllegalStateException("Mojang API returned bad name: " + s);
+        }
+
+        return n;
+    }
+
+    public void checkBlanks() {
+        getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
+            @Override
+            public void run() {
+                QPlayers p = QPlayers.players;
+                SQLQuery query = getDatabaseManager().getNewQuery();
+
+                if (query == null)
+                    return;
+
+                List<Players> result = query.from(p).where(p.name.eq("")).list(p);
+                for (Players players : result) {
+                    UUID uuid = Util.byteToUUID(players.getUuid());
+                    String name;
+                    try {
+                        name = getCurrentName(uuid);
+
+                        SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
+                        update
+                                .where(p.uuid.eq(players.getUuid()))
+                                .set(p.name, name)
+                                .execute();
+                    } catch (Exception e) {
+                        getServer().getLogger().warning("Was unable to set new name for " + uuid.toString());
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 }
