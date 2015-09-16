@@ -139,7 +139,7 @@ public class DamageTakenListener implements Listener {
                         if (entity instanceof EnderPearl) {
                             entityValue = "Ender Pearl";
                         } else {
-                            entityValue = entity.getName();
+                            entityValue = code.getName(entity.getName());
                         }
                     }
 
@@ -148,8 +148,8 @@ public class DamageTakenListener implements Listener {
                         SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
                         if (clause == null)
                             return;
-                        clause.columns(t.id, t.entity, t.type, t.amount)
-                            .values(id, entityValue, code.getCode(), damageTaken).execute();
+                        clause.columns(t.id, t.entity, t.amount)
+                            .values(id, entityValue, damageTaken).execute();
                     } catch (QueryException e) {
                         // UPDATE
                         SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
@@ -157,8 +157,7 @@ public class DamageTakenListener implements Listener {
                             return;
                         clause.where(
                             t.id.eq(id),
-                            t.entity.eq(entityValue),
-                            t.type.eq(code.getCode())
+                            t.entity.eq(entityValue)
                         ).set(t.amount, t.amount.add(damageTaken)).execute();
                     }
                 }

@@ -1,19 +1,5 @@
 package wav.demon.StatCraft;
 
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.SQLQuery;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
-
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Statistic;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-
 import wav.demon.StatCraft.Commands.BaseCommand;
 import wav.demon.StatCraft.Commands.SC.SCArrowsShot;
 import wav.demon.StatCraft.Commands.SC.SCBlocksBroken;
@@ -88,6 +74,19 @@ import wav.demon.StatCraft.Querydsl.QPlayTime;
 import wav.demon.StatCraft.Querydsl.QPlayers;
 import wav.demon.StatCraft.Querydsl.QTimeSlept;
 
+import com.mysema.query.QueryException;
+import com.mysema.query.sql.SQLQuery;
+import com.mysema.query.sql.dml.SQLInsertClause;
+import com.mysema.query.sql.dml.SQLUpdateClause;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Statistic;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -104,7 +103,7 @@ import java.util.UUID;
 public class StatCraft extends JavaPlugin {
     private DatabaseManager databaseManager;
     private volatile int errors = 0;
-
+    
     private HashMap<UUID, Integer> lastFireTime = new HashMap<>();
     private HashMap<UUID, Integer> lastDrownTime = new HashMap<>();
     private HashMap<UUID, Integer> lastPoisonTime = new HashMap<>();

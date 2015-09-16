@@ -1,4 +1,4 @@
--- StatCraft Database Creation Script Generated on Fri Jun 05 22:53:56 CDT 2015
+-- StatCraft Database Creation Script Generated on Tue Sep 15 19:46:04 CDT 2015
 --
 -- Database: statcraft
 -- ----------------------------------------------------------------------------
@@ -67,9 +67,8 @@ DROP TABLE IF EXISTS `damage_dealt`;
 CREATE TABLE `damage_dealt` (
   `id` int(10) unsigned NOT NULL,
   `entity` varchar(50) NOT NULL,
-  `type` tinyint(4) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  UNIQUE KEY `id` (`id`,`entity`,`type`)
+  UNIQUE KEY `id` (`id`,`entity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -79,9 +78,8 @@ DROP TABLE IF EXISTS `damage_taken`;
 CREATE TABLE `damage_taken` (
   `id` int(10) unsigned NOT NULL,
   `entity` varchar(50) NOT NULL,
-  `type` tinyint(4) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  UNIQUE KEY `id` (`id`,`entity`,`type`)
+  UNIQUE KEY `id` (`id`,`entity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -281,9 +279,8 @@ DROP TABLE IF EXISTS `kills`;
 CREATE TABLE `kills` (
   `id` int(10) unsigned NOT NULL,
   `entity` varchar(50) NOT NULL,
-  `type` tinyint(4) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  UNIQUE KEY `id` (`id`,`entity`,`type`)
+  UNIQUE KEY `id` (`id`,`entity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -468,4 +465,4 @@ CREATE TABLE `xp_gained` (
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Generated in 15.31ms
+-- Generated in 83.29ms

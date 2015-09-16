@@ -48,7 +48,7 @@ public class KillListener implements Listener {
                         if (entity instanceof EnderPearl) {
                             entityValue = "Ender Pearl";
                         } else {
-                            entityValue = entity.getName();
+                            entityValue = code.getName(entity.getName());
                         }
                     }
 
@@ -61,8 +61,8 @@ public class KillListener implements Listener {
                         if (clause == null)
                             return;
 
-                        clause.columns(k.id, k.entity, k.type, k.amount)
-                            .values(id, entityValue, code.getCode(), 1).execute();
+                        clause.columns(k.id, k.entity, k.amount)
+                            .values(id, entityValue, 1).execute();
                     } catch (QueryException e) {
                         // UPDATE
                         SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
@@ -72,8 +72,7 @@ public class KillListener implements Listener {
 
                         clause.where(
                             k.id.eq(id),
-                            k.entity.eq(entityValue),
-                            k.type.eq(code.getCode())
+                            k.entity.eq(entityValue)
                         ).set(k.amount, k.amount.add(1)).execute();
                     }
                 }

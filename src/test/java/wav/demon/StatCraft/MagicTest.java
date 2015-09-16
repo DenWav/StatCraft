@@ -1,15 +1,13 @@
 package wav.demon.StatCraft;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
+import org.junit.Test;
 import wav.demon.StatCraft.Magic.BucketCode;
-import wav.demon.StatCraft.Magic.EntityCode;
 import wav.demon.StatCraft.Magic.FishCode;
 import wav.demon.StatCraft.Magic.MoveCode;
 import wav.demon.StatCraft.Magic.ProjectilesCode;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class MagicTest {
 
@@ -39,29 +37,6 @@ public class MagicTest {
     @Test
     public void testBucketNegative() {
         assertNull(BucketCode.fromCode((byte) -1));
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //           ENTITY
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    @Test
-    public void testEntityCodeSkeleton() {
-        assertEquals(EntityCode.SKELETON, EntityCode.fromCode((byte) 0));
-    }
-
-    @Test
-    public void testEntityCodeWither() {
-        assertEquals(EntityCode.WITHER_SKELETON, EntityCode.fromCode((byte) 1));
-    }
-
-    @Test
-    public void testEntityCodeNull() {
-        assertNull(EntityCode.fromCode((byte) 2));
-    }
-
-    @Test
-    public void testEntityCodeNegative() {
-        assertNull(EntityCode.fromCode((byte) -1));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

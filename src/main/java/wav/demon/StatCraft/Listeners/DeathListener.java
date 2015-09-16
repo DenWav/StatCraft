@@ -37,29 +37,26 @@ public class DeathListener implements Listener {
         final UUID uuid = event.getEntity().getUniqueId();
         final String world = event.getEntity().getLocation().getWorld().getName();
         String cause;
-        EntityCode code;
 
         EntityDamageEvent damageEvent = event.getEntity().getLastDamageCause();
         if (damageEvent instanceof EntityDamageByEntityEvent) {
             EntityDamageByEntityEvent damageByEntityEvent = (EntityDamageByEntityEvent) damageEvent;
             Entity killer = damageByEntityEvent.getDamager();
-            code = EntityCode.fromEntity(killer);
+            EntityCode code = EntityCode.fromEntity(killer);
             if (killer instanceof Player) {
                 cause = String.valueOf(plugin.getDatabaseManager().getPlayerId(killer.getUniqueId()));
             } else {
                 if (killer instanceof EnderPearl) {
                     cause = "Ender Pearl";
                 } else {
-                    cause = killer.getName();
+                    cause = code.getName(killer.getName());
                 }
             }
         } else {
             EntityDamageEvent.DamageCause damageCause = damageEvent.getCause();
             cause = damageCause.name();
-            code = EntityCode.SKELETON; // default to 0
         }
 
-        final EntityCode finalCode = code;
         plugin.getThreadManager().schedule(Death.class, new Runnable() {
             @Override
             public void run() {
@@ -107,7 +104,7 @@ public class DeathListener implements Listener {
                         return;
 
                     clause.columns(c.id, c.cause, c.type, c.world, c.amount)
-                        .values(id, finalCause, finalCode.getCode(), world, 1).execute();
+                        .values(id, finalCause, world, 1).execute();
                 } catch (QueryException ex) {
                     // UPDATE
                     SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(c);
@@ -118,7 +115,6 @@ public class DeathListener implements Listener {
                     clause.where(
                         c.id.eq(id),
                         c.cause.eq(finalCause),
-                        c.type.eq(finalCode.getCode()),
                         c.world.eq(world)
                     ).set(c.amount, c.amount.add(1)).execute();
                 }

@@ -53,7 +53,7 @@ public class DamageDealtListener implements Listener {
                         if (entity instanceof Player) {
                             entityValue = String.valueOf(plugin.getDatabaseManager().getPlayerId(entity.getUniqueId()));
                         } else {
-                            entityValue = entity.getName();
+                            entityValue = code.getName(entity.getName());
                         }
 
                         try {
@@ -63,8 +63,8 @@ public class DamageDealtListener implements Listener {
                             if (clause == null)
                                 return;
 
-                            clause.columns(d.id, d.entity, d.type, d.amount)
-                                .values(id, entityValue, code.getCode(), damageDealt).execute();
+                            clause.columns(d.id, d.entity, d.amount)
+                                .values(id, entityValue, damageDealt).execute();
                         } catch (QueryException e) {
                             // UPDATE
                             SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(d);
@@ -74,8 +74,7 @@ public class DamageDealtListener implements Listener {
 
                             clause.where(
                                 d.id.eq(id),
-                                d.entity.eq(entityValue),
-                                d.type.eq(code.getCode())
+                                d.entity.eq(entityValue)
                             ).set(d.amount, d.amount.add(damageDealt)).execute();
                         }
                     }
