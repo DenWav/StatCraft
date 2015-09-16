@@ -1,5 +1,12 @@
+# StatCraft Bukkit Plugin
+#
+# Copyright (c) 2015 Kyle Wood (DemonWav)
+# http://demonwav.com
+#
+# MIT License
+
 dname: ${project.name}
-main: ${project.groupId}.${project.artifactId}.${project.name}
+main: ${project.groupId}.${project.name}
 version: ${project.version}
 author: ${project.author}
 

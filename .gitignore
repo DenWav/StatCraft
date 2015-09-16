@@ -1,5 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
 /.gitignore
+javadoc/
+libs/
+.clover/
 
 ### Gradle template
 .gradle
