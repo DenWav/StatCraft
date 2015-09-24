@@ -11,7 +11,7 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
-import com.demonwav.statcraft.querydsl.QFirstJoinTime;
+import com.demonwav.statcraft.querydsl.QSeen;
 
 import com.mysema.query.sql.SQLQuery;
 import org.bukkit.ChatColor;
@@ -41,12 +41,12 @@ public class SCFirstJoin extends SCTemplate {
             if (id < 0)
                 throw new Exception();
 
-            QFirstJoinTime f = QFirstJoinTime.firstJoinTime;
+            QSeen s = QSeen.seen;
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
 
-            Integer result = query.from(f).where(f.id.eq(id)).uniqueResult(f.time);
+            Integer result = query.from(s).where(s.id.eq(id)).uniqueResult(s.firstJoinTime);
             if (result == null)
                 throw new Exception();
 

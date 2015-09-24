@@ -1,4 +1,4 @@
--- StatCraft Database Creation Script Generated on Tue Sep 15 19:46:04 CDT 2015
+-- StatCraft Database Creation Script Generated on Wed Sep 23 20:29:37 CDT 2015
 --
 -- Database: statcraft
 -- ----------------------------------------------------------------------------
@@ -160,16 +160,6 @@ CREATE TABLE `fires_started` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Table: `first_join_time`
---
-DROP TABLE IF EXISTS `first_join_time`;
-CREATE TABLE `first_join_time` (
-  `id` int(10) unsigned NOT NULL,
-  `time` int(11) NOT NULL,
-  UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
 -- Table: `fish_caught`
 --
 DROP TABLE IF EXISTS `fish_caught`;
@@ -284,26 +274,6 @@ CREATE TABLE `kills` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Table: `last_join_time`
---
-DROP TABLE IF EXISTS `last_join_time`;
-CREATE TABLE `last_join_time` (
-  `id` int(10) unsigned NOT NULL,
-  `time` int(11) NOT NULL,
-  UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Table: `last_leave_time`
---
-DROP TABLE IF EXISTS `last_leave_time`;
-CREATE TABLE `last_leave_time` (
-  `id` int(10) unsigned NOT NULL,
-  `time` int(11) NOT NULL,
-  UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
 -- Table: `leave_bed`
 --
 DROP TABLE IF EXISTS `leave_bed`;
@@ -378,6 +348,19 @@ CREATE TABLE `projectiles` (
   `total_distance` int(10) unsigned NOT NULL,
   `max_throw` int(10) unsigned NOT NULL,
   UNIQUE KEY `id` (`id`,`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table: `seen`
+--
+DROP TABLE IF EXISTS `seen`;
+CREATE TABLE `seen` (
+  `id` int(10) unsigned NOT NULL,
+  `first_join_time` int(11) NOT NULL,
+  `last_join_time` int(11) NOT NULL,
+  `last_leave_time` int(11) NOT NULL,
+  `last_spoke_time` int(11) NOT NULL,
+  UNIQUE KEY `unique_id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -465,4 +448,4 @@ CREATE TABLE `xp_gained` (
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Generated in 83.29ms
+-- Generated in 18.47ms

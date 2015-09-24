@@ -72,16 +72,14 @@ import com.demonwav.statcraft.listeners.WordsSpokenListener;
 import com.demonwav.statcraft.listeners.WorldChangeListener;
 import com.demonwav.statcraft.listeners.XpGainedListener;
 import com.demonwav.statcraft.querydsl.EnterBed;
-import com.demonwav.statcraft.querydsl.LastJoinTime;
 import com.demonwav.statcraft.querydsl.Players;
 import com.demonwav.statcraft.querydsl.QEnterBed;
-import com.demonwav.statcraft.querydsl.QFirstJoinTime;
-import com.demonwav.statcraft.querydsl.QLastJoinTime;
-import com.demonwav.statcraft.querydsl.QLastLeaveTime;
 import com.demonwav.statcraft.querydsl.QLeaveBed;
 import com.demonwav.statcraft.querydsl.QPlayTime;
 import com.demonwav.statcraft.querydsl.QPlayers;
+import com.demonwav.statcraft.querydsl.QSeen;
 import com.demonwav.statcraft.querydsl.QTimeSlept;
+import com.demonwav.statcraft.querydsl.Seen;
 
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.SQLQuery;
@@ -165,9 +163,7 @@ public class StatCraft extends JavaPlugin {
             /* *********************************************************** */
             /*    To protect against NoClassDefFoundError in onDisable()   */
             /* *///noinspection unused                                  /* */
-            QLastLeaveTime lastLeaveTime = QLastLeaveTime.lastLeaveTime;/* */
-            /* *///noinspection unused                                  /* */
-            QLastJoinTime lastJoinTime = QLastJoinTime.lastJoinTime;    /* */
+            QSeen seen = QSeen.seen;                                    /* */
             /* *///noinspection unused                                  /* */
             QPlayTime playTime = QPlayTime.playTime;                    /* */
             /* *///noinspection unused                                  /* */
@@ -204,27 +200,27 @@ public class StatCraft extends JavaPlugin {
                     final int id = setupPlayer(player);
 
                     // Setup their current joins time here
-                    getThreadManager().schedule(LastJoinTime.class, new Runnable() {
+                    getThreadManager().schedule(Seen.class, new Runnable() {
                         @Override
                         public void run() {
-                            QLastJoinTime j = QLastJoinTime.lastJoinTime;
+                            QSeen s = QSeen.seen;
 
                             try {
                                 // INSERT
-                                SQLInsertClause clause = getDatabaseManager().getInsertClause(j);
+                                SQLInsertClause clause = getDatabaseManager().getInsertClause(s);
 
                                 if (clause == null)
                                     return;
 
-                                clause.columns(j.id, j.time).values(id, currentTime).execute();
+                                clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
                             } catch (QueryException e) {
                                 // UPDATE
-                                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(j);
+                                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(s);
 
                                 if (clause == null)
                                     return;
 
-                                clause.where(j.id.eq(id)).set(j.time, currentTime).execute();
+                                clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
                             }
                         }
                     });
@@ -271,19 +267,19 @@ public class StatCraft extends JavaPlugin {
             int id = getDatabaseManager().getPlayerId(uuid);
 
             // Set last leave time to now
-            QLastLeaveTime l = QLastLeaveTime.lastLeaveTime;
+            QSeen s = QSeen.seen;
             try {
                 // INSERT
-                SQLInsertClause clause = getDatabaseManager().getInsertClause(l);
+                SQLInsertClause clause = getDatabaseManager().getInsertClause(s);
 
                 if (clause != null)
-                    clause.columns(l.id, l.time).values(id, currentTime).execute();
+                    clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute();
             } catch (QueryException e) {
                 // UPDATE
-                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(l);
+                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(s);
 
                 if (clause != null)
-                    clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
+                    clause.where(s.id.eq(id)).set(s.lastLeaveTime, currentTime).execute();
             }
 
             final int currentPlayTime = (int) Math.round(player.getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
@@ -625,16 +621,16 @@ public class StatCraft extends JavaPlugin {
 
         if (config.stats.first_join_time) {
             query = getDatabaseManager().getNewQuery();
-            QFirstJoinTime f = QFirstJoinTime.firstJoinTime;
-            Integer time = query.from(f).where(f.id.eq(id)).uniqueResult(f.time);
+            QSeen s = QSeen.seen;
+            Integer time = query.from(s).where(s.id.eq(id)).uniqueResult(s.firstJoinTime);
             time = time == null ? 0 : time;
             if (time != (int)(player.getFirstPlayed() / 1000L)) {
                 try {
-                    SQLInsertClause clause = getDatabaseManager().getInsertClause(f);
-                    clause.columns(f.id, f.time).values(id, (int)(player.getFirstPlayed() / 1000L)).execute();
+                    SQLInsertClause clause = getDatabaseManager().getInsertClause(s);
+                    clause.columns(s.id, s.firstJoinTime).values(id, (int) (player.getFirstPlayed() / 1000L)).execute();
                 } catch (QueryException e) {
-                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(f);
-                    clause.where(f.id.eq(id)).set(f.time, (int)(player.getFirstPlayed() / 1000L)).execute();
+                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(s);
+                    clause.where(s.id.eq(id)).set(s.firstJoinTime, (int)(player.getFirstPlayed() / 1000L)).execute();
                 }
             }
         }

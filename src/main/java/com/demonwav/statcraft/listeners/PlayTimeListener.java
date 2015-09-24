@@ -13,15 +13,13 @@ import com.demonwav.statcraft.ServerStatUpdater;
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.querydsl.Joins;
 import com.demonwav.statcraft.querydsl.Jumps;
-import com.demonwav.statcraft.querydsl.LastJoinTime;
-import com.demonwav.statcraft.querydsl.LastLeaveTime;
 import com.demonwav.statcraft.querydsl.Move;
 import com.demonwav.statcraft.querydsl.PlayTime;
 import com.demonwav.statcraft.querydsl.Players;
 import com.demonwav.statcraft.querydsl.QJoins;
-import com.demonwav.statcraft.querydsl.QLastJoinTime;
-import com.demonwav.statcraft.querydsl.QLastLeaveTime;
 import com.demonwav.statcraft.querydsl.QPlayTime;
+import com.demonwav.statcraft.querydsl.QSeen;
+import com.demonwav.statcraft.querydsl.Seen;
 
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.dml.SQLInsertClause;
@@ -83,27 +81,27 @@ public class PlayTimeListener implements Listener {
                     });
                 }
 
-                plugin.getThreadManager().schedule(LastJoinTime.class, new Runnable() {
+                plugin.getThreadManager().schedule(Seen.class, new Runnable() {
                     @Override
                     public void run() {
-                        QLastJoinTime l = QLastJoinTime.lastJoinTime;
+                        QSeen s = QSeen.seen;
 
                         try {
                             // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(l);
+                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(s);
 
                             if (clause == null)
                                 return;
 
-                            clause.columns(l.id, l.time).values(id, currentTime).execute();
+                            clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
                         } catch (QueryException e) {
                             // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(l);
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(s);
 
                             if (clause == null)
                                 return;
 
-                            clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
+                            clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
                         }
                     }
                 });
@@ -119,29 +117,29 @@ public class PlayTimeListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
-        plugin.getThreadManager().schedule(LastLeaveTime.class, new Runnable() {
+        plugin.getThreadManager().schedule(Seen.class, new Runnable() {
             @Override
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                QLastLeaveTime l = QLastLeaveTime.lastLeaveTime;
+                QSeen s = QSeen.seen;
 
                 try {
                     // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(l);
+                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(s);
 
                     if (clause == null)
                         return;
 
-                    clause.columns(l.id, l.time).values(id, currentTime).execute();
+                    clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute();
                 } catch (QueryException e) {
                     // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(l);
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(s);
 
                     if (clause == null)
                         return;
 
-                    clause.where(l.id.eq(id)).set(l.time, currentTime).execute();
+                    clause.where(s.id.eq(id)).set(s.lastLeaveTime, currentTime).execute();
                 }
             }
         });

@@ -11,9 +11,9 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.commands.TimeResponseBuilder;
-import com.demonwav.statcraft.querydsl.QLastJoinTime;
 import com.demonwav.statcraft.querydsl.QPlayTime;
 import com.demonwav.statcraft.querydsl.QPlayers;
+import com.demonwav.statcraft.querydsl.QSeen;
 
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
@@ -57,9 +57,9 @@ public class SCPlayTime extends SCTemplate {
             if (player != null && player.isOnline()) {
                 int now = (int)(System.currentTimeMillis() / 1000L);
 
-                QLastJoinTime j = QLastJoinTime.lastJoinTime;
+                QSeen s = QSeen.seen;
                 query = plugin.getDatabaseManager().getNewQuery();
-                Integer join = query.from(j).where(j.id.eq(id)).uniqueResult(j.time);
+                Integer join = query.from(s).where(s.id.eq(id)).uniqueResult(s.lastJoinTime);
 
                 // Sanity check
                 if (join != null && join != 0 && now != 0)

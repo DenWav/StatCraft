@@ -11,7 +11,7 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
-import com.demonwav.statcraft.querydsl.QLastLeaveTime;
+import com.demonwav.statcraft.querydsl.QSeen;
 
 import com.mysema.query.sql.SQLQuery;
 import org.bukkit.ChatColor;
@@ -55,9 +55,9 @@ public class SCLastSeen extends SCTemplate {
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
                 if (query == null)
                     return "Sorry, there seems to be an issue connecting to the database right now.";
-                QLastLeaveTime l = QLastLeaveTime.lastLeaveTime;
+                QSeen s = QSeen.seen;
 
-                Integer result = query.from(l).where(l.id.eq(id)).uniqueResult(l.time);
+                Integer result = query.from(s).where(s.id.eq(id)).uniqueResult(s.lastLeaveTime);
                 if (result == null) {
                     throw new Exception();
                 }

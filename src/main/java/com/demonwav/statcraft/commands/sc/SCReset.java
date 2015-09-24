@@ -13,7 +13,7 @@ import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Table;
 import com.demonwav.statcraft.commands.CustomResponse;
 import com.demonwav.statcraft.querydsl.QEnterBed;
-import com.demonwav.statcraft.querydsl.QLastJoinTime;
+import com.demonwav.statcraft.querydsl.QSeen;
 
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
@@ -168,15 +168,15 @@ public class SCReset extends SCTemplate implements CustomResponse {
                 if (player != null && player.isOnline()) {
                     int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
-                    QLastJoinTime j = QLastJoinTime.lastJoinTime;
+                    QSeen s = QSeen.seen;
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery();
 
-                    if (query.from(j).where(j.id.eq(id)).exists()) {
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(j);
-                        clause.where(j.id.eq(id)).set(j.time, currentTime).execute();
+                    if (query.from(s).where(s.id.eq(id)).exists()) {
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(s);
+                        clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
                     } else {
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(j);
-                        clause.columns(j.id, j.time).values(id, currentTime).execute();
+                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(s);
+                        clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
                     }
 
                     if (player.getPlayer().isSleeping()) {
