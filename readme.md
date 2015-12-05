@@ -1,4 +1,4 @@
-StatCraft
+StatCraft <a href="https://tc.demonwav.com/viewType.html?buildTypeId=StatCraft_Maven&guest=1"><img src="https://tc.demonwav.com/app/rest/builds/buildType(id:StatCraft_Maven)/statusIcon"/></a>
 =========
 
 StatCraft is an easy to use and setup plugin for keeping very in-depth stats on your CraftBukkit server. Most individual
