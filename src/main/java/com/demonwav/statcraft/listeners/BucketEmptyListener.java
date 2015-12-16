@@ -10,13 +10,16 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
+import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.BucketCode;
 import com.demonwav.statcraft.querydsl.BucketEmpty;
 import com.demonwav.statcraft.querydsl.QBucketEmpty;
 
 import com.mysema.query.QueryException;
+import com.mysema.query.sql.RelationalPathBase;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+import com.mysema.query.types.path.NumberPath;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -50,27 +53,7 @@ public class BucketEmptyListener implements Listener {
 
                 QBucketEmpty e = QBucketEmpty.bucketEmpty;
 
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(e);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(e.id, e.type, e.amount)
-                        .values(id, code.getCode(), 1).execute();
-                } catch (QueryException ex) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(e);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(
-                        e.id.eq(id),
-                        e.type.eq(code.getCode())
-                    ).set(e.amount, e.amount.add(1)).execute();
-                }
+                Util.bucket(plugin, e, e.id, e.type, e.amount, id, code);
             }
         });
     }
@@ -88,27 +71,7 @@ public class BucketEmptyListener implements Listener {
 
                     QBucketEmpty e = QBucketEmpty.bucketEmpty;
 
-                    try {
-                        // INSERT
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(e);
-
-                        if (clause == null)
-                            return;
-
-                        clause.columns(e.id, e.type, e.amount)
-                            .values(id, code.getCode(), 1).execute();
-                    } catch (QueryException ex) {
-                        // UPDATE
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(e);
-
-                        if (clause == null)
-                            return;
-
-                        clause.where(
-                            e.id.eq(id),
-                            e.type.eq(code.getCode())
-                        ).set(e.amount, e.amount.add(1)).execute();
-                    }
+                    Util.bucket(plugin, e, e.id, e.type, e.amount, id, code);
                 }
             });
         }

@@ -10,6 +10,7 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
+import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.ProjectilesCode;
 import com.demonwav.statcraft.querydsl.Projectiles;
 import com.demonwav.statcraft.querydsl.QProjectiles;
@@ -58,33 +59,7 @@ public class ArrowsShotListener implements Listener {
                     int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
                     QProjectiles p = QProjectiles.projectiles;
-
-                    try {
-                        // INSERT
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(p);
-
-                        if (clause == null)
-                            return;
-
-                        clause.columns(p.id, p.type, p.amount, p.totalDistance, p.maxThrow)
-                            .values(id, code.getCode(), 1, finalDistance, finalDistance).execute();
-                    } catch (QueryException e) {
-                        // UPDATE
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(p);
-
-                        if (clause == null)
-                            return;
-
-                        clause.where(p.id.eq(id), p.type.eq(code.getCode()))
-                            .set(p.amount, p.amount.add(1))
-                            .set(p.totalDistance, p.totalDistance.add(finalDistance))
-                            .set(p.maxThrow,
-                                new CaseBuilder()
-                                    .when(p.maxThrow.lt(finalDistance)).then(finalDistance)
-                                    .otherwise(p.maxThrow))
-                            .execute();
-                    }
-
+                    Util.projectile(plugin, p, id, code, finalDistance);
                 }
             });
         }

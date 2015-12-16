@@ -9,6 +9,17 @@
 
 package com.demonwav.statcraft;
 
+import com.demonwav.statcraft.magic.BucketCode;
+import com.demonwav.statcraft.magic.ProjectilesCode;
+import com.demonwav.statcraft.querydsl.QProjectiles;
+import com.mysema.query.QueryException;
+import com.mysema.query.sql.RelationalPathBase;
+import com.mysema.query.sql.dml.SQLInsertClause;
+import com.mysema.query.sql.dml.SQLUpdateClause;
+import com.mysema.query.types.expr.CaseBuilder;
+import com.mysema.query.types.path.NumberPath;
+import com.mysema.query.types.path.StringPath;
+
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -203,5 +214,162 @@ public class Util {
         }
 
         return finalResult;
+    }
+
+    public static void set(
+            final StatCraft plugin,
+            final RelationalPathBase<?> base,
+            final NumberPath<Integer> id,
+            final NumberPath<Integer> amount,
+            final int idVal,
+            final int set) {
+        plugin.getThreadManager().schedule(base.getType(), new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // INSERT
+                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
+
+                    if (clause == null)
+                        return;
+
+                    clause.columns(id, amount).values(idVal, set).execute();
+                } catch (QueryException e) {
+                    // UPDATE
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
+
+                    if (clause == null)
+                        return;
+
+                    clause.where(id.eq(idVal)).set(amount, set).execute();
+                }
+            }
+        });
+    }
+
+    public static void increment(
+            final StatCraft plugin,
+            final RelationalPathBase<?> base,
+            final NumberPath<Integer> id,
+            final NumberPath<Integer> amount,
+            final int idVal,
+            final int inc) {
+        try {
+            // INSERT
+            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
+
+            if (clause == null)
+                return;
+
+            clause.columns(id, amount).values(id, inc).execute();
+        } catch (QueryException e) {
+            // UPDATE
+            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
+
+            if (clause == null)
+                return;
+
+            clause.where(id.eq(idVal)).set(amount, amount.add(inc)).execute();
+        }
+    }
+
+    public static void max(
+            final StatCraft plugin,
+            final RelationalPathBase<?> base,
+            final NumberPath<Integer> id,
+            final NumberPath<Short> type,
+            final NumberPath<Integer> amount,
+            final NumberPath<Integer> totalDistance,
+            final NumberPath<Integer> maxThrow,
+            final int idVal,
+            final short typeVal,
+            final int finalDistanceVal) {
+        try {
+            // INSERT
+            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
+
+            if (clause == null)
+                return;
+
+            clause.columns(id, type, amount, totalDistance, maxThrow)
+                    .values(idVal, typeVal, 1, finalDistanceVal, finalDistanceVal).execute();
+        } catch (QueryException ex) {
+            // UPDATE
+            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
+
+            if (clause == null)
+                return;
+
+            clause.where(id.eq(idVal), type.eq(typeVal)).set(amount, amount.add(1))
+                    .set(totalDistance, totalDistance.add(finalDistanceVal))
+                    .set(maxThrow,
+                            new CaseBuilder()
+                                    .when(maxThrow.lt(finalDistanceVal)).then(finalDistanceVal)
+                                    .otherwise(maxThrow))
+                    .execute();
+        }
+    }
+
+    public static void projectile(StatCraft plugin, final QProjectiles p, final int id, final ProjectilesCode code, final int finalDistance) {
+        max(plugin, p, p.id, p.type, p.amount, p.totalDistance, p.maxThrow, id, code.getCode(), finalDistance);
+    }
+
+    public static void bucket(
+            final StatCraft plugin,
+            final RelationalPathBase<?> base,
+            final NumberPath<Integer> id,
+            final NumberPath<Byte> type,
+            final NumberPath<Integer> amount,
+            final int idVal,
+            final BucketCode code) {
+        try {
+            // INSERT
+            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
+
+            if (clause == null)
+                return;
+
+            clause.columns(id, type, amount)
+                    .values(idVal, code.getCode(), 1).execute();
+        } catch (QueryException ex) {
+            // UPDATE
+            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
+
+            if (clause == null)
+                return;
+
+            clause.where(
+                    id.eq(idVal),
+                    type.eq(code.getCode())
+            ).set(amount, amount.add(1)).execute();
+        }
+    }
+
+    public static void damage(
+            final StatCraft plugin,
+            final RelationalPathBase<?> base,
+            final NumberPath<Integer> id,
+            final StringPath entity,
+            final NumberPath<Integer> amount,
+            final int idVal,
+            final String entityVal,
+            final int damage) {
+        try {
+            // INSERT
+            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
+            if (clause == null)
+                return;
+            clause.columns(id, entity, amount)
+                    .values(idVal, entityVal, damage).execute();
+        } catch (QueryException e) {
+            // UPDATE
+            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
+            if (clause == null)
+                return;
+            clause.where(
+                    id.eq(id),
+                    entity.eq(entityVal)
+            ).set(amount, amount.add(damage)).execute();
+        }
     }
 }

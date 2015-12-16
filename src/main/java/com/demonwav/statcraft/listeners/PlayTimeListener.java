@@ -11,6 +11,7 @@ package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.ServerStatUpdater;
 import com.demonwav.statcraft.StatCraft;
+import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.querydsl.Joins;
 import com.demonwav.statcraft.querydsl.Jumps;
 import com.demonwav.statcraft.querydsl.Move;
@@ -55,56 +56,10 @@ public class PlayTimeListener implements Listener {
                 plugin.players.put(name, uuid);
 
                 if (plugin.config().stats.joins) {
-                    plugin.getThreadManager().schedule(Joins.class, new Runnable() {
-                        @Override
-                        public void run() {
-                            QJoins j = QJoins.joins;
-
-                            try {
-                                // INSERT
-                                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(j);
-
-                                if (clause == null)
-                                    return;
-
-                                clause.columns(j.id, j.amount).values(id, 1).execute();
-                            } catch (QueryException e) {
-                                // UPDATE
-                                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(j);
-
-                                if (clause == null)
-                                    return;
-
-                                clause.where(j.id.eq(id)).set(j.amount, j.amount.add(1)).execute();
-                            }
-                        }
-                    });
+                    Util.increment(plugin, QJoins.joins, QJoins.joins.id, QJoins.joins.amount, id, 1);
                 }
 
-                plugin.getThreadManager().schedule(Seen.class, new Runnable() {
-                    @Override
-                    public void run() {
-                        QSeen s = QSeen.seen;
-
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(s);
-
-                            if (clause == null)
-                                return;
-
-                            clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
-                        } catch (QueryException e) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(s);
-
-                            if (clause == null)
-                                return;
-
-                            clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
-                        }
-                    }
-                });
+                Util.set(plugin, QSeen.seen, QSeen.seen.id, QSeen.seen.lastJoinTime, id, currentTime);
 
                 plugin.getThreadManager().schedule(Move.class, new ServerStatUpdater.Move(plugin));
                 plugin.getThreadManager().schedule(Jumps.class, new ServerStatUpdater.Jump(plugin));
@@ -122,25 +77,7 @@ public class PlayTimeListener implements Listener {
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                QSeen s = QSeen.seen;
-
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(s);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(s);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(s.id.eq(id)).set(s.lastLeaveTime, currentTime).execute();
-                }
+                Util.set(plugin, QSeen.seen, QSeen.seen.id, QSeen.seen.lastLeaveTime, id, currentTime);
             }
         });
 
@@ -151,25 +88,7 @@ public class PlayTimeListener implements Listener {
             public void run() {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
 
-                QPlayTime p = QPlayTime.playTime;
-
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(p);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(p.id, p.amount).values(id, currentPlayTime).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(p);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute();
-                }
+                Util.set(plugin, QPlayTime.playTime, QPlayTime.playTime.id, QPlayTime.playTime.amount, id, currentPlayTime);
             }
         });
     }

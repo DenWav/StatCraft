@@ -10,6 +10,7 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
+import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.EntityCode;
 import com.demonwav.statcraft.querydsl.DamageTaken;
 import com.demonwav.statcraft.querydsl.QDamageTaken;
@@ -151,23 +152,7 @@ public class DamageTakenListener implements Listener {
                         }
                     }
 
-                    try {
-                        // INSERT
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
-                        if (clause == null)
-                            return;
-                        clause.columns(t.id, t.entity, t.amount)
-                            .values(id, entityValue, damageTaken).execute();
-                    } catch (QueryException e) {
-                        // UPDATE
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-                        if (clause == null)
-                            return;
-                        clause.where(
-                            t.id.eq(id),
-                            t.entity.eq(entityValue)
-                        ).set(t.amount, t.amount.add(damageTaken)).execute();
-                    }
+                    Util.damage(plugin, t, t.id, t.entity, t.amount, id, entityValue, damageTaken);
                 }
             });
         }

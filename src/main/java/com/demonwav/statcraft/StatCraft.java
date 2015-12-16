@@ -71,15 +71,7 @@ import com.demonwav.statcraft.listeners.ToolsBrokenListener;
 import com.demonwav.statcraft.listeners.WordsSpokenListener;
 import com.demonwav.statcraft.listeners.WorldChangeListener;
 import com.demonwav.statcraft.listeners.XpGainedListener;
-import com.demonwav.statcraft.querydsl.EnterBed;
-import com.demonwav.statcraft.querydsl.Players;
-import com.demonwav.statcraft.querydsl.QEnterBed;
-import com.demonwav.statcraft.querydsl.QLeaveBed;
-import com.demonwav.statcraft.querydsl.QPlayTime;
-import com.demonwav.statcraft.querydsl.QPlayers;
-import com.demonwav.statcraft.querydsl.QSeen;
-import com.demonwav.statcraft.querydsl.QTimeSlept;
-import com.demonwav.statcraft.querydsl.Seen;
+import com.demonwav.statcraft.querydsl.*;
 
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.SQLQuery;
@@ -160,19 +152,13 @@ public class StatCraft extends JavaPlugin {
 
             getCommand("sc").setExecutor(baseCommand);
 
-            /* *********************************************************** */
-            /*    To protect against NoClassDefFoundError in onDisable()   */
-            /* *///noinspection unused                                  /* */
-            QSeen seen = QSeen.seen;                                    /* */
-            /* *///noinspection unused                                  /* */
-            QPlayTime playTime = QPlayTime.playTime;                    /* */
-            /* *///noinspection unused                                  /* */
-            QLeaveBed leaveBed = QLeaveBed.leaveBed;                    /* */
-            /* *///noinspection unused                                  /* */
-            QEnterBed enterBed = QEnterBed.enterBed;                    /* */
-            /* *///noinspection unused                                  /* */
-            QTimeSlept timeSlept = QTimeSlept.timeSlept;                /* */
-            /* *********************************************************** */
+            /* ****************************************************** */
+            /* To protect against NoClassDefFoundError in onDisable() */
+            /* */ QPlayTime.playTime.getClass();                   /* */
+            /* */ QLeaveBed.leaveBed.getClass();                   /* */
+            /* */ QEnterBed.enterBed.getClass();                   /* */
+            /* */ QTimeSlept.timeSlept.getClass();                 /* */
+            /* ****************************************************** */
 
             createListeners();
             initializePlaytimeAndBed();
@@ -191,6 +177,7 @@ public class StatCraft extends JavaPlugin {
 
     private void initializePlaytimeAndBed() {
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
+        final StatCraft plugin = this;
 
         getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
             @Override
@@ -203,25 +190,7 @@ public class StatCraft extends JavaPlugin {
                     getThreadManager().schedule(Seen.class, new Runnable() {
                         @Override
                         public void run() {
-                            QSeen s = QSeen.seen;
-
-                            try {
-                                // INSERT
-                                SQLInsertClause clause = getDatabaseManager().getInsertClause(s);
-
-                                if (clause == null)
-                                    return;
-
-                                clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
-                            } catch (QueryException e) {
-                                // UPDATE
-                                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(s);
-
-                                if (clause == null)
-                                    return;
-
-                                clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
-                            }
+                            Util.set(plugin, QSeen.seen, QSeen.seen.id, QSeen.seen.lastJoinTime, id, currentTime);
                         }
                     });
 
@@ -230,25 +199,7 @@ public class StatCraft extends JavaPlugin {
                         getThreadManager().schedule(EnterBed.class, new Runnable() {
                             @Override
                             public void run() {
-                                QEnterBed b = QEnterBed.enterBed;
-
-                                try {
-                                    // INSERT
-                                    SQLInsertClause clause = getDatabaseManager().getInsertClause(b);
-
-                                    if (clause == null)
-                                        return;
-
-                                    clause.columns(b.id, b.time).values(id, currentTime).execute();
-                                } catch (QueryException e) {
-                                    // UPDATE
-                                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(b);
-
-                                    if (clause == null)
-                                        return;
-
-                                    clause.where(b.id.eq(id)).set(b.time, currentTime).execute();
-                                }
+                                Util.set(plugin, QEnterBed.enterBed, QEnterBed.enterBed.id, QEnterBed.enterBed.time, id, currentTime);
                             }
                         });
                     }
@@ -617,7 +568,7 @@ public class StatCraft extends JavaPlugin {
             checkBlanks();
         }
 
-        int id = getDatabaseManager().getPlayerId(player.getUniqueId());
+        final int id = getDatabaseManager().getPlayerId(player.getUniqueId());
 
         if (config.stats.first_join_time) {
             query = getDatabaseManager().getNewQuery();
@@ -637,26 +588,14 @@ public class StatCraft extends JavaPlugin {
 
         if (player.isOnline()) {
             final int currentPlayTime = (int) Math.round(((Player) player).getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
+            final StatCraft plugin = this;
 
-            QPlayTime playtime = QPlayTime.playTime;
-
-            try {
-                // INSERT
-                SQLInsertClause clause = getDatabaseManager().getInsertClause(playtime);
-
-                if (clause == null)
-                    return id;
-
-                clause.columns(playtime.id, playtime.amount).values(id, currentPlayTime).execute();
-            } catch (QueryException e) {
-                // UPDATE
-                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(playtime);
-
-                if (clause == null)
-                    return id;
-
-                clause.where(playtime.id.eq(id)).set(playtime.amount, currentPlayTime).execute();
-            }
+            getThreadManager().schedule(PlayTime.class, new Runnable() {
+                @Override
+                public void run() {
+                    Util.set(plugin, QPlayTime.playTime, QPlayTime.playTime.id, QPlayTime.playTime.amount, id, currentPlayTime);
+                }
+            });
         }
 
         return id;

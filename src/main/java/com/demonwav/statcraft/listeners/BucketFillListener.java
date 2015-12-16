@@ -10,6 +10,7 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
+import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.BucketCode;
 import com.demonwav.statcraft.querydsl.BucketFill;
 import com.demonwav.statcraft.querydsl.QBucketFill;
@@ -55,24 +56,7 @@ public class BucketFillListener implements Listener {
 
                 QBucketFill f = QBucketFill.bucketFill;
 
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(f);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(f.id, f.type, f.amount)
-                        .values(id, code.getCode(), 1).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(f);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(f.id.eq(id), f.type.eq(code.getCode())).set(f.amount, f.amount.add(1)).execute();
-                }
+                Util.bucket(plugin, f, f.id, f.type, f.amount, id, code);
             }
         });
     }
