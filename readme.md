@@ -45,7 +45,7 @@ Statistics Supported
 | Chickens Hatched                                | **Implemented**                                    |
 | Ender Pearls Thrown                             | **Implemented**                                    |
 | Snow Balls Thrown                               | **Implemented**                                    |
-| Animals Bred                                    | Unimplemented                                      |
+| Animals Bred                                    | Unimplemented *Temporarily on hold*                |
 | TNT Detonated                                   | Unimplemented                                      |
 | Enchants Done                                   | Unimplemented                                      |
 | Highest Level Achieved                          | **Implemented**                                    |
