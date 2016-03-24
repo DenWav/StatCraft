@@ -1,4 +1,4 @@
--- StatCraft Database Creation Script Generated on Wed Sep 23 20:29:37 CDT 2015
+-- StatCraft Database Creation Script Generated on Wed Mar 23 22:39:27 CDT 2016
 --
 -- Database: statcraft
 -- ----------------------------------------------------------------------------
@@ -101,10 +101,9 @@ DROP TABLE IF EXISTS `death_by_cause`;
 CREATE TABLE `death_by_cause` (
   `id` int(10) unsigned NOT NULL,
   `cause` varchar(50) NOT NULL,
-  `type` tinyint(4) NOT NULL,
   `world` varchar(50) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  UNIQUE KEY `id` (`id`,`cause`,`type`,`world`)
+  UNIQUE KEY `id` (`id`,`cause`,`world`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -127,26 +126,6 @@ CREATE TABLE `enchants_done` (
   `item` smallint(6) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
   UNIQUE KEY `id` (`id`,`item`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Table: `enter_bed`
---
-DROP TABLE IF EXISTS `enter_bed`;
-CREATE TABLE `enter_bed` (
-  `id` int(10) unsigned NOT NULL,
-  `time` int(11) NOT NULL,
-  UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Table: `fallen`
---
-DROP TABLE IF EXISTS `fallen`;
-CREATE TABLE `fallen` (
-  `id` int(10) unsigned NOT NULL,
-  `distance` int(10) unsigned DEFAULT NULL,
-  UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -263,24 +242,26 @@ CREATE TABLE `jumps` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Table: `kicks`
+--
+DROP TABLE IF EXISTS `kicks`;
+CREATE TABLE `kicks` (
+  `id` int(10) unsigned NOT NULL,
+  `amount` int(11) NOT NULL,
+  `reason` varchar(100) NOT NULL,
+  UNIQUE KEY `id` (`id`,`reason`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Table: `kills`
 --
 DROP TABLE IF EXISTS `kills`;
 CREATE TABLE `kills` (
   `id` int(10) unsigned NOT NULL,
   `entity` varchar(50) NOT NULL,
+  `type` tinyint(4) NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  UNIQUE KEY `id` (`id`,`entity`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Table: `leave_bed`
---
-DROP TABLE IF EXISTS `leave_bed`;
-CREATE TABLE `leave_bed` (
-  `id` int(10) unsigned NOT NULL,
-  `time` int(11) NOT NULL,
-  UNIQUE KEY `id` (`id`)
+  UNIQUE KEY `id` (`id`,`entity`,`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -335,16 +316,16 @@ CREATE TABLE `players` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table: `projectiles`
 --
 DROP TABLE IF EXISTS `projectiles`;
 CREATE TABLE `projectiles` (
+  `amount` int(10) unsigned NOT NULL,
   `id` int(10) unsigned NOT NULL,
   `type` smallint(5) unsigned NOT NULL,
-  `amount` int(10) unsigned NOT NULL,
   `total_distance` int(10) unsigned NOT NULL,
   `max_throw` int(10) unsigned NOT NULL,
   UNIQUE KEY `id` (`id`,`type`)
@@ -375,20 +356,22 @@ CREATE TABLE `shearing` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Table: `tab_complete`
+-- Table: `sleep`
 --
-DROP TABLE IF EXISTS `tab_complete`;
-CREATE TABLE `tab_complete` (
+DROP TABLE IF EXISTS `sleep`;
+CREATE TABLE `sleep` (
   `id` int(10) unsigned NOT NULL,
-  `amount` int(10) unsigned NOT NULL,
+  `enter_bed` int(11) NOT NULL,
+  `leave_bed` int(11) NOT NULL,
+  `time_slept` int(11) NOT NULL,
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Table: `time_slept`
+-- Table: `tab_complete`
 --
-DROP TABLE IF EXISTS `time_slept`;
-CREATE TABLE `time_slept` (
+DROP TABLE IF EXISTS `tab_complete`;
+CREATE TABLE `tab_complete` (
   `id` int(10) unsigned NOT NULL,
   `amount` int(10) unsigned NOT NULL,
   UNIQUE KEY `id` (`id`)
@@ -448,4 +431,4 @@ CREATE TABLE `xp_gained` (
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Generated in 18.47ms
+-- Generated in 16.61ms

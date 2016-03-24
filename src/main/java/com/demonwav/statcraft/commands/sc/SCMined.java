@@ -103,68 +103,62 @@ public class SCMined extends SCTemplate implements CustomResponse {
         final int finalBlockid = blockid;
         final int finalDamage = damage;
         final boolean finalAll = all;
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                String response;
-                try {
-                    int id = plugin.getDatabaseManager().getPlayerId(name);
-                    if (id < 0)
-                        throw new Exception();
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            String response;
+            try {
+                int id = plugin.getDatabaseManager().getPlayerId(name);
+                if (id < 0)
+                    throw new Exception();
 
-                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-                    if (query == null)
-                        return;
-                    QBlockBreak b = QBlockBreak.blockBreak;
+                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                if (query == null)
+                    return;
+                QBlockBreak b = QBlockBreak.blockBreak;
 
-                    Integer result;
+                Integer result;
 
-                    if (finalDamage == -1) {
-                        result = query
-                                .from(b)
-                                .where(
-                                        b.id.eq(id)
-                                        .and(b.blockid.eq((short) finalBlockid))
-                                ).uniqueResult(b.amount.sum());
-                    } else {
-                        result = query
-                                .from(b)
-                                .where(
-                                        b.id.eq(id)
-                                        .and(b.blockid.eq((short) finalBlockid))
-                                        .and(b.damage.eq((short) finalDamage))
-                                ).uniqueResult(b.amount);
-                    }
-
-                    response = new ResponseBuilder(plugin)
-                            .setName(name)
-                            .setStatName(WordUtils.capitalizeFully(type) + " mined")
-                            .addStat("Total", df.format(result == null ? 0 : result))
-                            .toString();
-                } catch (Exception e) {
-                    response = new ResponseBuilder(plugin)
-                            .setName(name)
-                            .setStatName(WordUtils.capitalizeFully(type) + " mined")
-                            .addStat("Total", df.format(0))
-                            .toString();
+                if (finalDamage == -1) {
+                    result = query
+                            .from(b)
+                            .where(
+                                    b.id.eq(id)
+                                    .and(b.blockid.eq((short) finalBlockid))
+                            ).uniqueResult(b.amount.sum());
+                } else {
+                    result = query
+                            .from(b)
+                            .where(
+                                    b.id.eq(id)
+                                    .and(b.blockid.eq((short) finalBlockid))
+                                    .and(b.damage.eq((short) finalDamage))
+                            ).uniqueResult(b.amount);
                 }
 
-                if (finalAll)
-                    response = ChatColor.valueOf(plugin.config().colors.public_identifier)
-                            + "@" + sender.getName() + ": " + response;
-
-                final String finalResponse = response;
-                plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        if (finalAll) {
-                            plugin.getServer().broadcastMessage(finalResponse);
-                        } else {
-                            sender.sendMessage(finalResponse);
-                        }
-                    }
-                });
+                response = new ResponseBuilder(plugin)
+                        .setName(name)
+                        .setStatName(WordUtils.capitalizeFully(type) + " mined")
+                        .addStat("Total", df.format(result == null ? 0 : result))
+                        .toString();
+            } catch (Exception e) {
+                response = new ResponseBuilder(plugin)
+                        .setName(name)
+                        .setStatName(WordUtils.capitalizeFully(type) + " mined")
+                        .addStat("Total", df.format(0))
+                        .toString();
             }
+
+            if (finalAll)
+                response = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
+                        + "@" + sender.getName() + ": " + response;
+
+            final String finalResponse = response;
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                if (finalAll) {
+                    plugin.getServer().broadcastMessage(finalResponse);
+                } else {
+                    sender.sendMessage(finalResponse);
+                }
+            });
         });
     }
 }

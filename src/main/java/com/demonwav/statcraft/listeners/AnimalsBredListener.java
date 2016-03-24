@@ -10,12 +10,7 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
-import com.demonwav.statcraft.querydsl.AnimalsBred;
 import com.demonwav.statcraft.querydsl.QAnimalsBred;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.Material;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Chicken;
@@ -38,6 +33,8 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class AnimalsBredListener implements Listener {
+
+    // TODO: figure out how to implement this
 
     private StatCraft plugin;
     private HashMap<UUID, Player> breedMap = new HashMap<>();
@@ -81,34 +78,15 @@ public class AnimalsBredListener implements Listener {
                                     final UUID uuid = player.getUniqueId();
                                     final String type = entity.getType().name();
 
-                                    plugin.getThreadManager().schedule(AnimalsBred.class, new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                                            QAnimalsBred a = QAnimalsBred.animalsBred;
-
-                                            try {
-                                                // INSERT
-                                                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(a);
-
-                                                if (clause == null)
-                                                    return;
-
-                                                clause.columns(a.id, a.animal, a.amount)
-                                                    .values(id, type, 1).execute();
-                                            } catch (QueryException e) {
-                                                // UPDATE
-                                                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(a);
-
-                                                if (clause == null)
-                                                    return;
-
-                                                clause.where(a.id.eq(id), a.animal.eq(type))
-                                                    .set(a.amount, a.amount.add(1)).execute();
-                                            }
-                                        }
-                                    });
+                                    plugin.getThreadManager().schedule(
+                                        QAnimalsBred.class, uuid,
+                                        (a, clause, id) ->
+                                            clause.columns(a.id, a.animal, a.amount)
+                                                .values(id, type, 1).execute(),
+                                        (a, clause, id) ->
+                                            clause.where(a.id.eq(id), a.animal.eq(type))
+                                                .set(a.amount, a.amount.add(1)).execute()
+                                    );
                                 }
                             }
                         }
@@ -119,6 +97,7 @@ public class AnimalsBredListener implements Listener {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerFeed(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
@@ -187,12 +166,7 @@ public class AnimalsBredListener implements Listener {
             if (breedPlayer == null) {
                 // Register this mob
                 breedMap.put(entity.getUniqueId(), player);
-                plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        breedMap.remove(uuid);
-                    }
-                }, 600);
+                plugin.getServer().getScheduler().runTaskLater(plugin, () -> breedMap.remove(uuid), 600);
             }
         }
     }

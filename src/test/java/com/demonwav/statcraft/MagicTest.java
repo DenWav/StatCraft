@@ -1,15 +1,14 @@
 package com.demonwav.statcraft;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import com.demonwav.statcraft.magic.BucketCode;
 import com.demonwav.statcraft.magic.FishCode;
 import com.demonwav.statcraft.magic.MoveCode;
 import com.demonwav.statcraft.magic.ProjectilesCode;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class MagicTest {
 
@@ -134,8 +133,13 @@ public class MagicTest {
     }
 
     @Test
+    public void testMoveElytra() {
+        assertEquals(MoveCode.ELYTRA, MoveCode.fromCode((byte) 12));
+    }
+
+    @Test
     public void testMoveNull() {
-        assertNull(MoveCode.fromCode((byte) 12));
+        assertNull(MoveCode.fromCode((byte) 13));
     }
 
     @Test

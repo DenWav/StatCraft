@@ -26,6 +26,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SCMove extends SCTemplate {
 
@@ -41,7 +42,7 @@ public class SCMove extends SCTemplate {
 
     @Override
     @SecondaryArgument({"walking", "crouching", "sprinting", "swimming", "falling", "climbing",
-                        "flying", "diving", "minecart", "boat", "pig", "horse", "breakdown"})
+                        "flying", "diving", "minecart", "boat", "pig", "horse", "breakdown", "elytra"})
     public String playerStatResponse(String name, List<String> args) {
         String arg = null;
         try {
@@ -69,13 +70,13 @@ public class SCMove extends SCTemplate {
 
                     StringBuilder sb = new StringBuilder();
 
-                    sb  .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+                    sb  .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
                         .append("- ")
-                        .append(ChatColor.valueOf(plugin.config().colors.player_name))
+                        .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
                         .append(name).append(" ")
-                        .append(ChatColor.valueOf(plugin.config().colors.stat_separator))
+                        .append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator()))
                         .append("| ")
-                        .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+                        .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
                         .append("Move Breakdown")
                         .append(" -");
 
@@ -83,10 +84,10 @@ public class SCMove extends SCTemplate {
                         MoveCode code = MoveCode.fromCode(move.getVehicle());
                         if (code != null)
                         sb  .append("\n")
-                            .append(ChatColor.valueOf(plugin.config().colors.stat_label))
+                            .append(ChatColor.valueOf(plugin.config().getColors().getStatLabel()))
                             .append(WordUtils.capitalizeFully(code.name()))
                             .append(": ")
-                            .append(ChatColor.valueOf(plugin.config().colors.stat_value))
+                            .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
                             .append(Util.distanceUnits(move.getDistance()));
                     }
                     return sb.toString();
@@ -115,7 +116,7 @@ public class SCMove extends SCTemplate {
 
     @Override
     @SecondaryArgument({"walking", "crouching", "sprinting", "swimming", "falling", "climbing",
-        "flying", "diving", "minecart", "boat", "pig", "horse"})
+        "flying", "diving", "minecart", "boat", "pig", "horse", "elytra"})
     public String serverStatListResponse(int num, List<String> args) {
         QMove m = QMove.move;
         QPlayers p = QPlayers.players;
@@ -155,7 +156,6 @@ public class SCMove extends SCTemplate {
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
         if (args[args.length -1].startsWith("-")) {
-            List<String> result = new LinkedList<>();
             List<String> list = new LinkedList<>();
             list.add("-all");
             list.add("-boat");
@@ -163,6 +163,7 @@ public class SCMove extends SCTemplate {
             list.add("-climbing");
             list.add("-crouching");
             list.add("-diving");
+            list.add("-elytra");
             list.add("-falling");
             list.add("-flying");
             list.add("-horse");
@@ -171,12 +172,7 @@ public class SCMove extends SCTemplate {
             list.add("-sprinting");
             list.add("-swimming");
             list.add("-walking");
-            for (String s : list) {
-                if (s.startsWith(args[args.length -1])) {
-                    result.add(s);
-                }
-            }
-            return result;
+            return list.stream().filter(s -> s.startsWith(args[args.length - 1])).collect(Collectors.toList());
         } else {
             return super.onTabComplete(sender, args);
         }

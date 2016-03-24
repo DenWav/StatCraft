@@ -43,8 +43,8 @@ public class SCLastSeen extends SCTemplate {
             OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
 
             if (player.isOnline()) {
-                return ChatColor.valueOf(plugin.config().colors.player_name) +
-                    name + ChatColor.valueOf(plugin.config().colors.stat_value) +
+                return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) +
+                    name + ChatColor.valueOf(plugin.config().getColors().getStatValue()) +
                     " is online now!";
             } else {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -72,13 +72,13 @@ public class SCLastSeen extends SCTemplate {
 
                 time = time + " (" + Util.transformTime((int) (difference / 1000L)).split(",")[0] + " ago)";
 
-                return ChatColor.valueOf(plugin.config().colors.player_name) + name +
-                    ChatColor.valueOf(plugin.config().colors.stat_title) + " - Last Seen - " +
-                    ChatColor.valueOf(plugin.config().colors.stat_value) + time;
+                return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) + name +
+                    ChatColor.valueOf(plugin.config().getColors().getStatTitle()) + " - Last Seen - " +
+                    ChatColor.valueOf(plugin.config().getColors().getStatValue()) + time;
             }
         } catch (Exception e) {
-            return ChatColor.valueOf(plugin.config().colors.player_name) +
-                name + ChatColor.valueOf(plugin.config().colors.stat_value) +
+            return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) +
+                name + ChatColor.valueOf(plugin.config().getColors().getStatValue()) +
                 " has not been seen on this server.";
         }
     }

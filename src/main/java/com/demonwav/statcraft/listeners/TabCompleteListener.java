@@ -11,11 +11,6 @@ package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.querydsl.QTabComplete;
-import com.demonwav.statcraft.querydsl.TabComplete;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -35,31 +30,12 @@ public class TabCompleteListener implements Listener {
     public void onTabComplete(PlayerChatTabCompleteEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
 
-        plugin.getThreadManager().schedule(TabComplete.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                QTabComplete t = QTabComplete.tabComplete;
-
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(t.id, t.amount).values(id, 1).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(t.id.eq(id)).set(t.amount, t.amount.add(1)).execute();
-                }
-            }
-        });
+        plugin.getThreadManager().schedule(
+            QTabComplete.class, uuid,
+            (t, clause, id) ->
+                clause.columns(t.id, t.amount).values(id, 1).execute(),
+            (t, clause, id) ->
+                clause.where(t.id.eq(id)).set(t.amount, t.amount.add(1)).execute()
+        );
     }
 }

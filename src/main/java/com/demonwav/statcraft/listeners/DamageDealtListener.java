@@ -10,14 +10,8 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
-import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.EntityCode;
-import com.demonwav.statcraft.querydsl.DamageDealt;
 import com.demonwav.statcraft.querydsl.QDamageDealt;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -26,6 +20,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class DamageDealtListener implements Listener {
@@ -47,12 +43,10 @@ public class DamageDealtListener implements Listener {
             if (damagee instanceof LivingEntity) {
                 final LivingEntity entity = (LivingEntity) event.getEntity();
 
-                plugin.getThreadManager().schedule(DamageDealt.class, new Runnable() {
-                    @Override
-                    public void run() {
-                        int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                        QDamageDealt d = QDamageDealt.damageDealt;
+                plugin.getThreadManager().schedule(
+                    QDamageDealt.class, uuid,
+                    (d, query, id) -> {
+                        Map<String, String> map = new HashMap<>();
 
                         // For special entities which are clumped together
                         // currently only skeletons and wither skeletons fall under this category
@@ -65,9 +59,15 @@ public class DamageDealtListener implements Listener {
                             entityValue = code.getName(entity.getName());
                         }
 
-                        Util.damage(plugin, d, d.id, d.entity, d.amount, id, entityValue, damageDealt);
-                    }
-                });
+                        map.put("entityValue", entityValue);
+                        return map;
+                    }, (d, clause, id, map) ->
+                        clause.columns(d.id, d.entity, d.amount)
+                            .values(id, map.get("entityValue"), damageDealt).execute(),
+                    (d, clause, id, map) ->
+                        clause.where(d.id.eq(id), d.entity.eq(map.get("entityValue")))
+                            .set(d.amount, d.amount.add(damageDealt)).execute()
+                );
             }
         }
     }

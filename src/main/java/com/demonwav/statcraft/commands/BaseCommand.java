@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
 
@@ -142,48 +143,39 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
             final boolean finalTop = top;
             final boolean finalPublicCmd = publicCmd;
             final int finalTopNumber = topNumber;
-            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    if (finalTop) {
+            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                if (finalTop) {
 
-                        // the top argument takes precedence over player's names listed
-                        final String response = command.serverStatListResponse(finalTopNumber, secondaryArgsList);
+                    // the top argument takes precedence over player's names listed
+                    final String response = command.serverStatListResponse(finalTopNumber, secondaryArgsList);
 
-                        plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
-                            @Override
-                            public void run() {
-                                if (response == null) {
-                                    sender.sendMessage("\"-top\" cannot be used with this command.");
-                                } else {
-                                    if (finalPublicCmd) {
-                                        String endResponse = ChatColor.valueOf(plugin.config().colors.public_identifier)
-                                                + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
-                                        plugin.getServer().broadcastMessage(endResponse);
-                                    } else {
-                                        sender.sendMessage(response);
-                                    }
-                                }
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        if (response == null) {
+                            sender.sendMessage("\"-top\" cannot be used with this command.");
+                        } else {
+                            if (finalPublicCmd) {
+                                String endResponse = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
+                                        + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
+                                plugin.getServer().broadcastMessage(endResponse);
+                            } else {
+                                sender.sendMessage(response);
+                            }
+                        }
+                    });
+                } else {
+                    for (final String player : players) {
+                        plugin.getServer().getScheduler().runTask(plugin, () -> {
+                            final String response = command.playerStatResponse(player, secondaryArgsList);
+
+                            if (finalPublicCmd) {
+                                String endResponse = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
+                                        + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
+                                plugin.getServer().broadcastMessage(endResponse);
+                            } else {
+                                sender.sendMessage(response);
                             }
                         });
-                    } else {
-                        for (final String player : players) {
-                            plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
-                                @Override
-                                public void run() {
-                                    final String response = command.playerStatResponse(player, secondaryArgsList);
 
-                                    if (finalPublicCmd) {
-                                        String endResponse = ChatColor.valueOf(plugin.config().colors.public_identifier)
-                                                + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
-                                        plugin.getServer().broadcastMessage(endResponse);
-                                    } else {
-                                        sender.sendMessage(response);
-                                    }
-                                }
-                            });
-
-                        }
                     }
                 }
             });
@@ -194,11 +186,10 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
     public List<String> onTabComplete(CommandSender sender, Command cmd, String commandLabel, String[] args) {
         if (args.length == 1) {
             // Return a list of only the commands they are allowed to run
-            List<String> result = new LinkedList<>();
-            for (Map.Entry<String, SCTemplate> entry : subCommands.entrySet()) {
-                if (entry.getValue().hasPermission(sender, null) && entry.getKey().startsWith(args[0]))
-                    result.add(entry.getKey());
-            }
+            List<String> result = subCommands.entrySet().stream()
+                .filter(entry -> entry.getValue().hasPermission(sender, null) && entry.getKey().startsWith(args[0]))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
             result.sort(String.CASE_INSENSITIVE_ORDER);
             return result;
         } else {

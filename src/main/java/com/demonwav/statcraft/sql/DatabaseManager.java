@@ -7,8 +7,11 @@
  * MIT License
  */
 
-package com.demonwav.statcraft;
+package com.demonwav.statcraft.sql;
 
+import com.demonwav.statcraft.StatCraft;
+import com.demonwav.statcraft.Table;
+import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.querydsl.QPlayers;
 
 import com.mysema.query.sql.MySQLTemplates;
@@ -19,6 +22,7 @@ import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.OfflinePlayer;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -27,7 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class DatabaseManager {
+public class DatabaseManager implements Closeable {
 
     private StatCraft plugin;
     private Connection connection;
@@ -36,10 +40,10 @@ public class DatabaseManager {
 
     public DatabaseManager(StatCraft plugin) {
         this.plugin = plugin;
-        this.url = "jdbc:mysql://" + plugin.config().mysql.hostname + ":" + plugin.config().mysql.port +
-            "/" + plugin.config().mysql.database + "?autoReconnect=true";
+        this.url = "jdbc:mysql://" + plugin.config().getMysql().getHostname() + ":" + plugin.config().getMysql().getPort() +
+            "/" + plugin.config().getMysql().getDatabase() + "?autoReconnect=true";
         try {
-            connection = DriverManager.getConnection(url, plugin.config().mysql.username, plugin.config().mysql.password);
+            connection = DriverManager.getConnection(url, plugin.config().getMysql().getUsername(), plugin.config().getMysql().getPassword());
             connecting = false;
         } catch (SQLException ex) {
             plugin.getLogger().severe(red(" *** StatCraft was unable to communicate with the database,"));
@@ -55,7 +59,7 @@ public class DatabaseManager {
 
     public void reconnect() {
         try {
-            connection = DriverManager.getConnection(url, plugin.config().mysql.username, plugin.config().mysql.password);
+            connection = DriverManager.getConnection(url, plugin.config().getMysql().getUsername(), plugin.config().getMysql().getPassword());
         } catch (SQLException e) {
             plugin.getLogger().warning("StatCraft is having issues connecting to the database. Will try to reconnect in 10 seconds.");
             e.printStackTrace();
@@ -80,6 +84,7 @@ public class DatabaseManager {
             plugin.getLogger().info("Database verified successfully.");
     }
 
+    @SuppressWarnings("SqlResolve")
     private void checkTable(Table table) {
         PreparedStatement intPst = null;
         ResultSet resultSet = null;
@@ -100,7 +105,7 @@ public class DatabaseManager {
             }
 
             DatabaseMetaData dbm = getConnection().getMetaData();
-            ResultSet tables = dbm.getTables(null, null, plugin.config().mysql.database + "." + table.getName(), null);
+            ResultSet tables = dbm.getTables(null, null, plugin.config().getMysql().getDatabase() + "." + table.getName(), null);
             if (tables.next() && resultSet.next()) {
                 // Table exists
                 // Make sure the engine is correct
@@ -174,7 +179,7 @@ public class DatabaseManager {
             createTable(table);
             plugin.getLogger().info("Created table `" + table.getName() + "`.");
         } else {
-            if (plugin.config().mysql.forceSetup) {
+            if (plugin.config().getMysql().isForceSetup()) {
                 dropTable(table);
                 createTable(table);
                 plugin.getLogger().info("Created table `" + table.getName() + "`.");
@@ -205,7 +210,7 @@ public class DatabaseManager {
         }
     }
 
-    public void createTable(Table table) {
+    private void createTable(Table table) {
         try (PreparedStatement pst = getConnection().prepareStatement(table.getCreate())) {
             pst.executeUpdate();
         } catch (SQLException e) {
@@ -292,13 +297,5 @@ public class DatabaseManager {
             return new SQLInsertClause(getConnection(), MySQLTemplates.DEFAULT, path);
         else
             return null;
-    }
-
-    // In case something goes wrong, at least try to close the connection nicely
-    @Override
-    public void finalize() throws Throwable {
-        super.finalize();
-        if (connection != null)
-            connection.close();
     }
 }

@@ -10,16 +10,10 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
-import com.demonwav.statcraft.querydsl.MessagesSpoken;
+import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.querydsl.QMessagesSpoken;
 import com.demonwav.statcraft.querydsl.QSeen;
 import com.demonwav.statcraft.querydsl.QWordFrequency;
-import com.demonwav.statcraft.querydsl.Seen;
-import com.demonwav.statcraft.querydsl.WordFrequency;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -51,106 +45,47 @@ public class WordsSpokenListener implements Listener {
                 words.add(modified);
         }
 
-        plugin.getThreadManager().schedule(Seen.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
+        plugin.getThreadManager().schedule(
+            QSeen.class, uuid,
+            (s, clause, id) ->
+                clause.columns(s.id, s.lastSpokeTime).values(id, currentTime).execute(),
+            (s, clause, id) ->
+                clause.where(s.id.eq(id)).set(s.lastSpokeTime, currentTime).execute()
+        );
 
-                QSeen s = QSeen.seen;
+        plugin.getThreadManager().schedule(
+            QMessagesSpoken.class, uuid,
+            (m, clause, id) ->
+                clause.columns(m.id, m.amount, m.wordsSpoken).values(id, 1, words.size()).execute(),
+            (m, clause, id) ->
+                clause.where(m.id.eq(id)).set(m.amount, m.amount.add(1))
+                    .set(m.wordsSpoken, m.wordsSpoken.add(words.size())).execute()
+        );
 
-                try {
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(s);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(s.id, s.lastSpokeTime).values(id, currentTime).execute();
-                } catch (QueryException e) {
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(s);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(s.id.eq(id)).set(s.lastSpokeTime, currentTime).execute();
-                }
-            }
-        });
-
-        plugin.getThreadManager().schedule(MessagesSpoken.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                QMessagesSpoken m = QMessagesSpoken.messagesSpoken;
-
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(m);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(m.id, m.amount, m.wordsSpoken).values(id, 1, words.size()).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(m);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(m.id.eq(id)).set(m.amount, m.amount.add(1))
-                        .set(m.wordsSpoken, m.wordsSpoken.add(words.size())).execute();
-                }
-            }
-        });
-
-        plugin.getThreadManager().schedule(WordFrequency.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                QWordFrequency w = QWordFrequency.wordFrequency;
-
-                if (plugin.config().stats.specific_words_spoken) {
+        plugin.getThreadManager().scheduleRaw(
+            QWordFrequency.class, () -> {
+                if (plugin.config().getStats().isSpecificWordsSpoken()) {
                     for (String word : words) {
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(w);
-
-                            if (clause == null)
-                                return;
-
-                            clause.columns(w.id, w.word, w.amount).values(id, word, 1).execute();
-                        } catch (QueryException e) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
-
-                            if (clause == null)
-                                return;
-
-                            clause.where(w.id.eq(id), w.word.eq(word)).set(w.amount, w.amount.add(1)).execute();
-                        }
+                        Util.runQuery(
+                            QWordFrequency.class, uuid,
+                            (w, clause, id) ->
+                                clause.columns(w.id, w.word, w.amount).values(id, word, 1).execute(),
+                            (w, clause, id) ->
+                                clause.where(w.id.eq(id), w.word.eq(word)).set(w.amount, w.amount.add(1)).execute(),
+                            plugin
+                        );
                     }
                 } else {
-                    try {
-                        // INSERT
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(w);
-
-                        if (clause == null)
-                            return;
-
-                        clause.columns(w.id, w.word, w.amount).values(id, "§", 1).execute();
-                    } catch (QueryException e) {
-                        // UPDATE
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
-
-                        if (clause == null)
-                            return;
-
-                        clause.where(w.id.eq(id), w.word.eq("§")).set(w.amount, w.amount.add(1)).execute();
-                    }
+                    Util.runQuery(
+                        QWordFrequency.class, uuid,
+                        (w, clause, id) ->
+                            clause.columns(w.id, w.word, w.amount).values(id, "§", 1).execute(),
+                        (w, clause, id) ->
+                            clause.where(w.id.eq(id), w.word.eq("§")).set(w.amount, w.amount.add(1)).execute(),
+                        plugin
+                    );
                 }
             }
-        });
+        );
     }
 }

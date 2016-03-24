@@ -12,19 +12,12 @@ package com.demonwav.statcraft.listeners;
 import com.demonwav.statcraft.ServerStatUpdater;
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
-import com.demonwav.statcraft.querydsl.Joins;
 import com.demonwav.statcraft.querydsl.Jumps;
 import com.demonwav.statcraft.querydsl.Move;
-import com.demonwav.statcraft.querydsl.PlayTime;
-import com.demonwav.statcraft.querydsl.Players;
 import com.demonwav.statcraft.querydsl.QJoins;
 import com.demonwav.statcraft.querydsl.QPlayTime;
+import com.demonwav.statcraft.querydsl.QPlayers;
 import com.demonwav.statcraft.querydsl.QSeen;
-import com.demonwav.statcraft.querydsl.Seen;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.Statistic;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -48,23 +41,45 @@ public class PlayTimeListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
-        plugin.getThreadManager().schedule(Players.class, new Runnable() {
-            @Override
-            public void run() {
+        plugin.getThreadManager().scheduleRaw(
+            QPlayers.class,
+            () -> {
                 // This MUST be done before the other two jobs
                 final int id = plugin.setupPlayer(event.getPlayer());
                 plugin.players.put(name, uuid);
 
-                if (plugin.config().stats.joins) {
-                    Util.increment(plugin, QJoins.joins, QJoins.joins.id, QJoins.joins.amount, id, 1);
+                if (plugin.config().getStats().isJoins()) {
+                    plugin.getThreadManager().scheduleRaw(
+                        QJoins.class,
+                        () ->
+                            Util.runQuery(
+                                QJoins.class,
+                                (j, clause) ->
+                                    clause.columns(j.id, j.amount).values(id, 1).execute(),
+                                (j, clause) ->
+                                    clause.where(j.id.eq(id)).set(j.amount, j.amount.add(1)).execute(),
+                                plugin
+                            )
+                    );
                 }
 
-                Util.set(plugin, QSeen.seen, QSeen.seen.id, QSeen.seen.lastJoinTime, id, currentTime);
-
-                plugin.getThreadManager().schedule(Move.class, new ServerStatUpdater.Move(plugin));
-                plugin.getThreadManager().schedule(Jumps.class, new ServerStatUpdater.Jump(plugin));
+                plugin.getThreadManager().scheduleRaw(
+                    QSeen.class,
+                    () ->
+                        Util.runQuery(
+                            QSeen.class,
+                            (s, clause) ->
+                                clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute(),
+                            (s, clause) ->
+                                clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
+                            plugin
+                        )
+                );
             }
-        });
+        );
+
+        plugin.getThreadManager().scheduleRaw(Move.class, new ServerStatUpdater.Move(plugin));
+        plugin.getThreadManager().scheduleRaw(Jumps.class, new ServerStatUpdater.Jump(plugin));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -72,24 +87,22 @@ public class PlayTimeListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
-        plugin.getThreadManager().schedule(Seen.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                Util.set(plugin, QSeen.seen, QSeen.seen.id, QSeen.seen.lastLeaveTime, id, currentTime);
-            }
-        });
+        plugin.getThreadManager().schedule(
+            QSeen.class, uuid,
+            (s, clause, id) ->
+                clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute(),
+            (s, clause, id) ->
+                clause.where(s.id.eq(id)).set(s.lastLeaveTime, currentTime).execute()
+        );
 
         final int currentPlayTime = (int) Math.round(event.getPlayer().getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
 
-        plugin.getThreadManager().schedule(PlayTime.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                Util.set(plugin, QPlayTime.playTime, QPlayTime.playTime.id, QPlayTime.playTime.amount, id, currentPlayTime);
-            }
-        });
+        plugin.getThreadManager().schedule(
+            QPlayTime.class, uuid,
+            (p, clause, id) ->
+                clause.columns(p.id, p.amount).values(id, currentPlayTime).execute(),
+            (p, clause, id) ->
+                clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute()
+        );
     }
 }

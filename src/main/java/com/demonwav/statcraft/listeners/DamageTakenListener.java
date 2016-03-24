@@ -10,14 +10,8 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
-import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.EntityCode;
-import com.demonwav.statcraft.querydsl.DamageTaken;
 import com.demonwav.statcraft.querydsl.QDamageTaken;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
@@ -28,6 +22,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class DamageTakenListener implements Listener {
@@ -45,44 +41,24 @@ public class DamageTakenListener implements Listener {
             final UUID uuid = event.getEntity().getUniqueId();
             final int damageTaken = (int) Math.round(event.getFinalDamage());
 
-            plugin.getThreadManager().schedule(DamageTaken.class, new Runnable() {
-                @Override
-                public void run() {
-                    int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                    QDamageTaken t = QDamageTaken.damageTaken;
-
-                    try {
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
-
-                        if (clause == null)
-                            return;
-
-                        clause.columns(t.id, t.entity, t.amount)
-                            .values(id, event.getCause().name(), damageTaken).execute();
-                    } catch (QueryException e) {
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-
-                        if (clause == null)
-                            return;
-
-                        clause.where(
-                            t.id.eq(id),
-                            t.entity.eq(event.getCause().name())
-                        ).set(t.amount, t.amount.add(damageTaken)).execute();
-                    }
-                }
-            });
-
+            plugin.getThreadManager().schedule(
+                QDamageTaken.class, uuid,
+                (t, clause, id) ->
+                    clause.columns(t.id, t.entity, t.amount)
+                        .values(id, event.getCause().name(), damageTaken).execute(),
+                (t, clause, id) ->
+                    clause.where(t.id.eq(id), t.entity.eq(event.getCause().name()))
+                        .set(t.amount, t.amount.add(damageTaken)).execute()
+            );
 
             // DROWN ANNOUNCE
-            if (plugin.config().stats.drowning_announce)
+            if (plugin.config().getStats().isDrowningAnnounce())
             if (event.getCause().equals(EntityDamageEvent.DamageCause.DROWNING)) {
                 if ((System.currentTimeMillis() / 1000) - plugin.getLastDrownTime(uuid) > 120) {
 
                     event.getEntity().getServer().broadcastMessage(
                             ChatColor.BLUE +
-                            plugin.config().stats.drown_announce_message.replaceAll(
+                            plugin.config().getStats().getDrownAnnounceMessage().replaceAll(
                                     "~",
                                     ((Player) event.getEntity()).getDisplayName() + ChatColor.BLUE
                             )
@@ -91,13 +67,13 @@ public class DamageTakenListener implements Listener {
                 }
             }
             // POISON ANNOUNCE
-            if (plugin.config().stats.poison_announce)
+            if (plugin.config().getStats().isPoisonAnnounce())
             if (event.getCause().equals(EntityDamageEvent.DamageCause.POISON)) {
                 if ((System.currentTimeMillis() / 1000) - plugin.getLastPoisonTime(uuid) > 120) {
 
                     event.getEntity().getServer().broadcastMessage(
                             ChatColor.GREEN +
-                            plugin.config().stats.poison_announce_message.replaceAll(
+                            plugin.config().getStats().getPoisonAnnounceMessage().replaceAll(
                                     "~",
                                     ((Player) event.getEntity()).getDisplayName() + ChatColor.GREEN
                             )
@@ -106,13 +82,13 @@ public class DamageTakenListener implements Listener {
                 }
             }
             // WITHER ANNOUNCE
-            if (plugin.config().stats.wither_announce)
+            if (plugin.config().getStats().isWitherAnnounce())
                 if (event.getCause().equals(EntityDamageEvent.DamageCause.WITHER)) {
                     if ((System.currentTimeMillis() / 1000) - plugin.getLastWitherTime(uuid) > 120) {
 
                         event.getEntity().getServer().broadcastMessage(
                                 ChatColor.DARK_GRAY +
-                                plugin.config().stats.wither_announce_message.replaceAll(
+                                plugin.config().getStats().getWitherAnnounceMessage().replaceAll(
                                         "~",
                                         ((Player) event.getEntity()).getDisplayName() + ChatColor.DARK_GRAY
                                 )
@@ -130,12 +106,10 @@ public class DamageTakenListener implements Listener {
             final int damageTaken = (int) Math.round(event.getFinalDamage());
             final Entity entity = event.getDamager();
 
-            plugin.getThreadManager().schedule(DamageTaken.class, new Runnable() {
-                @Override
-                public void run() {
-                    int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                    QDamageTaken t = QDamageTaken.damageTaken;
+            plugin.getThreadManager().schedule(
+                QDamageTaken.class, uuid,
+                (d, query, id) -> {
+                    Map<String, String> map = new HashMap<>();
 
                     // For special entities which are clumped together
                     // currently only skeletons and wither skeletons fall under this category
@@ -152,9 +126,15 @@ public class DamageTakenListener implements Listener {
                         }
                     }
 
-                    Util.damage(plugin, t, t.id, t.entity, t.amount, id, entityValue, damageTaken);
-                }
-            });
+                    map.put("entityValue", entityValue);
+                    return map;
+                }, (t, clause, id, map) ->
+                    clause.columns(t.id, t.entity, t.amount)
+                        .values(id, map.get("entityValue"), damageTaken).execute(),
+                (t, clause, id, map) ->
+                    clause.where(t.id.eq(id), t.entity.eq(map.get("entityValue")))
+                        .set(t.amount, t.amount.add(damageTaken)).execute()
+            );
         }
     }
 }

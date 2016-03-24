@@ -25,6 +25,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SCEggsThrown extends SCTemplate {
 
@@ -194,7 +195,6 @@ public class SCEggsThrown extends SCTemplate {
                 if (s.startsWith("-top"))
                     top = true;
             }
-            List<String> result = new LinkedList<>();
             List<String> list = new LinkedList<>();
             list.add("-all");
             list.add("-distance");
@@ -202,12 +202,7 @@ public class SCEggsThrown extends SCTemplate {
             if (top)
                 list.add("-unhatched");
 
-            for (String s : list) {
-                if (s.startsWith(args[args.length -1])) {
-                    result.add(s);
-                }
-            }
-            return result;
+            return list.stream().filter(s -> s.startsWith(args[args.length - 1])).collect(Collectors.toList());
         } else {
             return super.onTabComplete(sender, args);
         }

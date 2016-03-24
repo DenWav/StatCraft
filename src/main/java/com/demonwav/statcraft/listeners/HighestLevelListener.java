@@ -10,12 +10,7 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
-import com.demonwav.statcraft.querydsl.HighestLevel;
 import com.demonwav.statcraft.querydsl.QHighestLevel;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -36,32 +31,13 @@ public class HighestLevelListener implements Listener {
         final int newLevel = event.getNewLevel();
         final UUID uuid = event.getPlayer().getUniqueId();
 
-        plugin.getThreadManager().schedule(HighestLevel.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                QHighestLevel h = QHighestLevel.highestLevel;
-
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(h);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(h.id, h.level)
-                        .values(id, newLevel).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(h);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(h.id.eq(id), h.level.lt(newLevel)).set(h.level, newLevel).execute();
-                }
-            }
-        });
+        plugin.getThreadManager().schedule(
+            QHighestLevel.class, uuid,
+            (h, clause, id) ->
+                clause.columns(h.id, h.level)
+                    .values(id, newLevel).execute(),
+            (h, clause, id) ->
+                clause.where(h.id.eq(id), h.level.lt(newLevel)).set(h.level, newLevel).execute()
+        );
     }
 }

@@ -11,11 +11,6 @@ package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.querydsl.QWorldChange;
-import com.demonwav.statcraft.querydsl.WorldChange;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -37,36 +32,17 @@ public class WorldChangeListener implements Listener {
         final String fromWorld = event.getFrom().getName();
         final String toWorld = event.getPlayer().getWorld().getName();
 
-        plugin.getThreadManager().schedule(WorldChange.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                QWorldChange w = QWorldChange.worldChange;
-
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(w);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(w.id, w.toWorld, w.fromWorld, w.amount)
-                        .values(id, toWorld, fromWorld, 1).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(w);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(
-                        w.id.eq(id),
-                        w.toWorld.eq(toWorld),
-                        w.fromWorld.eq(fromWorld)
-                    ).set(w.amount, w.amount.add(1)).execute();
-                }
-            }
-        });
+        plugin.getThreadManager().schedule(
+            QWorldChange.class, uuid,
+            (w, clause, id) ->
+                clause.columns(w.id, w.toWorld, w.fromWorld, w.amount)
+                    .values(id, toWorld, fromWorld, 1).execute(),
+            (w, clause, id) ->
+                clause.where(
+                    w.id.eq(id),
+                    w.toWorld.eq(toWorld),
+                    w.fromWorld.eq(fromWorld)
+                ).set(w.amount, w.amount.add(1)).execute()
+        );
     }
 }

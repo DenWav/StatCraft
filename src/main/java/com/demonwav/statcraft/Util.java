@@ -9,20 +9,22 @@
 
 package com.demonwav.statcraft;
 
-import com.demonwav.statcraft.magic.BucketCode;
-import com.demonwav.statcraft.magic.ProjectilesCode;
-import com.demonwav.statcraft.querydsl.QProjectiles;
+import com.demonwav.statcraft.sql.QueryFunction;
+import com.demonwav.statcraft.sql.QueryIdFunction;
+import com.demonwav.statcraft.sql.QueryIdRunner;
+import com.demonwav.statcraft.sql.QueryIdRunnerMap;
+import com.demonwav.statcraft.sql.QueryRunner;
+import com.demonwav.statcraft.sql.QueryRunnerMap;
 import com.mysema.query.QueryException;
-import com.mysema.query.sql.RelationalPathBase;
+import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
-import com.mysema.query.types.expr.CaseBuilder;
-import com.mysema.query.types.path.NumberPath;
-import com.mysema.query.types.path.StringPath;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 
 public class Util {
@@ -76,7 +78,7 @@ public class Util {
             case 155:   // Quartz Blocks
             case 159:   // Stained Clay
             case 160:   // Stained Glass Panes
-            case 161:   // New LEaves
+            case 161:   // New Leaves
             case 168:   // Prismarine Blocks
             case 171:   // Carpet
             case 175:   // Various Plants
@@ -216,160 +218,193 @@ public class Util {
         return finalResult;
     }
 
-    public static void set(
-            final StatCraft plugin,
-            final RelationalPathBase<?> base,
-            final NumberPath<Integer> id,
-            final NumberPath<Integer> amount,
-            final int idVal,
-            final int set) {
-        plugin.getThreadManager().schedule(base.getType(), new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
+    /**
+     * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
+     * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
+     * caller.
+     * <p>
+     * Thanks to type inferencing no type parameters should need to be provided.
+     *
+     * @param clazz The relevant table for this query
+     * @param insertClause The action to run for the insert query
+     * @param updateClause The action to run for the update query if the insert fails
+     * @param plugin The StatCraft object
+     * @param <T> The RelationalPath that represents the relevant table
+     */
+    public  static <T extends RelationalPath<?>> void runQuery(final Class<T> clazz,
+                                                               final QueryRunner<T, SQLInsertClause> insertClause,
+                                                               final QueryRunner<T, SQLUpdateClause> updateClause,
+                                                               final StatCraft plugin) {
+        try {
+            final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
 
-                    if (clause == null)
-                        return;
+            try {
+                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(path);
 
-                    clause.columns(id, amount).values(idVal, set).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
+                if (clause == null)
+                    return;
 
-                    if (clause == null)
-                        return;
+                insertClause.run(path, clause);
+            } catch (QueryException e) {
+                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(path);
 
-                    clause.where(id.eq(idVal)).set(amount, set).execute();
-                }
+                if (clause == null)
+                    return;
+
+                updateClause.run(path, clause);
             }
-        });
-    }
-
-    public static void increment(
-            final StatCraft plugin,
-            final RelationalPathBase<?> base,
-            final NumberPath<Integer> id,
-            final NumberPath<Integer> amount,
-            final int idVal,
-            final int inc) {
-        try {
-            // INSERT
-            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
-
-            if (clause == null)
-                return;
-
-            clause.columns(id, amount).values(id, inc).execute();
-        } catch (QueryException e) {
-            // UPDATE
-            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
-
-            if (clause == null)
-                return;
-
-            clause.where(id.eq(idVal)).set(amount, amount.add(inc)).execute();
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            // By the class generator we use, this should never happen
+            e.printStackTrace();
         }
     }
 
-    public static void max(
-            final StatCraft plugin,
-            final RelationalPathBase<?> base,
-            final NumberPath<Integer> id,
-            final NumberPath<Short> type,
-            final NumberPath<Integer> amount,
-            final NumberPath<Integer> totalDistance,
-            final NumberPath<Integer> maxThrow,
-            final int idVal,
-            final short typeVal,
-            final int finalDistanceVal) {
+    /**
+     * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
+     * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
+     * caller. This also allows work to be done before the insert and update queries, with parameters saved in a map.
+     * The map object this work function returns will be passed to the insert and update functions, and in that order.
+     * Because of this, if the map is modified in the insert function, these modifications will be present in the update
+     * function.
+     * <p>
+     * Thanks to type inferencing no type parameters should need to be provided.
+     *
+     * @param clazz The relevant table for this query
+     * @param workBefore The action to run before the queries, returning a map which will be passed to the two queries
+     * @param insertClause The action to run for the insert query
+     * @param updateClause The action to run for the update query if the insert fails
+     * @param plugin The StatCraft object
+     * @param <T> The RelationalPath that represents the relevant table
+     */
+    public static <T extends RelationalPath<?>, K, V> void runQuery(final Class<T> clazz,
+                                                                    final QueryFunction<T, K, V> workBefore,
+                                                                    final QueryRunnerMap<T, SQLInsertClause, K, V> insertClause,
+                                                                    final QueryRunnerMap<T, SQLUpdateClause, K, V> updateClause,
+                                                                    final StatCraft plugin) {
         try {
-            // INSERT
-            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
+            final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
 
-            if (clause == null)
-                return;
+            final Map<K, V> map = workBefore.run(path, plugin.getDatabaseManager().getNewQuery());
 
-            clause.columns(id, type, amount, totalDistance, maxThrow)
-                    .values(idVal, typeVal, 1, finalDistanceVal, finalDistanceVal).execute();
-        } catch (QueryException ex) {
-            // UPDATE
-            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
+            try {
+                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(path);
 
-            if (clause == null)
-                return;
+                if (clause == null)
+                    return;
 
-            clause.where(id.eq(idVal), type.eq(typeVal)).set(amount, amount.add(1))
-                    .set(totalDistance, totalDistance.add(finalDistanceVal))
-                    .set(maxThrow,
-                            new CaseBuilder()
-                                    .when(maxThrow.lt(finalDistanceVal)).then(finalDistanceVal)
-                                    .otherwise(maxThrow))
-                    .execute();
+                insertClause.run(path, clause, map);
+            } catch (QueryException e) {
+                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(path);
+
+                if (clause == null)
+                    return;
+
+                updateClause.run(path, clause, map);
+            }
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            // By the class generator we use, this should never happen
+            e.printStackTrace();
         }
     }
 
-    public static void projectile(StatCraft plugin, final QProjectiles p, final int id, final ProjectilesCode code, final int finalDistance) {
-        max(plugin, p, p.id, p.type, p.amount, p.totalDistance, p.maxThrow, id, code.getCode(), finalDistance);
-    }
-
-    public static void bucket(
-            final StatCraft plugin,
-            final RelationalPathBase<?> base,
-            final NumberPath<Integer> id,
-            final NumberPath<Byte> type,
-            final NumberPath<Integer> amount,
-            final int idVal,
-            final BucketCode code) {
+    /**
+     * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
+     * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
+     * caller.
+     * <p>
+     * For convenience this method also allows a player's UUID to be passed in. The database id of the player will be
+     * fetched before the insert and update functions are called, and the id will be passed to them.
+     * <p>
+     * Thanks to type inferencing no type parameters should need to be provided.
+     *
+     * @param clazz The relevant table for this query
+     * @param uuid The UUID of the relevant player
+     * @param insertClause The action to run for the insert query
+     * @param updateClause The action to run for the update query if the insert fails
+     * @param plugin The StatCraft object
+     * @param <T> The RelationalPath that represents the relevant table
+     */
+    public static <T extends RelationalPath<?>> void runQuery(final Class<T> clazz,
+                                                              final UUID uuid,
+                                                              final QueryIdRunner<T, SQLInsertClause> insertClause,
+                                                              final QueryIdRunner<T, SQLUpdateClause> updateClause,
+                                                              final StatCraft plugin) {
         try {
-            // INSERT
-            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
+            final int id = plugin.getDatabaseManager().getPlayerId(uuid);
+            final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
 
-            if (clause == null)
-                return;
+            try {
+                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(path);
 
-            clause.columns(id, type, amount)
-                    .values(idVal, code.getCode(), 1).execute();
-        } catch (QueryException ex) {
-            // UPDATE
-            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
+                if (clause == null)
+                    return;
 
-            if (clause == null)
-                return;
+                insertClause.run(path, clause, id);
+            } catch (QueryException e) {
+                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(path);
 
-            clause.where(
-                    id.eq(idVal),
-                    type.eq(code.getCode())
-            ).set(amount, amount.add(1)).execute();
+                if (clause == null)
+                    return;
+
+                updateClause.run(path, clause, id);
+            }
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            // By the class generator we use, this should never happen
+            e.printStackTrace();
         }
     }
 
-    public static void damage(
-            final StatCraft plugin,
-            final RelationalPathBase<?> base,
-            final NumberPath<Integer> id,
-            final StringPath entity,
-            final NumberPath<Integer> amount,
-            final int idVal,
-            final String entityVal,
-            final int damage) {
+    /**
+     * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
+     * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
+     * caller. This also allows work to be done before the insert and update queries, with parameters saved in a map.
+     * The map object this work function returns will be passed to the insert and update functions, and in that order.
+     * Because of this, if the map is modified in the insert function, these modifications will be present in the update
+     * function.
+     * <p>
+     * For convenience this method also allows a player's UUID to be passed in. The database id of the player will be
+     * fetched before the insert and update functions are called, and the id will be passed to them.
+     * <p>
+     * Thanks to type inferencing no type parameters should need to be provided.
+     *
+     * @param clazz The relevant table for this query
+     * @param uuid The UUID of the relevant player
+     * @param workBefore The action to run before the queries, returning a map which will be passed to the two queries
+     * @param insertClause The action to run for the insert query
+     * @param updateClause The action to run for the update query if the insert fails
+     * @param plugin The StatCraft object
+     * @param <T> The RelationalPath that represents the relevant table
+     */
+    public static <T extends RelationalPath<?>, K, V> void runQuery(final Class<T> clazz,
+                                                                    final UUID uuid,
+                                                                    final QueryIdFunction<T, K, V> workBefore,
+                                                                    final QueryIdRunnerMap<T, SQLInsertClause, K, V> insertClause,
+                                                                    final QueryIdRunnerMap<T, SQLUpdateClause, K, V> updateClause,
+                                                                    final StatCraft plugin) {
         try {
-            // INSERT
-            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(base);
-            if (clause == null)
-                return;
-            clause.columns(id, entity, amount)
-                    .values(idVal, entityVal, damage).execute();
-        } catch (QueryException e) {
-            // UPDATE
-            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(base);
-            if (clause == null)
-                return;
-            clause.where(
-                    id.eq(id),
-                    entity.eq(entityVal)
-            ).set(amount, amount.add(damage)).execute();
+            final int id = plugin.getDatabaseManager().getPlayerId(uuid);
+            final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
+
+            final Map<K, V> map = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(), id);
+
+            try {
+                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(path);
+
+                if (clause == null)
+                    return;
+
+                insertClause.run(path, clause, id, map);
+            } catch (QueryException e) {
+                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(path);
+
+                if (clause == null)
+                    return;
+
+                updateClause.run(path, clause, id, map);
+            }
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            // By the class generator we use, this should never happen
+            e.printStackTrace();
         }
     }
 }

@@ -11,11 +11,6 @@ package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.querydsl.QToolsBroken;
-import com.demonwav.statcraft.querydsl.ToolsBroken;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -37,31 +32,12 @@ public class ToolsBrokenListener implements Listener {
         final UUID uuid = event.getPlayer().getUniqueId();
         final short item = (short) event.getBrokenItem().getType().getId();
 
-        plugin.getThreadManager().schedule(ToolsBroken.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                QToolsBroken t = QToolsBroken.toolsBroken;
-
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(t);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(t.id, t.item, t.amount).values(id, item, 1).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(t);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(t.id.eq(id), t.item.eq(item)).set(t.amount, t.amount.add(1)).execute();
-                }
-            }
-        });
+        plugin.getThreadManager().schedule(
+            QToolsBroken.class, uuid,
+            (t, clause, id) ->
+                clause.columns(t.id, t.item, t.amount).values(id, item, 1).execute(),
+            (t, clause, id) ->
+                clause.where(t.id.eq(id), t.item.eq(item)).set(t.amount, t.amount.add(1)).execute()
+        );
     }
 }

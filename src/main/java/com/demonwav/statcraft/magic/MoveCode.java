@@ -23,7 +23,8 @@ public enum MoveCode {
     MINECART((byte)8, Statistic.MINECART_ONE_CM),
     BOAT((byte)9, Statistic.BOAT_ONE_CM),
     PIG((byte)10, Statistic.PIG_ONE_CM),
-    HORSE((byte)11, Statistic.HORSE_ONE_CM);
+    HORSE((byte)11, Statistic.HORSE_ONE_CM),
+    ELYTRA((byte)12, Statistic.AVIATE_ONE_CM);
 
     private byte code;
     private Statistic statistic;

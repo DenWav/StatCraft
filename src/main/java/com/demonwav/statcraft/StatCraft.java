@@ -28,6 +28,7 @@ import com.demonwav.statcraft.commands.sc.SCItemsDropped;
 import com.demonwav.statcraft.commands.sc.SCItemsPickedUp;
 import com.demonwav.statcraft.commands.sc.SCJoins;
 import com.demonwav.statcraft.commands.sc.SCJumps;
+import com.demonwav.statcraft.commands.sc.SCKicks;
 import com.demonwav.statcraft.commands.sc.SCKills;
 import com.demonwav.statcraft.commands.sc.SCLastSeen;
 import com.demonwav.statcraft.commands.sc.SCLastSlept;
@@ -61,6 +62,7 @@ import com.demonwav.statcraft.listeners.HighestLevelListener;
 import com.demonwav.statcraft.listeners.ItemDropListener;
 import com.demonwav.statcraft.listeners.ItemPickUpListener;
 import com.demonwav.statcraft.listeners.ItemsCraftedListener;
+import com.demonwav.statcraft.listeners.KickListener;
 import com.demonwav.statcraft.listeners.KillListener;
 import com.demonwav.statcraft.listeners.OnFireListener;
 import com.demonwav.statcraft.listeners.PlayTimeListener;
@@ -71,8 +73,13 @@ import com.demonwav.statcraft.listeners.ToolsBrokenListener;
 import com.demonwav.statcraft.listeners.WordsSpokenListener;
 import com.demonwav.statcraft.listeners.WorldChangeListener;
 import com.demonwav.statcraft.listeners.XpGainedListener;
-import com.demonwav.statcraft.querydsl.*;
-
+import com.demonwav.statcraft.querydsl.Players;
+import com.demonwav.statcraft.querydsl.QPlayTime;
+import com.demonwav.statcraft.querydsl.QPlayers;
+import com.demonwav.statcraft.querydsl.QSeen;
+import com.demonwav.statcraft.querydsl.QSleep;
+import com.demonwav.statcraft.sql.DatabaseManager;
+import com.demonwav.statcraft.sql.ThreadManager;
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
@@ -96,12 +103,17 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StatCraft extends JavaPlugin {
+
     private DatabaseManager databaseManager;
-    private volatile int errors = 0;
+    private AtomicInteger errors = new AtomicInteger(0);
 
     private HashMap<UUID, Integer> lastFireTime = new HashMap<>();
     private HashMap<UUID, Integer> lastDrownTime = new HashMap<>();
@@ -114,14 +126,14 @@ public class StatCraft extends JavaPlugin {
     private BaseCommand baseCommand = new BaseCommand(this);
 
     private String timeZone;
+    public ConcurrentHashMap<String, UUID> players = new ConcurrentHashMap<>();
 
     // So we know if it's fully been enabled or not
-    private volatile boolean enabler = false;
+    private AtomicBoolean enabler = new AtomicBoolean(false);
 
     // Config
     private Config config;
     final private FileYamlStorage<Config> configStorage = new FileYamlStorage<>(new File(getDataFolder(), "config.yml"), Config.class, this);
-    public volatile HashMap<String, UUID> players = new HashMap<>();
 
     public Config config() {
         return config;
@@ -140,11 +152,11 @@ public class StatCraft extends JavaPlugin {
                 return;
 
             // set the time zone of the server
-            if (config().timezone.equalsIgnoreCase("auto")) {
+            if (config().getTimezone().equalsIgnoreCase("auto")) {
                 TimeZone tz = Calendar.getInstance().getTimeZone();
                 timeZone = tz.getDisplayName(false, TimeZone.SHORT);
             } else {
-                timeZone = config().timezone;
+                timeZone = config().getTimezone();
             }
 
             // Register timers
@@ -154,10 +166,9 @@ public class StatCraft extends JavaPlugin {
 
             /* ****************************************************** */
             /* To protect against NoClassDefFoundError in onDisable() */
+            /* */ QSeen.seen.getClass();                           /* */
             /* */ QPlayTime.playTime.getClass();                   /* */
-            /* */ QLeaveBed.leaveBed.getClass();                   /* */
-            /* */ QEnterBed.enterBed.getClass();                   /* */
-            /* */ QTimeSlept.timeSlept.getClass();                 /* */
+            /* */ QSleep.sleep.getClass();                         /* */
             /* ****************************************************** */
 
             createListeners();
@@ -177,35 +188,36 @@ public class StatCraft extends JavaPlugin {
 
     private void initializePlaytimeAndBed() {
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
-        final StatCraft plugin = this;
 
-        getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
-            @Override
-            public void run() {
-                for (Player player : getServer().getOnlinePlayers()) {
-                    // Insert game join / bed enter data
-                    final int id = setupPlayer(player);
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            getServer().getOnlinePlayers().forEach(player -> {
+                // Insert game join / bed enter data
+                final int id = setupPlayer(player);
 
-                    // Setup their current joins time here
-                    getThreadManager().schedule(Seen.class, new Runnable() {
-                        @Override
-                        public void run() {
-                            Util.set(plugin, QSeen.seen, QSeen.seen.id, QSeen.seen.lastJoinTime, id, currentTime);
-                        }
-                    });
+                getThreadManager().scheduleRaw(
+                    QSeen.class, () -> Util.runQuery(
+                            QSeen.class,
+                            (s, clause) ->
+                                clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute(),
+                            (s, clause) ->
+                                clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
+                            this
+                        )
+                );
 
-                    // If the player is sleeping at the time, setup their enter bed time here
-                    if (player.isSleeping()) {
-                        getThreadManager().schedule(EnterBed.class, new Runnable() {
-                            @Override
-                            public void run() {
-                                Util.set(plugin, QEnterBed.enterBed, QEnterBed.enterBed.id, QEnterBed.enterBed.time, id, currentTime);
-                            }
-                        });
-                    }
+                if (player.isSleeping()) {
+                    getThreadManager().scheduleRaw(
+                        QSleep.class, () -> Util.runQuery(
+                           QSleep.class, (s, clause) ->
+                                clause.columns(s.id, s.enterBed).values(id, currentTime).execute(),
+                            (s, clause) ->
+                                clause.where(s.id.eq(id)).set(s.enterBed, currentTime).execute(),
+                            this
+                        )
+                    );
                 }
-                enabler = true;
-            }
+            });
+            enabler.set(true);
         });
     }
 
@@ -213,105 +225,75 @@ public class StatCraft extends JavaPlugin {
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
         // We can't start an async task here, so just do it on the main thread
-        for (Player player : getServer().getOnlinePlayers()) {
+        getServer().getOnlinePlayers().forEach(player -> {
             UUID uuid = player.getUniqueId();
             int id = getDatabaseManager().getPlayerId(uuid);
 
-            // Set last leave time to now
-            QSeen s = QSeen.seen;
-            try {
-                // INSERT
-                SQLInsertClause clause = getDatabaseManager().getInsertClause(s);
-
-                if (clause != null)
-                    clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute();
-            } catch (QueryException e) {
-                // UPDATE
-                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(s);
-
-                if (clause != null)
-                    clause.where(s.id.eq(id)).set(s.lastLeaveTime, currentTime).execute();
-            }
+            Util.runQuery(QSeen.class, (s, clause) ->
+                    clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute(),
+                (s, clause) ->
+                    clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
+                this
+            );
 
             final int currentPlayTime = (int) Math.round(player.getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
 
-            QPlayTime playtime = QPlayTime.playTime;
+            Util.runQuery(QPlayTime.class, (p, clause) ->
+                    clause.columns(p.id, p.amount).values(id, currentPlayTime).execute(),
+                (p, clause) ->
+                    clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute(),
+                this
+            );
 
-            try {
-                // INSERT
-                SQLInsertClause clause = getDatabaseManager().getInsertClause(playtime);
+            if (player.isSleeping()){
+                Util.runQuery(QSleep.class, (s, query) -> {
+                        Map<String, Integer> map = new HashMap<>();
 
-                if (clause != null)
-                    clause.columns(playtime.id, playtime.amount).values(id, currentPlayTime).execute();
-            } catch (QueryException e) {
-                // UPDATE
-                SQLUpdateClause clause = getDatabaseManager().getUpdateClause(playtime);
+                        Integer enterBed = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
+                        enterBed = enterBed == null ? 0 : enterBed;
+                        if (enterBed != 0) {
+                            map.put("timeSlept", currentTime - enterBed);
+                        } else {
+                            map.put("timeSlept", 0);
+                        }
 
-                if (clause != null)
-                    clause.where(playtime.id.eq(id)).set(playtime.amount, currentPlayTime).execute();
+                        return map;
+                    }, (s, clause, map) -> {
+                        if (map.get("timeSlept") == 0) {
+                            clause.columns(s.id, s.leaveBed).values(id, currentTime).execute();
+                        } else {
+                            clause.columns(s.id, s.leaveBed, s.timeSlept)
+                                .values(id, currentTime, map.get("timeSlept")).execute();
+                        }
+                    }, (s, clause, map) -> {
+                        if (map.get("timeSlept") == 0) {
+                            clause.where(s.id.eq(id)).set(s.leaveBed, currentTime).execute();
+                        } else {
+                            clause.where(s.id.eq(id))
+                                .set(s.leaveBed, currentPlayTime)
+                                .set(s.timeSlept, map.get("timeSlept"))
+                                .execute();
+                        }
+                    },
+                    this
+                );
             }
-
-
-            SQLQuery query = getDatabaseManager().getNewQuery();
-
-            // Do the same things for players that may be sleeping
-            if (player.isSleeping()) {
-                // Set the last leave bed time to now
-                QLeaveBed b = QLeaveBed.leaveBed;
-                try {
-                    // INSERT
-                    SQLInsertClause clause = getDatabaseManager().getInsertClause(b);
-
-                    if (clause != null)
-                        clause.columns(b.id, b.time).values(id, currentTime).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(b);
-
-                    if (clause != null)
-                        clause.where(b.id.eq(id)).set(b.time, currentTime).execute();
-                }
-
-                // Add on to the sleeping time based on this "leave bed time"
-                QEnterBed e = QEnterBed.enterBed;
-                Integer enterBed = query.from(e).where(e.id.eq(id)).uniqueResult(e.time);
-                enterBed = enterBed == null ? 0 : enterBed;
-
-                if (enterBed != 0) {
-                    int timeSlept = currentTime - enterBed;
-
-                    QTimeSlept t = QTimeSlept.timeSlept;
-                    try {
-                        // INSERT
-                        SQLInsertClause clause = getDatabaseManager().getInsertClause(t);
-
-                        if (clause != null)
-                            clause.columns(t.id, t.amount).values(id, timeSlept).execute();
-                    } catch (QueryException ex) {
-                        // UPDATE
-                        SQLUpdateClause clause = getDatabaseManager().getUpdateClause(t);
-
-                        if (clause != null)
-                            clause.where(t.id.eq(id)).set(t.amount, t.amount.add(timeSlept)).execute();
-                    }
-                }
-            }
-        }
+        });
     }
 
     private void verifyConfigColors() {
         ColorConfig defaultConfig = new ColorConfig();
 
-        for (Field field : config().colors.getClass().getFields()) {
+        for (Field field : config().getColors().getClass().getFields()) {
             try {
-                String s = ((String)field.get(config().colors)).trim().toUpperCase().replaceAll("\\s+", "_");
-                field.set(config().colors, s);
+                String s = ((String)field.get(config().getColors())).trim().toUpperCase().replaceAll("\\s+", "_");
+                field.set(config().getColors(), s);
                 ChatColor.valueOf(s);
             } catch (Exception e) {
                 try {
-                    getLogger().warning("The color value '" + field.get(config().colors) + "' specified for colors." +
+                    getLogger().warning("The color value '" + field.get(config().getColors()) + "' specified for colors." +
                             field.getName() + " is invalid, resetting to the default value of " + field.get(defaultConfig));
-                    field.set(config().colors, field.get(defaultConfig));
+                    field.set(config().getColors(), field.get(defaultConfig));
                 } catch (IllegalAccessException e1) {
                     e1.printStackTrace();
                 }
@@ -322,181 +304,181 @@ public class StatCraft extends JavaPlugin {
     private void createListeners() {
         StringBuilder statsEnabled = new StringBuilder();
         // load up the listeners
-        if (config.stats.deaths) {
+        if (config.getStats().isDeaths()) {
             getServer().getPluginManager().registerEvents(new DeathListener(this), this);
             statsEnabled.append(" death");
             new SCDeaths(this);
         }
 
-        if (config.stats.blocks) {
+        if (config.getStats().isBlocks()) {
             getServer().getPluginManager().registerEvents(new BlockListener(this), this);
             new SCBlocksBroken(this);
             new SCBlocksPlaced(this);
             statsEnabled.append(" block");
 
-            if (config.stats.specific_blocks) {
+            if (config.getStats().isSpecificBlocks()) {
                 statsEnabled.append(" mined");
                 new SCMined(this);
             }
         }
 
-        if (config.stats.play_time || config.stats.first_join_time) {
+        if (config.getStats().isPlayTime() || config.getStats().isFirstJoinTime()) {
             getServer().getPluginManager().registerEvents(new PlayTimeListener(this), this);
-            if (config.stats.last_seen) {
+            if (config.getStats().isLastSeen()) {
                 statsEnabled.append(" last_seen");
                 new SCLastSeen(this);
             }
-            if (config.stats.play_time) {
+            if (config.getStats().isPlayTime()) {
                 statsEnabled.append(" playtime");
                 new SCPlayTime(this);
             }
-            if (config.stats.joins) {
+            if (config.getStats().isJoins()) {
                 statsEnabled.append(" joins");
                 new SCJoins(this);
             }
-            if (config.stats.first_join_time) {
+            if (config.getStats().isFirstJoinTime()) {
                 statsEnabled.append(" first_join_time");
                 new SCFirstJoin(this);
             }
         }
 
-        if (config.stats.item_pickups) {
+        if (config.getStats().isItemPickUps()) {
             getServer().getPluginManager().registerEvents(new ItemPickUpListener(this), this);
             statsEnabled.append(" item_pickups");
             new SCItemsPickedUp(this);
         }
 
-        if (config.stats.item_drops) {
+        if (config.getStats().isItemDrops()) {
             getServer().getPluginManager().registerEvents(new ItemDropListener(this), this);
             statsEnabled.append(" item_drops");
             new SCItemsDropped(this);
         }
 
-        if (config.stats.items_crafted) {
+        if (config.getStats().isItemsCrafted()) {
             getServer().getPluginManager().registerEvents(new ItemsCraftedListener(this), this);
             statsEnabled.append(" items_crafted");
             new SCItemsCrafted(this);
         }
 
-        if (config.stats.on_fire) {
+        if (config.getStats().isOnFire()) {
             getServer().getPluginManager().registerEvents(new OnFireListener(this), this);
             statsEnabled.append(" on_fire");
             new SCOnFire(this);
         }
 
-        if (config.stats.tools_broken) {
+        if (config.getStats().isToolsBroken()) {
             getServer().getPluginManager().registerEvents(new ToolsBrokenListener(this), this);
             statsEnabled.append(" tools_broken");
             new SCToolsBroken(this);
         }
 
-        if (config.stats.arrows_shot) {
+        if (config.getStats().isArrowsShot()) {
             getServer().getPluginManager().registerEvents(new ArrowsShotListener(this), this);
             statsEnabled.append(" arrows_shot");
             new SCArrowsShot(this);
         }
 
-        if (config.stats.buckets_filled) {
+        if (config.getStats().isBucketsEmptied()) {
             getServer().getPluginManager().registerEvents(new BucketFillListener(this), this);
             statsEnabled.append(" bucket_fill");
             new SCBucketsFilled(this);
         }
 
-        if (config.stats.buckets_emptied) {
+        if (config.getStats().isBucketsEmptied()) {
             getServer().getPluginManager().registerEvents(new BucketEmptyListener(this), this);
             statsEnabled.append(" bucket_empty");
             new SCBucketsEmptied(this);
         }
 
-        if (config.stats.bed) {
+        if (config.getStats().isBed()) {
             getServer().getPluginManager().registerEvents(new SleepyTimeListener(this), this);
             statsEnabled.append(" bed");
             new SCTimeSlept(this);
             new SCLastSlept(this);
         }
 
-        if (config.stats.world_changes) {
+        if (config.getStats().isWorldChanges()) {
             getServer().getPluginManager().registerEvents(new WorldChangeListener(this), this);
             statsEnabled.append(" world_change");
             new SCWorldChanges(this);
         }
 
-        if (config.stats.messages_spoken) {
+        if (config.getStats().isMessagesSpoken()) {
             getServer().getPluginManager().registerEvents(new WordsSpokenListener(this), this);
             statsEnabled.append(" message_spoken");
             new SCMessagesSpoken(this);
-            if (config.stats.words_spoken)
+            if (config.getStats().isWordsSpoken())
                 new SCWordsSpoken(this);
         }
 
-        if (config.stats.damage_taken) {
+        if (config.getStats().isDamageTaken()) {
             getServer().getPluginManager().registerEvents(new DamageTakenListener(this), this);
             statsEnabled.append(" damage_taken");
             new SCDamageTaken(this);
         }
 
-        if (config.stats.damage_dealt) {
+        if (config.getStats().isDamageDealt()) {
             getServer().getPluginManager().registerEvents(new DamageDealtListener(this), this);
             statsEnabled.append(" damage_dealt");
             new SCDamageDealt(this);
         }
 
-        if (config.stats.fish_caught) {
+        if (config.getStats().isFishCaught()) {
             getServer().getPluginManager().registerEvents(new FishCaughtListener(this), this);
             statsEnabled.append(" fish_caught");
             new SCFishCaught(this);
         }
 
-        if (config.stats.xp_gained) {
+        if (config.getStats().isXpGained()) {
             getServer().getPluginManager().registerEvents(new XpGainedListener(this), this);
             statsEnabled.append(" xp_gained");
             new SCXpGained(this);
         }
 
-        if (config.stats.kills) {
+        if (config.getStats().isKills()) {
             getServer().getPluginManager().registerEvents(new KillListener(this), this);
             statsEnabled.append(" kills");
             new SCKills(this);
         }
 
-        if (config.stats.highest_level) {
+        if (config.getStats().isHighestLevel()) {
             getServer().getPluginManager().registerEvents(new HighestLevelListener(this), this);
             statsEnabled.append(" highest_level");
             new SCHighestLevel(this);
         }
 
-        if (config.stats.tab_completes) {
+        if (config.getStats().isTabCompletes()) {
             getServer().getPluginManager().registerEvents(new TabCompleteListener(this), this);
             statsEnabled.append(" tab_complete");
             new SCTabCompletes(this);
         }
 
-        if (config.stats.eggs_thrown) {
+        if (config.getStats().isEggsThrown()) {
             getServer().getPluginManager().registerEvents(new EggListener(this), this);
             statsEnabled.append(" eggs_thrown");
             new SCEggsThrown(this);
         }
 
-        if (config.stats.ender_pearls) {
+        if (config.getStats().isEnderPearls()) {
             getServer().getPluginManager().registerEvents(new EnderPearlListener(this), this);
             statsEnabled.append(" ender_pearls");
             new SCEnderPearls(this);
         }
 
-        if (config.stats.snow_balls) {
+        if (config.getStats().isSnowBalls()) {
             getServer().getPluginManager().registerEvents(new SnowballListener(this), this);
             statsEnabled.append(" snow_balls");
             new SCSnowballs(this);
         }
 
-        if (config.stats.move) {
+        if (config.getStats().isMove()) {
             // Every 30 seconds
             getServer().getScheduler().runTaskTimerAsynchronously(this, new ServerStatUpdater.Move(this), 1, 600);
             statsEnabled.append(" move");
             new SCMove(this);
         }
 
-        if (config.stats.jumps) {
+        if (config.getStats().isJumps()) {
             // Every 10 seconds
             getServer().getScheduler().runTaskTimerAsynchronously(this, new ServerStatUpdater.Jump(this), 1, 200);
             statsEnabled.append(" jumps");
@@ -508,6 +490,12 @@ public class StatCraft extends JavaPlugin {
 //            statsEnabled.append(" animals_bred");
 //        }
 
+        if (config.getStats().isKicks()) {
+            getServer().getPluginManager().registerEvents(new KickListener(this), this);
+            statsEnabled.append(" kicks");
+            new SCKicks(this);
+        }
+
         getLogger().info("Successfully enabled:" + statsEnabled);
 
         new SCReset(this);
@@ -515,7 +503,7 @@ public class StatCraft extends JavaPlugin {
 
     @Override
     final public void onDisable() {
-        if (enabler)
+        if (enabler.get())
             finishPlaytimeAndBed();
 
         if (threadManager != null)
@@ -523,6 +511,8 @@ public class StatCraft extends JavaPlugin {
 
         if (getDatabaseManager() != null)
             getDatabaseManager().close();
+
+        getServer().getScheduler().cancelTasks(this);
      }
 
     public int setupPlayer(OfflinePlayer player) {
@@ -568,9 +558,9 @@ public class StatCraft extends JavaPlugin {
             checkBlanks();
         }
 
-        final int id = getDatabaseManager().getPlayerId(player.getUniqueId());
+        int id = getDatabaseManager().getPlayerId(player.getUniqueId());
 
-        if (config.stats.first_join_time) {
+        if (config.getStats().isFirstJoinTime()) {
             query = getDatabaseManager().getNewQuery();
             QSeen s = QSeen.seen;
             Integer time = query.from(s).where(s.id.eq(id)).uniqueResult(s.firstJoinTime);
@@ -588,14 +578,13 @@ public class StatCraft extends JavaPlugin {
 
         if (player.isOnline()) {
             final int currentPlayTime = (int) Math.round(((Player) player).getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
-            final StatCraft plugin = this;
 
-            getThreadManager().schedule(PlayTime.class, new Runnable() {
-                @Override
-                public void run() {
-                    Util.set(plugin, QPlayTime.playTime, QPlayTime.playTime.id, QPlayTime.playTime.amount, id, currentPlayTime);
-                }
-            });
+            Util.runQuery(QPlayTime.class, (pl, clause) ->
+                    clause.columns(pl.id, pl.amount).values(id, currentPlayTime).execute(),
+                (pl, clause) ->
+                    clause.where(pl.id.eq(id)).set(pl.amount, currentPlayTime).execute(),
+                this
+            );
         }
 
         return id;
@@ -610,7 +599,9 @@ public class StatCraft extends JavaPlugin {
      * @return The time zone the plugin is using for the displayed times
      * @see java.util.TimeZone
      */
-    public String getTimeZone() { return timeZone; }
+    public String getTimeZone() {
+        return timeZone;
+    }
 
     /**
      * Returns the last time a player was on fire
@@ -662,7 +653,9 @@ public class StatCraft extends JavaPlugin {
      * @param uuid The uuid of the player that is on fire
      * @param time The time the player was on fire
      */
-    public void setLastFireTime(UUID uuid, int time) { lastFireTime.put(uuid, time); }
+    public void setLastFireTime(UUID uuid, int time) {
+        lastFireTime.put(uuid, time);
+    }
 
     /**
      * Sets the last time a player is drowning
@@ -670,7 +663,9 @@ public class StatCraft extends JavaPlugin {
      * @param uuid The uuid of the player that is drowning
      * @param time The time the player was drowning
      */
-    public void setLastDrowningTime(UUID uuid, int time) { lastDrownTime.put(uuid, time); }
+    public void setLastDrowningTime(UUID uuid, int time) {
+        lastDrownTime.put(uuid, time);
+    }
 
     /**
      * Sets the last time a player is poisoned
@@ -678,7 +673,9 @@ public class StatCraft extends JavaPlugin {
      * @param uuid The uuid of the player that is poisoned
      * @param time The time the player was poisoned
      */
-    public void setLastPoisonTime(UUID uuid, int time) { lastPoisonTime.put(uuid, time); }
+    public void setLastPoisonTime(UUID uuid, int time) {
+        lastPoisonTime.put(uuid, time);
+    }
 
     /**
      * Sets the last time a player is withering away
@@ -686,27 +683,34 @@ public class StatCraft extends JavaPlugin {
      * @param uuid The uuid of the player that is withering awawy
      * @param time The time the player is withering away
      */
-    public void setLastWitherTime(UUID uuid, int time) { lastWitherTime.put(uuid, time); }
+    public void setLastWitherTime(UUID uuid, int time) {
+        lastWitherTime.put(uuid, time);
+    }
 
-    public DatabaseManager getDatabaseManager() { return databaseManager; }
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
 
-    public BaseCommand getBaseCommand() { return baseCommand; }
+    public BaseCommand getBaseCommand() {
+        return baseCommand;
+    }
 
-    public ThreadManager getThreadManager() { return threadManager; }
+    public ThreadManager getThreadManager() {
+        return threadManager;
+    }
 
-    public synchronized void incrementError() {
-        errors++;
-        if (errors > 15) {
+    public void incrementError() {
+        if (errors.incrementAndGet() > 15) {
             clearError();
             getDatabaseManager().reconnect();
         }
     }
 
-    public synchronized void clearError() {
-        errors = 0;
+    private void clearError() {
+        errors.set(0);
     }
 
-    public static String getCurrentName(UUID uuid) {
+    private static String getCurrentName(UUID uuid) {
         // Get JSON from Mojang API
         final String url = "https://api.mojang.com/user/profiles/" + uuid.toString().replaceAll("-", "") + "/names";
         HttpURLConnection conn;
@@ -743,7 +747,7 @@ public class StatCraft extends JavaPlugin {
 
         Object last = names.get(names.size() - 1);
         if (!(last instanceof JSONObject))
-            throw new IllegalStateException("Mojant API returned incorrect JSON: " + s);
+            throw new IllegalStateException("Mojang API returned incorrect JSON: " + s);
 
         JSONObject name = (JSONObject) last;
         if (name.isEmpty()) {
@@ -763,32 +767,29 @@ public class StatCraft extends JavaPlugin {
         return n;
     }
 
-    public void checkBlanks() {
-        getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
-            @Override
-            public void run() {
-                QPlayers p = QPlayers.players;
-                SQLQuery query = getDatabaseManager().getNewQuery();
+    private void checkBlanks() {
+        getThreadManager().scheduleRaw(QPlayers.class, () -> {
+            QPlayers p = QPlayers.players;
+            SQLQuery query = getDatabaseManager().getNewQuery();
 
-                if (query == null)
-                    return;
+            if (query == null)
+                return;
 
-                List<Players> result = query.from(p).where(p.name.eq("")).list(p);
-                for (Players players : result) {
-                    UUID uuid = Util.byteToUUID(players.getUuid());
-                    String name;
-                    try {
-                        name = getCurrentName(uuid);
+            List<Players> result = query.from(p).where(p.name.eq("")).list(p);
+            for (Players players : result) {
+                UUID uuid = Util.byteToUUID(players.getUuid());
+                String name;
+                try {
+                    name = getCurrentName(uuid);
 
-                        SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
-                        update
-                                .where(p.uuid.eq(players.getUuid()))
-                                .set(p.name, name)
-                                .execute();
-                    } catch (Exception e) {
-                        getServer().getLogger().warning("Was unable to set new name for " + uuid.toString());
-                        e.printStackTrace();
-                    }
+                    SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
+                    update
+                        .where(p.uuid.eq(players.getUuid()))
+                        .set(p.name, name)
+                        .execute();
+                } catch (Exception e) {
+                    getServer().getLogger().warning("Was unable to set new name for " + uuid.toString());
+                    e.printStackTrace();
                 }
             }
         });

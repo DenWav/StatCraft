@@ -11,12 +11,7 @@ package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.magic.EntityCode;
-import com.demonwav.statcraft.querydsl.Kills;
 import com.demonwav.statcraft.querydsl.QKills;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -25,6 +20,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class KillListener implements Listener {
@@ -42,12 +39,10 @@ public class KillListener implements Listener {
             final LivingEntity entity = event.getEntity();
             final EntityCode code = EntityCode.fromEntity(event.getEntity());
 
-
-
-            plugin.getThreadManager().schedule(Kills.class, new Runnable() {
-                @Override
-                public void run() {
-                    int id = plugin.getDatabaseManager().getPlayerId(uuid);
+            plugin.getThreadManager().schedule(
+                QKills.class, uuid,
+                (k, query, id) -> {
+                    Map<String, String> map = new HashMap<>();
 
                     String entityValue;
                     if (entity instanceof Player) {
@@ -60,31 +55,17 @@ public class KillListener implements Listener {
                         }
                     }
 
-                    QKills k = QKills.kills;
-
-                    try {
-                        // INSERT
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(k);
-
-                        if (clause == null)
-                            return;
-
-                        clause.columns(k.id, k.entity, k.amount)
-                            .values(id, entityValue, 1).execute();
-                    } catch (QueryException e) {
-                        // UPDATE
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(k);
-
-                        if (clause == null)
-                            return;
-
-                        clause.where(
-                            k.id.eq(id),
-                            k.entity.eq(entityValue)
-                        ).set(k.amount, k.amount.add(1)).execute();
-                    }
-                }
-            });
+                    map.put("entityValue", entityValue);
+                    return map;
+                }, (k, clause, id, map) ->
+                    clause.columns(k.id, k.entity, k.amount)
+                        .values(id, map.get("entityValue"), 1).execute(),
+                (k, clause, id, map) ->
+                    clause.where(
+                        k.id.eq(id),
+                        k.entity.eq(map.get("entityValue"))
+                    ).set(k.amount, k.amount.add(1)).execute()
+            );
         }
     }
 }

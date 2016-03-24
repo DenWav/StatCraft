@@ -11,7 +11,7 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
-import com.demonwav.statcraft.querydsl.QEnterBed;
+import com.demonwav.statcraft.querydsl.QSleep;
 
 import com.mysema.query.sql.SQLQuery;
 import org.bukkit.ChatColor;
@@ -43,8 +43,8 @@ public class SCLastSlept extends SCTemplate {
             OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
 
             if (player.isOnline() && player.getPlayer().isSleeping()) {
-                return ChatColor.valueOf(plugin.config().colors.player_name) +
-                    name + ChatColor.valueOf(plugin.config().colors.stat_value) +
+                return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) +
+                    name + ChatColor.valueOf(plugin.config().getColors().getStatValue()) +
                     " is sleeping now!";
             } else {
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
@@ -55,9 +55,9 @@ public class SCLastSlept extends SCTemplate {
                 SQLQuery query = plugin.getDatabaseManager().getNewQuery();
                 if (query == null)
                     return "Sorry, there seems to be an issue connecting to the database right now.";
-                QEnterBed b = QEnterBed.enterBed;
+                QSleep s = QSleep.sleep;
 
-                Integer result = query.from(b).where(b.id.eq(id)).uniqueResult(b.time);
+                Integer result = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
                 if (result == null) {
                     throw new Exception();
                 }
@@ -74,13 +74,13 @@ public class SCLastSlept extends SCTemplate {
 
                 time = time + " (" + Util.transformTime((int) (difference / 1000L)).split(",")[0] + " ago)";
 
-                return ChatColor.valueOf(plugin.config().colors.player_name) + name +
-                    ChatColor.valueOf(plugin.config().colors.stat_title) + " - Last Slept - " +
-                    ChatColor.valueOf(plugin.config().colors.stat_value) + time;
+                return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) + name +
+                    ChatColor.valueOf(plugin.config().getColors().getStatTitle()) + " - Last Slept - " +
+                    ChatColor.valueOf(plugin.config().getColors().getStatValue()) + time;
             }
         } catch (Exception e) {
-            return ChatColor.valueOf(plugin.config().colors.player_name) +
-                name + ChatColor.valueOf(plugin.config().colors.stat_value) +
+            return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) +
+                name + ChatColor.valueOf(plugin.config().getColors().getStatValue()) +
                 " has not slept on this server.";
         }
     }

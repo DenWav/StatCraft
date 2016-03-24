@@ -63,11 +63,11 @@ public abstract class SCTemplate {
     protected String topListResponse(String name, List<Tuple> list) {
         StringBuilder sb = new StringBuilder();
 
-        sb  .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+        sb  .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
                 .append("- ").append(name).append(" ")
-                .append(ChatColor.valueOf(plugin.config().colors.stat_separator))
+                .append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator()))
                 .append("| ")
-                .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+                .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
                 .append("Top ")
                 .append(list.size())
                 .append(" -");
@@ -78,15 +78,15 @@ public abstract class SCTemplate {
             sb      .append("\n")
                     .append(ChatColor.RESET)
                     .append(ChatColor.BOLD)
-                    .append(ChatColor.valueOf(plugin.config().colors.list_number))
+                    .append(ChatColor.valueOf(plugin.config().getColors().getListNumber()))
                     .append(++i)
                     .append(". ")
                     .append(ChatColor.RESET)
-                    .append(ChatColor.valueOf(plugin.config().colors.player_name))
+                    .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
                     .append(tuple.get(0, String.class))
                     .append(ChatColor.WHITE)
                     .append(": ")
-                    .append(ChatColor.valueOf(plugin.config().colors.stat_value))
+                    .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
                     .append(df.format(tuple.get(1, Integer.class)))
                     .append(ChatColor.RESET);
         }
@@ -97,11 +97,11 @@ public abstract class SCTemplate {
     protected String topListTimeResponse(String name, List<Tuple> list) {
         StringBuilder sb = new StringBuilder();
 
-        sb  .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+        sb  .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
                 .append("- ").append(name).append(" ")
-                .append(ChatColor.valueOf(plugin.config().colors.stat_separator))
+                .append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator()))
                 .append("| ")
-                .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+                .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
                 .append("Top ")
                 .append(list.size())
                 .append(" -");
@@ -113,15 +113,15 @@ public abstract class SCTemplate {
             sb      .append("\n")
                     .append(ChatColor.RESET)
                     .append(ChatColor.BOLD)
-                    .append(ChatColor.valueOf(plugin.config().colors.list_number))
+                    .append(ChatColor.valueOf(plugin.config().getColors().getListNumber()))
                     .append(++i)
                     .append(". ")
                     .append(ChatColor.RESET)
-                    .append(ChatColor.valueOf(plugin.config().colors.player_name))
+                    .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
                     .append(tuple.get(0, String.class))
                     .append(ChatColor.WHITE)
                     .append(": ")
-                    .append(ChatColor.valueOf(plugin.config().colors.stat_value))
+                    .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
                     .append(Util.transformTime(res == null ? 0 : res))
                     .append(ChatColor.RESET);
         }
@@ -132,11 +132,11 @@ public abstract class SCTemplate {
     protected String topListDistanceResponse(String name, List<Tuple> list) {
         StringBuilder sb = new StringBuilder();
 
-        sb  .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+        sb  .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
             .append("- ").append(name).append(" ")
-            .append(ChatColor.valueOf(plugin.config().colors.stat_separator))
+            .append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator()))
             .append("| ")
-            .append(ChatColor.valueOf(plugin.config().colors.stat_title))
+            .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
             .append("Top ")
             .append(list.size())
             .append(" -");
@@ -148,15 +148,15 @@ public abstract class SCTemplate {
             sb  .append("\n")
                 .append(ChatColor.RESET)
                 .append(ChatColor.BOLD)
-                .append(ChatColor.valueOf(plugin.config().colors.list_number))
+                .append(ChatColor.valueOf(plugin.config().getColors().getListNumber()))
                 .append(++i)
                 .append(". ")
                 .append(ChatColor.RESET)
-                .append(ChatColor.valueOf(plugin.config().colors.player_name))
+                .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
                 .append(tuple.get(0, String.class))
                 .append(ChatColor.WHITE)
                 .append(": ")
-                .append(ChatColor.valueOf(plugin.config().colors.stat_value))
+                .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
                 .append(Util.distanceUnits(res == null ? 0 : res))
                 .append(ChatColor.RESET);
         }

@@ -12,12 +12,12 @@ package com.demonwav.statcraft.commands.sc;
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Table;
 import com.demonwav.statcraft.commands.CustomResponse;
-import com.demonwav.statcraft.querydsl.QEnterBed;
 import com.demonwav.statcraft.querydsl.QSeen;
-
+import com.demonwav.statcraft.querydsl.QSleep;
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -28,10 +28,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class SCReset extends SCTemplate implements CustomResponse {
 
@@ -120,83 +120,81 @@ public class SCReset extends SCTemplate implements CustomResponse {
     }
 
     private void resetStats(final CommandSender sender, final UUID uuid, final String name) {
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                final int id = plugin.getDatabaseManager().getPlayerId(uuid);
-                if (id < 0) {
-                    sender.sendMessage("Unable to find " + name + " in the database.");
-                    return;
-                }
-
-                Statement st = null;
-                try {
-                    plugin.getDatabaseManager().getConnection().setAutoCommit(false);
-                    st = plugin.getDatabaseManager().getConnection().createStatement();
-
-                    for (Table table : Table.values()) {
-                        if (!table.getName().equalsIgnoreCase("players")) {
-                            st.addBatch("DELETE FROM " + table.getName() + " WHERE id = " + id);
-                        }
-                    }
-
-                    st.executeBatch();
-
-                    plugin.getDatabaseManager().getConnection().commit();
-                    plugin.getDatabaseManager().getConnection().setAutoCommit(true);
-                } catch (SQLException e) {
-                    try {
-                        plugin.getDatabaseManager().getConnection().rollback();
-                        plugin.getDatabaseManager().getConnection().setAutoCommit(true);
-                    } catch (SQLException e1) {
-                        e1.printStackTrace();
-                    }
-                    e.printStackTrace();
-                } finally {
-                    if (st != null) {
-                        try {
-                            st.close();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-
-                // So we don't mess up play time / time slept, check if they are online or in the bed
-                // and add "join" values for now
-                OfflinePlayer player = plugin.getServer().getPlayer(uuid);
-                if (player != null && player.isOnline()) {
-                    int currentTime = (int)(System.currentTimeMillis() / 1000L);
-
-                    QSeen s = QSeen.seen;
-                    SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-
-                    if (query.from(s).where(s.id.eq(id)).exists()) {
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(s);
-                        clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
-                    } else {
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(s);
-                        clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
-                    }
-
-                    if (player.getPlayer().isSleeping()) {
-                        QEnterBed e = QEnterBed.enterBed;
-
-                        if (query.from(e).where(e.id.eq(id)).exists()) {
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(e);
-                            clause.where(e.id.eq(id)).set(e.time, currentTime).execute();
-                        } else {
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(e);
-                            clause.columns(e.id, e.time).values(id, currentTime).execute();
-                        }
-                    }
-                }
-
-                if (sender.getName().equals(name))
-                    sender.sendMessage("Your stats have been successfully reset.");
-                else
-                    sender.sendMessage(name + "'s stats have been successfully reset.");
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            final int id = plugin.getDatabaseManager().getPlayerId(uuid);
+            if (id < 0) {
+                sender.sendMessage("Unable to find " + name + " in the database.");
+                return;
             }
+
+            Statement st = null;
+            try {
+                plugin.getDatabaseManager().getConnection().setAutoCommit(false);
+                st = plugin.getDatabaseManager().getConnection().createStatement();
+
+                for (Table table : Table.values()) {
+                    if (!table.getName().equalsIgnoreCase("players")) {
+                        String tableName = StringEscapeUtils.escapeSql(table.getName());
+                        st.addBatch("DELETE FROM " + tableName + " WHERE " + tableName + " id = " + id);
+                    }
+                }
+
+                st.executeBatch();
+
+                plugin.getDatabaseManager().getConnection().commit();
+                plugin.getDatabaseManager().getConnection().setAutoCommit(true);
+            } catch (SQLException e) {
+                try {
+                    plugin.getDatabaseManager().getConnection().rollback();
+                    plugin.getDatabaseManager().getConnection().setAutoCommit(true);
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+                e.printStackTrace();
+            } finally {
+                if (st != null) {
+                    try {
+                        st.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            // So we don't mess up play time / time slept, check if they are online or in the bed
+            // and add "join" values for now
+            OfflinePlayer player = plugin.getServer().getPlayer(uuid);
+            if (player != null && player.isOnline()) {
+                int currentTime = (int)(System.currentTimeMillis() / 1000L);
+
+                QSeen s = QSeen.seen;
+                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+
+                if (query.from(s).where(s.id.eq(id)).exists()) {
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(s);
+                    clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
+                } else {
+                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(s);
+                    clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
+                }
+
+                if (player.getPlayer().isSleeping()) {
+                    QSleep sl = QSleep.sleep;
+
+                    if (query.from(sl).where(sl.id.eq(id)).exists()) {
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(sl);
+                        clause.where(sl.id.eq(id)).set(sl.enterBed, currentTime).execute();
+                    } else {
+                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(sl);
+                        clause.columns(sl.id, sl.enterBed).values(id, currentTime).execute();
+                    }
+                }
+            }
+
+            if (sender.getName().equals(name))
+                sender.sendMessage("Your stats have been successfully reset.");
+            else
+                sender.sendMessage(name + "'s stats have been successfully reset.");
         });
     }
 
@@ -212,24 +210,25 @@ public class SCReset extends SCTemplate implements CustomResponse {
                 return list;
             } else {
                 ArrayList<String> players = new ArrayList<>(plugin.players.keySet());
-                ArrayList<String> secondary = new ArrayList<>();
-                for (Player player : plugin.getServer().getOnlinePlayers()) {
-                    secondary.add(player.getName());
-                }
+                List<String> secondary = plugin.getServer().getOnlinePlayers().stream()
+                    .map(Player::getName).collect(Collectors.toList());
 
+                // keep only the offline players for now
                 players.removeAll(secondary);
 
-                LinkedList<String> result = new LinkedList<>();
+                // primarily we want players that are online
+                List<String> result = secondary.stream().filter(s ->
+                    s.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).collect(Collectors.toList());
 
-                for (String s : secondary) {
-                    if (s.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                        result.add(s);
-                }
-                for (String s : players) {
-                    if (s.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                        result.add(s);
-                }
+                // also include players that are offline
+                secondary = players.stream().filter(s ->
+                    s.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).collect(Collectors.toList());
+
+                // They need to be sorted independently
                 result.sort(String.CASE_INSENSITIVE_ORDER);
+                secondary.sort(String.CASE_INSENSITIVE_ORDER);
+                // Add the offline players to the end
+                result.addAll(secondary);
                 return result;
             }
         }

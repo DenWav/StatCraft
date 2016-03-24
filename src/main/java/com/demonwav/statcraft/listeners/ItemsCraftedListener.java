@@ -11,13 +11,8 @@ package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
-import com.demonwav.statcraft.querydsl.ItemsCrafted;
 import com.demonwav.statcraft.querydsl.QItemsCrafted;
-
 import com.google.common.base.Objects;
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -32,7 +27,7 @@ import java.util.UUID;
  *  https://forums.bukkit.org/threads/cant-get-amount-of-shift-click-craft-item.79090/ */
 public class ItemsCraftedListener implements Listener {
 
-    StatCraft plugin;
+    private StatCraft plugin;
 
     public ItemsCraftedListener(StatCraft plugin) {
         this.plugin = plugin;
@@ -68,37 +63,15 @@ public class ItemsCraftedListener implements Listener {
 
     private void updateData(final short itemid, short initDamage, final UUID uuid, final int amount) {
         final short damage = Util.damageValue(itemid, initDamage);
-        plugin.getThreadManager().schedule(ItemsCrafted.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                QItemsCrafted i = QItemsCrafted.itemsCrafted;
-
-                try {
-                    // INSERT
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(i);
-
-                    if (clause == null)
-                        return;
-
-                    clause.columns(i.id, i.item, i.damage, i.amount)
-                        .values(id, itemid, damage, amount).execute();
-                } catch (QueryException e) {
-                    // UPDATE
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(i);
-
-                    if (clause == null)
-                        return;
-
-                    clause.where(
-                        i.id.eq(id),
-                        i.item.eq(itemid),
-                        i.damage.eq(damage)
-                    ).set(i.amount, i.amount.add(amount)).execute();
-                }
-            }
-        });
+        plugin.getThreadManager().schedule(
+            QItemsCrafted.class, uuid,
+            (i, clause, id) ->
+                clause.columns(i.id, i.item, i.damage, i.amount)
+                    .values(id, itemid, damage, amount).execute(),
+            (i, clause, id) ->
+                clause.where(i.id.eq(id), i.item.eq(itemid), i.damage.eq(damage))
+                    .set(i.amount, i.amount.add(amount)).execute()
+        );
     }
 
     /** From here down is Comphenix's code */
@@ -113,30 +86,26 @@ public class ItemsCraftedListener implements Listener {
             preInv[i] = preInv[i] != null ? preInv[i].clone() : null;
         }
 
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-            @SuppressWarnings("deprecation")
-            @Override
-            public void run() {
-                final ItemStack[] postInv = player.getInventory().getContents();
-                int newItemsCount = 0;
+        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            final ItemStack[] postInv = player.getInventory().getContents();
+            int newItemsCount = 0;
 
-                for (int i = 0; i < preInv.length; i++) {
-                    ItemStack pre = preInv[i];
-                    ItemStack post = postInv[i];
+            for (int i = 0; i < preInv.length; i++) {
+                ItemStack pre = preInv[i];
+                ItemStack post = postInv[i];
 
-                    // We're only interested in filled slots that are different
-                    if (hasSameItem(compareItem, post) && (hasSameItem(compareItem, pre) || pre == null)) {
-                        newItemsCount += post.getAmount() - (pre != null ? pre.getAmount() : 0);
-                    }
+                // We're only interested in filled slots that are different
+                if (hasSameItem(compareItem, post) && (hasSameItem(compareItem, pre) || pre == null)) {
+                    newItemsCount += post.getAmount() - (pre != null ? pre.getAmount() : 0);
                 }
+            }
 
-                if (newItemsCount > 0) {
-                    final short item = (short) compareItem.getType().getId();
-                    final short damage = compareItem.getData().getData();
-                    final UUID uuid = player.getUniqueId();
+            if (newItemsCount > 0) {
+                final short item = (short) compareItem.getType().getId();
+                final short damage = compareItem.getData().getData();
+                final UUID uuid = player.getUniqueId();
 
-                    updateData(item, damage, uuid, newItemsCount);
-                }
+                updateData(item, damage, uuid, newItemsCount);
             }
         }, ticks);
     }

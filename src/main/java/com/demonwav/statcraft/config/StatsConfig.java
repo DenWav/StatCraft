@@ -12,169 +12,175 @@ package com.demonwav.statcraft.config;
 import com.demonwav.statcraft.config.com.md_5.config.AnnotatedConfig;
 import com.demonwav.statcraft.config.com.md_5.config.ConfigComment;
 import com.demonwav.statcraft.config.com.md_5.config.NewLine;
+import lombok.Data;
 
+@Data
 public class StatsConfig extends AnnotatedConfig {
 
     @ConfigComment("Record deaths")
-    public boolean deaths = true;
+    private boolean deaths = true;
 
     @NewLine
     @ConfigComment("Record when a player breaks/places a block.")
-    public boolean blocks = true;
+    private boolean blocks = true;
     @ConfigComment("Allow players to search specific blocks broken on players (/mined command).")
-    public boolean specific_blocks = true;
+    private boolean specificBlocks = true;
 
     @NewLine
     @ConfigComment({"Keep track of how long players are online.",
                     "last_seen and joins require that this must be true."})
-    public boolean play_time = true;
+    private boolean playTime = true;
     @ConfigComment({"Allow players to check when a player was last online.",
                     "play_time must be true to enable this."})
-    public boolean last_seen = true;
+    private boolean lastSeen = true;
     @ConfigComment({"Keep track of the number of times a player joins the server.",
                     "play_time must be true to enable this."})
-    public boolean joins = true;
+    private boolean joins = true;
     @ConfigComment("Record the date when a player first joined joined the server.")
-    public boolean first_join_time = true;
+    private boolean firstJoinTime = true;
 
     @NewLine
     @ConfigComment("Record number of items a player has crafted.")
-    public boolean items_crafted = true;
+    private boolean itemsCrafted = true;
 
     @NewLine
     @ConfigComment("Record number of items a player has brewed.")
-    public boolean items_brewed = true;
+    private boolean itemsBrewed = true;
 
     @NewLine
     @ConfigComment("Record number of items a player has cooked.")
-    public boolean items_cooked = true;
+    private boolean itemsCooked = true;
 
     @NewLine
     @ConfigComment("Record how long a player has been on fire.")
-    public boolean on_fire = true;
+    private boolean onFire = true;
     @ConfigComment("Announce to the server whenever a player is on fire.")
-    public boolean on_fire_announce = true;
+    private boolean onFireAnnounce = true;
     @ConfigComment({"Message to show to the players when an on_fire announcement is made.",
                     "~ is the player's name."})
-    public String on_fire_announce_message = "~  is on fire! Oh no!";
+    private String onFireAnnounceMessage = "~  is on fire! Oh no!";
 
     @NewLine
     @ConfigComment("Record number of times a player changes worlds (such as nether portals).")
-    public boolean world_changes = true;
+    private boolean worldChanges = true;
 
     @NewLine
     @ConfigComment("Record when a player breaks a tool.")
-    public boolean tools_broken = true;
+    private boolean toolsBroken = true;
 
     @NewLine
     @ConfigComment("Record number of arrows shot.")
-    public boolean arrows_shot = true;
+    private boolean arrowsShot = true;
 
     @NewLine
     @ConfigComment("Record when a player fills a bucket.")
-    public boolean buckets_filled = true;
+    private boolean bucketsFilled = true;
     @ConfigComment("Record whe na player empties a bucket.")
-    public boolean buckets_emptied = true;
+    private boolean bucketsEmptied = true;
 
     @NewLine
     @ConfigComment("Record when a player drops an item.")
-    public boolean item_drops = true;
+    private boolean itemDrops = true;
     @ConfigComment("Record when a player picks up an item.")
-    public boolean item_pickups = true;
+    private boolean itemPickUps = true;
 
     @NewLine
     @ConfigComment({"Record the number of times a player enters and leaves a bed.",
                     "This includes time slept."})
-    public boolean bed = true;
+    private boolean bed = true;
 
     @NewLine
     @ConfigComment("Record the number of messages a player has spoken.")
-    public boolean messages_spoken = true;
+    private boolean messagesSpoken = true;
     @ConfigComment({"Record the total number of words a player has spoken.",
                     "messages_spoken must be true to enable this."})
-    public boolean words_spoken = true;
+    private boolean wordsSpoken = true;
     @ConfigComment({"Record specific words spoken by players.",
                     "words_spoken must be true to enable this."})
-    public boolean specific_words_spoken = true;
+    private boolean specificWordsSpoken = true;
 
     @NewLine
     @ConfigComment("Record the number of attempted tab-completes a player does.")
-    public boolean tab_completes = true;
+    private boolean tabCompletes = true;
 
     @NewLine
     @ConfigComment("Record the total damage a player has received.")
-    public boolean damage_taken = true;
+    private boolean damageTaken = true;
     @ConfigComment("Announce to the server whenever a player is drowning.")
-    public boolean drowning_announce = true;
+    private boolean drowningAnnounce = true;
     @ConfigComment("Announce to the server whenever a player is poisoned.")
-    public boolean poison_announce = true;
+    private boolean poisonAnnounce = true;
     @ConfigComment("Announce to the server whenever a player is withering away.")
-    public boolean wither_announce = true;
+    private boolean witherAnnounce = true;
     @ConfigComment({"Message to show to the players when a drowning announcement is made.",
                     "~ is the player's name."})
-    public String drown_announce_message = "~ is drowning! Oh no!";
+    private String drownAnnounceMessage = "~ is drowning! Oh no!";
     @ConfigComment({"Message to show to the players when a poison announcement is made.",
                     "~ is the player's name."})
-    public String poison_announce_message = "~ is poisoned! Oh no!";
+    private String poisonAnnounceMessage = "~ is poisoned! Oh no!";
     @ConfigComment({"Message to show to the players when a withering away announcement is made.",
                     "~ is the player's name."})
-    public String wither_announce_message = "~ is withering away! Oh no!";
+    private String witherAnnounceMessage = "~ is withering away! Oh no!";
 
     @NewLine
     @ConfigComment("Record when a player catches a fish.")
-    public boolean fish_caught = true;
+    private boolean fishCaught = true;
 
     @NewLine
     @ConfigComment("Record the total xp gained by a player.")
-    public boolean xp_gained = true;
+    private boolean xpGained = true;
     @ConfigComment("Record the total xp spent by a player (enchanting, repairing).")
-    public boolean xp_spent = true;
+    private boolean xpSpent = true;
     @ConfigComment("Record the highest leve a player has obtained.")
-    public boolean highest_level = true;
+    private boolean highestLevel = true;
 
     @NewLine
     @ConfigComment("Keep track of how far a player has moved (uses server stats).")
-    public boolean move = true;
+    private boolean move = true;
 
     @NewLine
     @ConfigComment("Record when a player kills a mob or another player.")
-    public boolean kills = true;
+    private boolean kills = true;
 
     @NewLine
     @ConfigComment("Record how many times a player has jumped.")
-    public boolean jumps = true;
+    private boolean jumps = true;
 
     @NewLine
     @ConfigComment("Track the number of eggs thrown.")
-    public boolean eggs_thrown = true;
+    private boolean eggsThrown = true;
 
     @NewLine
     @ConfigComment("Record stats on ender pearls.")
-    public boolean ender_pearls = true;
+    private boolean enderPearls = true;
     @ConfigComment("Record stats on snowballs.")
-    public boolean snow_balls = true;
+    private boolean snowBalls = true;
 
     @NewLine
     @ConfigComment("Record how many animals a player has killed.")
-    public boolean animals_bred = true;
+    private boolean animalsBred = true;
 
     @NewLine
     @ConfigComment("Record how many blocks of TNT a player has set off.")
-    public boolean tnt_detonated = true;
+    private boolean tntDetonated = true;
 
     @NewLine
     @ConfigComment("Record how many times a player has enchanted an item.")
-    public boolean enchants_done = true;
+    private boolean enchantsDone = true;
 
     @NewLine
     @ConfigComment("Record how many times a player has repaired an item.")
-    public boolean repairs_done = true;
+    private boolean repairsDone = true;
 
     @NewLine
     @ConfigComment("Track the amount of damage a player has dealt to mobs and other players.")
-    public boolean damage_dealt = true;
+    private boolean damageDealt = true;
 
     @NewLine
     @ConfigComment("Track how many times a player has started a fire.")
-    public boolean fires_started = true;
+    private boolean firesStarted = true;
+
+    @NewLine
+    @ConfigComment("Track how many times a player has been kicked and the reasons")
+    private boolean kicks = true;
 }

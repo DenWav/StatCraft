@@ -11,9 +11,8 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.commands.TimeResponseBuilder;
-import com.demonwav.statcraft.querydsl.QEnterBed;
 import com.demonwav.statcraft.querydsl.QPlayers;
-import com.demonwav.statcraft.querydsl.QTimeSlept;
+import com.demonwav.statcraft.querydsl.QSleep;
 
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
@@ -45,8 +44,8 @@ public class SCTimeSlept extends SCTemplate {
             SQLQuery query = plugin.getDatabaseManager().getNewQuery();
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
-            QTimeSlept t = QTimeSlept.timeSlept;
-            Integer result = query.from(t).where(t.id.eq(id)).uniqueResult(t.amount);
+            QSleep s = QSleep.sleep;
+            Integer result = query.from(s).where(s.id.eq(id)).uniqueResult(s.timeSlept);
 
             if (result == null)
                 result = 0;
@@ -57,9 +56,8 @@ public class SCTimeSlept extends SCTemplate {
             if (player.isOnline() && player.getPlayer().isSleeping()) {
                 int now = (int)(System.currentTimeMillis() / 1000L);
 
-                QEnterBed e = QEnterBed.enterBed;
                 query = plugin.getDatabaseManager().getNewQuery();
-                Integer enter = query.from(e).where(e.id.eq(id)).uniqueResult(e.time);
+                Integer enter = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
 
                 // Sanity check
                 if (enter != null && enter != 0 && now != 0)
@@ -85,17 +83,17 @@ public class SCTimeSlept extends SCTemplate {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery();
         if (query == null)
             return "Sorry, there seems to be an issue connecting to the database right now.";
-        QTimeSlept t = QTimeSlept.timeSlept;
+        QSleep s = QSleep.sleep;
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(t)
+                .from(s)
                 .leftJoin(p)
-                .on(t.id.eq(p.id))
+                .on(s.id.eq(p.id))
                 .groupBy(p.name)
-                .orderBy(t.amount.desc())
+                .orderBy(s.timeSlept.desc())
                 .limit(num)
-                .list(p.name, t.amount);
+                .list(p.name, s.timeSlept);
 
         return topListTimeResponse("Time Slept", list);
     }

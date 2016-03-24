@@ -24,6 +24,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SCEnderPearls extends SCTemplate {
 
@@ -144,18 +145,12 @@ public class SCEnderPearls extends SCTemplate {
                     top = true;
             }
             if (top) {
-                List<String> result = new LinkedList<>();
                 List<String> list = new LinkedList<>();
                 list.add("-all");
                 list.add("-distance");
                 list.add("-farthest");
 
-                for (String s : list) {
-                    if (s.startsWith(args[args.length -1])) {
-                        result.add(s);
-                    }
-                }
-                return result;
+                return list.stream().filter(s -> s.startsWith(args[args.length - 1])).collect(Collectors.toList());
             } else {
                 return super.onTabComplete(sender, args);
             }

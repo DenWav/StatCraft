@@ -7,7 +7,7 @@
 
     <groupId>com.demonwav.statcraft</groupId>
     <artifactId>statcraft</artifactId>
-    <version>0.3.7</version>
+    <version>0.4.0</version>
     <packaging>jar</packaging>
 
     <name>StatCraft</name>
@@ -48,35 +48,18 @@
                 </configuration>
             </plugin>
             <plugin>
-                <version>3.1</version>
+                <version>3.5.1</version>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
-                <executions>
-                    <execution>
-                        <id>default-jar</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <finalName>${project.name}</finalName>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
+                <version>2.4.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -84,6 +67,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <finalName>${project.name}</finalName>
                             <minimizeJar>true</minimizeJar>
                             <filters>
                                 <filter>
@@ -136,24 +120,26 @@
             </resource>
         </resources>
     </build>
+
     <repositories>
         <repository>
             <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
             <id>demonwav-repo</id>
-            <url>http://nexus.demonwav.com/content/repositories/snapshots/</url>
+            <url>https://nexus.demonwav.com/content/repositories/snapshots/</url>
         </pluginRepository>
     </pluginRepositories>
+
     <dependencies>
-        <!-- Bukkit API -->
+        <!-- Spigot API -->
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.8.8-R0.1-SNAPSHOT</version>
+            <version>1.9-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>

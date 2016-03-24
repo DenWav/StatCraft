@@ -12,12 +12,7 @@ package com.demonwav.statcraft.listeners;
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.FishCode;
-import com.demonwav.statcraft.querydsl.FishCaught;
 import com.demonwav.statcraft.querydsl.QFishCaught;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -42,8 +37,8 @@ public class FishCaughtListener implements Listener {
             // shouldn't be an issue, but just to protect against a ClassCastException
             if (event.getCaught() instanceof Item) {
                 Item item = (Item) event.getCaught();
-                final short itemid = (short) item.getItemStack().getTypeId();
-                final short damage = Util.damageValue(itemid, item.getItemStack().getData().getData());
+                final short itemId = (short) item.getItemStack().getTypeId();
+                final short damage = Util.damageValue(itemId, item.getItemStack().getData().getData());
 
                 final FishCode code;
 
@@ -82,38 +77,15 @@ public class FishCaughtListener implements Listener {
                         break;
                 }
 
-                plugin.getThreadManager().schedule(FishCaught.class, new Runnable() {
-                    @Override
-                    public void run() {
-                        int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                        QFishCaught f = QFishCaught.fishCaught;
-
-                        try {
-                            // INSERT
-                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(f);
-
-                            if (clause == null)
-                                return;
-
-                            clause.columns(f.id, f.item, f.damage, f.type, f.amount)
-                                .values(id, itemid, damage, code.getCode(), 1).execute();
-                        } catch (QueryException e) {
-                            // UPDATE
-                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(f);
-
-                            if (clause == null)
-                                return;
-
-                            clause.where(
-                                f.id.eq(id),
-                                f.item.eq(itemid),
-                                f.damage.eq(damage),
-                                f.type.eq(code.getCode())
-                            ).set(f.amount, f.amount.add(1)).execute();
-                        }
-                    }
-                });
+                plugin.getThreadManager().schedule(
+                    QFishCaught.class, uuid,
+                    (f, clause, id) ->
+                        clause.columns(f.id, f.item, f.damage, f.type, f.amount)
+                            .values(id, itemId, damage, code.getCode(), 1).execute(),
+                    (f, clause, id) ->
+                        clause.where(f.id.eq(id), f.item.eq(itemId), f.damage.eq(damage), f.type.eq(code.getCode()))
+                            .set(f.amount, f.amount.add(1)).execute()
+                );
             }
         }
     }

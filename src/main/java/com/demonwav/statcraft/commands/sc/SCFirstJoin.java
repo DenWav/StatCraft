@@ -60,12 +60,12 @@ public class SCFirstJoin extends SCTemplate {
 
             time = time + " (" + Util.transformTime((int) (difference / 1000L)).split(",")[0] + " ago)";
 
-            return ChatColor.valueOf(plugin.config().colors.player_name) + name +
-                ChatColor.valueOf(plugin.config().colors.stat_title) + " - First Join - " +
-                ChatColor.valueOf(plugin.config().colors.stat_value) + time;
+            return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) + name +
+                ChatColor.valueOf(plugin.config().getColors().getStatTitle()) + " - First Join - " +
+                ChatColor.valueOf(plugin.config().getColors().getStatValue()) + time;
         } catch (Exception e) {
-            return ChatColor.valueOf(plugin.config().colors.player_name) +
-                name + ChatColor.valueOf(plugin.config().colors.stat_value) +
+            return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) +
+                name + ChatColor.valueOf(plugin.config().getColors().getStatValue()) +
                 " has not been seen on this server.";
         }
     }

@@ -10,14 +10,8 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
-import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.BucketCode;
-import com.demonwav.statcraft.querydsl.BucketFill;
 import com.demonwav.statcraft.querydsl.QBucketFill;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -49,15 +43,14 @@ public class BucketFillListener implements Listener {
                 break;
         }
 
-        plugin.getThreadManager().schedule(BucketFill.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
-
-                QBucketFill f = QBucketFill.bucketFill;
-
-                Util.bucket(plugin, f, f.id, f.type, f.amount, id, code);
-            }
-        });
+        plugin.getThreadManager().schedule(
+            QBucketFill.class, uuid,
+            (f, clause, id) ->
+                clause.columns(f.id, f.type, f.amount)
+                    .values(id, code.getCode(), 1).execute(),
+            (f, clause, id) ->
+                clause.where(f.id.eq(id), f.type.eq(code.getCode()))
+                    .set(f.amount, f.amount.add(1)).execute()
+        );
     }
 }

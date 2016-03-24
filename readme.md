@@ -62,7 +62,7 @@ Compiling
 
 ### Need Maven? [Get Maven Here](http://maven.apache.org/download.cgi)
 
-#### JDK 8 is recommended.
+#### JDK 8 is required.
 
 If you are just modifying the plugin without changing any of the database structure, then there is no setup needed.
 
@@ -98,4 +98,3 @@ questions or want to contact me for any reason, you can find me in IRC:
 `irc.spi.gt`
 
 I am usually in *#spigot* and *#spigot-dev*, but you can always just message me, username is DemonWav.
-If you can't  find me there, you should always be able to message me in `chat.freenode.net`

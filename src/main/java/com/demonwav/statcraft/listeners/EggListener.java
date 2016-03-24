@@ -10,14 +10,8 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
-import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.ProjectilesCode;
-import com.demonwav.statcraft.querydsl.Projectiles;
 import com.demonwav.statcraft.querydsl.QProjectiles;
-
-import com.mysema.query.QueryException;
-import com.mysema.query.sql.dml.SQLInsertClause;
-import com.mysema.query.sql.dml.SQLUpdateClause;
 import com.mysema.query.types.expr.CaseBuilder;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -48,26 +42,30 @@ public class EggListener implements Listener {
         final double distance = playerLocation.distance(eggLocation);
         final int finalDistance = (int) Math.round(distance * 100.0);
 
-        plugin.getThreadManager().schedule(Projectiles.class, new Runnable() {
-            @Override
-            public void run() {
-                int id = plugin.getDatabaseManager().getPlayerId(uuid);
+        ProjectilesCode code;
 
-                ProjectilesCode code;
+        if (hatched && numberHatched == 1) {
+            code = ProjectilesCode.HATCHED_EGG;
+        } else if (hatched) {
+            code = ProjectilesCode.FOUR_HATCHED_EGG;
+        } else {
+            code = ProjectilesCode.UNHATCHED_EGG;
+        }
 
-                if (hatched && numberHatched == 1) {
-                    code = ProjectilesCode.HATCHED_EGG;
-                } else if (hatched) {
-                    code = ProjectilesCode.FOUR_HATCHED_EGG;
-                } else {
-                    code = ProjectilesCode.UNHATCHED_EGG;
-                }
-
-                QProjectiles p = QProjectiles.projectiles;
-                Util.projectile(plugin, p, id, code, finalDistance);
-            }
-        });
-
+        plugin.getThreadManager().schedule(
+            QProjectiles.class, uuid,
+            (p, clause, id) ->
+                clause.columns(p.id, p.type, p.amount, p.totalDistance, p.maxThrow)
+                    .values(id, code.getCode(), 1, finalDistance, finalDistance).execute(),
+            (p, clause, id) ->
+                clause.where(p.id.eq(id), p.type.eq(code.getCode())).set(p.amount, p.amount.add(1))
+                    .set(p.totalDistance, p.totalDistance.add(finalDistance))
+                    .set(p.maxThrow,
+                        new CaseBuilder()
+                            .when(p.maxThrow.lt(finalDistance)).then(finalDistance)
+                            .otherwise(p.maxThrow))
+                    .execute()
+        );
     }
 
 }
