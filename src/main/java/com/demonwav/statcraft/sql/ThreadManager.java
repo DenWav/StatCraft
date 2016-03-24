@@ -42,7 +42,7 @@ public class ThreadManager implements Runnable {
     @Override
     public void run() {
         // Remove any work that has finished
-        work.entrySet().removeIf(e -> Bukkit.getScheduler().isCurrentlyRunning(e.getValue()));
+        work.entrySet().removeIf(e -> !Bukkit.getScheduler().isCurrentlyRunning(e.getValue()));
 
         // Start work that is waiting to be started
         for (Iterator<Map.Entry<Class<?>, ConcurrentLinkedQueue<Runnable>>> it = map.entrySet().iterator(); it.hasNext();) {
