@@ -87,7 +87,7 @@ public class ThreadManager implements Runnable {
                 map.put(clazz, queue);
             }
         }
-        queue.add(runnable);
+        queue.offer(runnable);
     }
 
     public void stop() {
