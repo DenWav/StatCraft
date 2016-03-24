@@ -92,6 +92,8 @@ compile-time issues, rather than hard to debug runtime problems.
 Further Info
 ------------
 
+Source for the StatCraft Maven Plugin [here](https://github.com/DemonWav/StatCraftMavenPlugin).
+
 This project is still very much a work-in-progress, and it is not very close to release. However, if you have any
 questions or want to contact me for any reason, you can find me in IRC:
 

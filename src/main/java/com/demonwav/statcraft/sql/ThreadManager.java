@@ -60,39 +60,21 @@ public class ThreadManager implements Runnable {
         }
     }
 
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public <T extends RelationalPath<?>> void schedule(final Class<T> clazz,
                                                        final UUID uuid,
                                                        final QueryIdRunner<T, SQLInsertClause> insertRunner,
                                                        final QueryIdRunner<T, SQLUpdateClause> updateRunner) {
         final QueryRunnable<T> queryRunnable = new QueryRunnable<>(clazz, uuid, insertRunner, updateRunner, plugin);
-        ConcurrentLinkedQueue<Runnable> queue;
-        synchronized (clazz) {
-            queue = map.get(clazz);
-            if (queue == null) {
-                queue = new ConcurrentLinkedQueue<>();
-                map.put(queryRunnable.getClazz(), queue);
-            }
-        }
-        queue.add(queryRunnable);
+        scheduleRaw(clazz, queryRunnable);
     }
 
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public <T extends RelationalPath<?>, K, V> void schedule(final Class<T> clazz,
                                                              final UUID uuid,
                                                              final QueryIdFunction<T, K, V> workBefore,
                                                              final QueryIdRunnerMap<T, SQLInsertClause, K, V> insertRunner,
                                                              final QueryIdRunnerMap<T, SQLUpdateClause, K, V> updateRunner) {
         final QueryRunnableMap<T, K, V> queryRunnableMap = new QueryRunnableMap<>(clazz, uuid, workBefore, insertRunner, updateRunner, plugin);
-        ConcurrentLinkedQueue<Runnable> queue;
-        synchronized (clazz) {
-            queue = map.get(clazz);
-            if (queue == null) {
-                queue = new ConcurrentLinkedQueue<>();
-                map.put(queryRunnableMap.getClazz(), queue);
-            }
-        }
-        queue.add(queryRunnableMap);
+        scheduleRaw(clazz, queryRunnableMap);
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
