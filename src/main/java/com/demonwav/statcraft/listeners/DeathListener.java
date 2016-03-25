@@ -39,7 +39,7 @@ public class DeathListener implements Listener {
 
         final String message = event.getDeathMessage();
         final UUID uuid = event.getEntity().getUniqueId();
-        final String world = event.getEntity().getLocation().getWorld().getName();
+        final UUID worldUuid = event.getEntity().getWorld().getUID();
         String cause;
 
         EntityDamageEvent damageEvent = event.getEntity().getLastDamageCause();
@@ -64,21 +64,21 @@ public class DeathListener implements Listener {
         }
 
         plugin.getThreadManager().schedule(
-            QDeath.class, uuid,
-            (d, clause, id) ->
-                clause.columns(d.id, d.message, d.world, d.amount).values(id, message, world, 1).execute(),
-            (d, clause, id) ->
-                clause.where(d.id.eq(id), d.message.eq(message), d.world.eq(world))
+            QDeath.class, uuid, worldUuid,
+            (d, clause, id, worldId) ->
+                clause.columns(d.id, d.message, d.worldId, d.amount).values(id, message, worldId, 1).execute(),
+            (d, clause, id, worldId) ->
+                clause.where(d.id.eq(id), d.message.eq(message), d.worldId.eq(worldId))
                     .set(d.amount, d.amount.add(1)).execute()
         );
 
         plugin.getThreadManager().schedule(
-            QDeathByCause.class, uuid,
-            (c, clause, id) ->
-                clause.columns(c.id, c.cause, c.world, c.amount)
-                    .values(id, cause, world, 1).execute(),
-            (c, clause, id) ->
-                clause.where(c.id.eq(id), c.cause.eq(cause), c.world.eq(world))
+            QDeathByCause.class, uuid, worldUuid,
+            (c, clause, id, worldId) ->
+                clause.columns(c.id, c.cause, c.worldId, c.amount)
+                    .values(id, cause, worldId, 1).execute(),
+            (c, clause, id, worldId) ->
+                clause.where(c.id.eq(id), c.cause.eq(cause), c.worldId.eq(worldId))
                     .set(c.amount, c.amount.add(1)).execute()
         );
     }

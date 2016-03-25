@@ -20,8 +20,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class KillListener implements Listener {
@@ -36,14 +34,13 @@ public class KillListener implements Listener {
     public void onKill(EntityDeathEvent event) {
         if (event.getEntity().getKiller() != null) {
             final UUID uuid = event.getEntity().getKiller().getUniqueId();
+            final UUID worldUuid = event.getEntity().getWorld().getUID();
             final LivingEntity entity = event.getEntity();
             final EntityCode code = EntityCode.fromEntity(event.getEntity());
 
             plugin.getThreadManager().schedule(
-                QKills.class, uuid,
-                (k, query, id) -> {
-                    Map<String, String> map = new HashMap<>();
-
+                QKills.class, uuid, worldUuid,
+                (k, query, id, worldId) -> {
                     String entityValue;
                     if (entity instanceof Player) {
                         entityValue = String.valueOf(plugin.getDatabaseManager().getPlayerId(entity.getUniqueId()));
@@ -55,15 +52,15 @@ public class KillListener implements Listener {
                         }
                     }
 
-                    map.put("entityValue", entityValue);
-                    return map;
-                }, (k, clause, id, map) ->
-                    clause.columns(k.id, k.entity, k.amount)
-                        .values(id, map.get("entityValue"), 1).execute(),
-                (k, clause, id, map) ->
+                    return entityValue;
+                }, (k, clause, id, worldId, entityValue) ->
+                    clause.columns(k.id, k.worldId, k.entity, k.amount)
+                        .values(id, worldId, entityValue, 1).execute(),
+                (k, clause, id, worldId, entityValue) ->
                     clause.where(
                         k.id.eq(id),
-                        k.entity.eq(map.get("entityValue"))
+                        k.worldId.eq(worldId),
+                        k.entity.eq(entityValue)
                     ).set(k.amount, k.amount.add(1)).execute()
             );
         }

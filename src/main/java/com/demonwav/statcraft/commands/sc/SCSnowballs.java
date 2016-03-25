@@ -52,7 +52,7 @@ public class SCSnowballs extends SCTemplate {
                 return "Sorry, there seems to be an issue connecting to the database right now.";
 
             Tuple tuple = query.from(p).where(p.id.eq(id), p.type.eq(ProjectilesCode.SNOWBALL.getCode()))
-                .uniqueResult(p.amount, p.totalDistance, p.maxThrow);
+                .uniqueResult(p.amount.sum(), p.totalDistance.sum(), p.maxThrow.max());
 
             if (tuple == null)
                 throw new Exception();

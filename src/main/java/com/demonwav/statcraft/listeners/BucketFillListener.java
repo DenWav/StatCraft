@@ -30,6 +30,7 @@ public class BucketFillListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBucketFill(PlayerBucketFillEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final BucketCode code;
         switch (event.getItemStack().getType()) {
             case MILK_BUCKET:
@@ -44,12 +45,12 @@ public class BucketFillListener implements Listener {
         }
 
         plugin.getThreadManager().schedule(
-            QBucketFill.class, uuid,
-            (f, clause, id) ->
-                clause.columns(f.id, f.type, f.amount)
-                    .values(id, code.getCode(), 1).execute(),
-            (f, clause, id) ->
-                clause.where(f.id.eq(id), f.type.eq(code.getCode()))
+            QBucketFill.class, uuid, worldUuid,
+            (f, clause, id, worldId) ->
+                clause.columns(f.id, f.worldId, f.type, f.amount)
+                    .values(id, worldId, code.getCode(), 1).execute(),
+            (f, clause, id, worldId) ->
+                clause.where(f.id.eq(id), f.worldId.eq(worldId), f.type.eq(code.getCode()))
                     .set(f.amount, f.amount.add(1)).execute()
         );
     }

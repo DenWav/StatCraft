@@ -41,14 +41,15 @@ public class EnderPearlListener implements Listener {
             final int finalDistance = (int) Math.round(distance * 100.0);
 
             final UUID uuid = player.getUniqueId();
+            final UUID worldUuid = player.getWorld().getUID();
 
             plugin.getThreadManager().schedule(
-                QProjectiles.class, uuid,
-                (p, clause, id) ->
-                    clause.columns(p.id, p.type, p.amount, p.totalDistance, p.maxThrow)
-                        .values(id, ProjectilesCode.ENDER_PEARL.getCode(), 1, finalDistance, finalDistance).execute(),
-                (p, clause, id) ->
-                    clause.where(p.id.eq(id), p.type.eq(ProjectilesCode.ENDER_PEARL.getCode()))
+                QProjectiles.class, uuid, worldUuid,
+                (p, clause, id, worldId) ->
+                    clause.columns(p.id, p.worldId, p.type, p.amount, p.totalDistance, p.maxThrow)
+                        .values(id, worldId, ProjectilesCode.ENDER_PEARL.getCode(), 1, finalDistance, finalDistance).execute(),
+                (p, clause, id, worldId) ->
+                    clause.where(p.id.eq(id), p.worldId.eq(worldId), p.type.eq(ProjectilesCode.ENDER_PEARL.getCode()))
                         .set(p.amount, p.amount.add(1))
                         .set(p.totalDistance, p.totalDistance.add(finalDistance))
                         .set(p.maxThrow,

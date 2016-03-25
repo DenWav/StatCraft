@@ -40,6 +40,7 @@ public class SCEggsThrown extends SCTemplate {
         return sender.hasPermission("statcraft.user.eggsthrown");
     }
 
+    @SuppressWarnings("Duplicates")
     @Override
     @SecondaryArgument({"distance", "farthest"})
     public String playerStatResponse(String name, List<String> args, Connection connection) {
@@ -73,14 +74,14 @@ public class SCEggsThrown extends SCTemplate {
 
                 switch (code) {
                     case HATCHED_EGG:
-                        hatched = projectiles.getAmount();
-                        hatchedDistance = projectiles.getTotalDistance();
-                        hatchedMaxThrow = projectiles.getMaxThrow();
+                        hatched += projectiles.getAmount();
+                        hatchedDistance += projectiles.getTotalDistance();
+                        hatchedMaxThrow = Math.max(hatchedMaxThrow, projectiles.getMaxThrow());
                         break;
                     case UNHATCHED_EGG:
-                        notHatched = projectiles.getAmount();
-                        unHatchedDistance = projectiles.getTotalDistance();
-                        unHatchedMaxThrow = projectiles.getMaxThrow();
+                        notHatched += projectiles.getAmount();
+                        unHatchedDistance += projectiles.getTotalDistance();
+                        unHatchedMaxThrow = Math.max(unHatchedMaxThrow, projectiles.getMaxThrow());
                         break;
                 }
             }
@@ -180,7 +181,7 @@ public class SCEggsThrown extends SCTemplate {
             .groupBy(pl.name)
             .orderBy(path.desc())
             .limit(num)
-            .list(pl.name, path);
+            .list(pl.name, path.sum());
 
         if (distance)
             return topListDistanceResponse(title, list);

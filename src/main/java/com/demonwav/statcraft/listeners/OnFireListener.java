@@ -38,13 +38,14 @@ public class OnFireListener implements Listener {
             if (cause == EntityDamageEvent.DamageCause.FIRE_TICK) {
 
                 final UUID uuid = event.getEntity().getUniqueId();
+                final UUID worldUuid = event.getEntity().getWorld().getUID();
 
                 plugin.getThreadManager().schedule(
-                    QOnFire.class, uuid,
-                    (o, clause, id) ->
-                        clause.columns(o.id, o.time).values(id, 1).execute(),
-                    (o, clause, id) ->
-                        clause.where(o.id.eq(id)).set(o.time, o.time.add(1)).execute()
+                    QOnFire.class, uuid, worldUuid,
+                    (o, clause, id, worldId) ->
+                        clause.columns(o.id, o.worldId, o.time).values(id, worldId, 1).execute(),
+                    (o, clause, id, worldId) ->
+                        clause.where(o.id.eq(id), o.worldId.eq(worldId)).set(o.time, o.time.add(1)).execute()
                 );
             }
         }

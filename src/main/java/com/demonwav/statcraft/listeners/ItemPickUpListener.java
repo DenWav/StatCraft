@@ -33,15 +33,16 @@ public class ItemPickUpListener implements Listener {
         final short itemid = (short) event.getItem().getItemStack().getTypeId();
         final short damage = Util.damageValue(itemid, event.getItem().getItemStack().getData().getData());
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final int amount = event.getItem().getItemStack().getAmount();
 
         plugin.getThreadManager().schedule(
-            QItemPickups.class, uuid,
-            (i, clause, id) ->
-                clause.columns(i.id, i.item, i.damage, i.amount)
-                    .values(id, itemid, damage, amount).execute(),
-            (i, clause, id) ->
-                clause.where(i.id.eq(id), i.item.eq(itemid), i.damage.eq(damage))
+            QItemPickups.class, uuid, worldUuid,
+            (i, clause, id, worldId) ->
+                clause.columns(i.id, i.worldId, i.item, i.damage, i.amount)
+                    .values(id, worldId, itemid, damage, amount).execute(),
+            (i, clause, id, worldId) ->
+                clause.where(i.id.eq(id), i.worldId.eq(worldId), i.item.eq(itemid), i.damage.eq(damage))
                     .set(i.amount, i.amount.add(amount)).execute()
         );
     }

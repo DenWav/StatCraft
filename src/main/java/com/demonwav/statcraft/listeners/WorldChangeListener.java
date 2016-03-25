@@ -29,20 +29,24 @@ public class WorldChangeListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerWorldChange(PlayerChangedWorldEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final String fromWorld = event.getFrom().getName();
-        final String toWorld = event.getPlayer().getWorld().getName();
+        final UUID fromWorldUuid = event.getPlayer().getWorld().getUID();
+        final UUID toWorldUuid = event.getPlayer().getWorld().getUID();
 
         plugin.getThreadManager().schedule(
-            QWorldChange.class, uuid,
-            (w, clause, id) ->
+            QWorldChange.class, uuid, fromWorldUuid,
+            (w, query, id, worldId) ->
+                plugin.getDatabaseManager().getWorldId(toWorldUuid),
+            (w, clause, id, fromWorldId, toWorldId) -> {
                 clause.columns(w.id, w.toWorld, w.fromWorld, w.amount)
-                    .values(id, toWorld, fromWorld, 1).execute(),
-            (w, clause, id) ->
+                    .values(id, toWorldId, fromWorldId, 1).execute();
+            }, (w, clause, id, fromWorldId, toWorldId) ->
                 clause.where(
                     w.id.eq(id),
-                    w.toWorld.eq(toWorld),
-                    w.fromWorld.eq(fromWorld)
+                    w.toWorld.eq(toWorldId),
+                    w.fromWorld.eq(fromWorldId)
                 ).set(w.amount, w.amount.add(1)).execute()
         );
+
+        plugin.getMoveUpdater().run(event.getPlayer(), fromWorldUuid);
     }
 }

@@ -28,15 +28,16 @@ public class KickListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerKick(PlayerKickEvent event) {
-        final UUID uuid= event.getPlayer().getUniqueId();
+        final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final String reason = event.getReason();
 
         plugin.getThreadManager().schedule(
-            QKicks.class, uuid,
-            (k, clause, id) ->
-                clause.columns(k.id, k.reason, k.amount).values(id, reason, 1).execute(),
-            (k, clause, id) ->
-                clause.where(k.id.eq(id), k.reason.eq(reason)).set(k.amount, k.amount.add(1)).execute()
+            QKicks.class, uuid, worldUuid,
+            (k, clause, id, worldId) ->
+                clause.columns(k.id, k.worldId, k.reason, k.amount).values(id, worldId, reason, 1).execute(),
+            (k, clause, id, worldId) ->
+                clause.where(k.id.eq(id), k.worldId.eq(worldId), k.reason.eq(reason)).set(k.amount, k.amount.add(1)).execute()
         );
     }
 

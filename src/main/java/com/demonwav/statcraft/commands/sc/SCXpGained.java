@@ -44,7 +44,7 @@ public class SCXpGained extends SCTemplate {
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
             QXpGained x = QXpGained.xpGained;
-            Integer result = query.from(x).where(x.id.eq(id)).uniqueResult(x.amount);
+            Integer result = query.from(x).where(x.id.eq(id)).uniqueResult(x.amount.sum());
 
             return new ResponseBuilder(plugin)
                     .setName(name)
@@ -73,9 +73,9 @@ public class SCXpGained extends SCTemplate {
                 .leftJoin(p)
                 .on(x.id.eq(p.id))
                 .groupBy(p.name)
-                .orderBy(x.amount.desc())
+                .orderBy(x.amount.sum().desc())
                 .limit(num)
-                .list(p.name, x.amount);
+                .list(p.name, x.amount.sum());
 
         return topListResponse("Xp Gained", list);
     }

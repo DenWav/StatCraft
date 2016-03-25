@@ -124,17 +124,18 @@ public class SCMined extends SCTemplate implements CustomResponse {
                         result = query
                             .from(b)
                             .where(
-                                b.id.eq(id)
-                                    .and(b.blockid.eq((short) finalBlockid))
+                                b.id.eq(id),
+                                b.blockid.eq((short) finalBlockid)
                             ).uniqueResult(b.amount.sum());
                     } else {
                         result = query
                             .from(b)
                             .where(
-                                b.id.eq(id)
-                                    .and(b.blockid.eq((short) finalBlockid))
-                                    .and(b.damage.eq((short) finalDamage))
-                            ).uniqueResult(b.amount);
+                                b.id.eq(id),
+                                b.blockid.eq((short) finalBlockid),
+                                b.damage.eq((short) finalDamage)
+                            ).groupBy(b.worldId)
+                            .uniqueResult(b.amount.sum());
                     }
 
                     response = new ResponseBuilder(plugin)

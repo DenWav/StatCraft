@@ -62,13 +62,13 @@ public class SCBucketsFilled extends SCTemplate {
 
                 switch (code) {
                     case WATER:
-                        water = bucketFill.getAmount();
+                        water += bucketFill.getAmount();
                         break;
                     case LAVA:
-                        lava = bucketFill.getAmount();
+                        lava += bucketFill.getAmount();
                         break;
                     case MILK:
-                        milk = bucketFill.getAmount();
+                        milk += bucketFill.getAmount();
                         break;
                 }
             }

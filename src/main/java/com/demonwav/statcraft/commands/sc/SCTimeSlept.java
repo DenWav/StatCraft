@@ -92,9 +92,9 @@ public class SCTimeSlept extends SCTemplate {
                 .leftJoin(p)
                 .on(s.id.eq(p.id))
                 .groupBy(p.name)
-                .orderBy(s.timeSlept.desc())
+                .orderBy(s.timeSlept.sum().desc())
                 .limit(num)
-                .list(p.name, s.timeSlept);
+                .list(p.name, s.timeSlept.sum());
 
         return topListTimeResponse("Time Slept", list);
     }

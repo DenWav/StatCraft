@@ -35,14 +35,15 @@ public class BlockListener implements Listener {
         final short blockid = (short) event.getBlock().getTypeId();
         final short damage = Util.damageValue(blockid, event.getBlock().getData());
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
 
         plugin.getThreadManager().schedule(
-            QBlockBreak.class, uuid,
-            (b, clause, id) ->
-                clause.columns(b.id, b.blockid, b.damage, b.amount)
-                    .values(id, blockid, damage, 1).execute(),
-            (b, clause, id) ->
-                clause.where(b.id.eq(id), b.blockid.eq(blockid), b.damage.eq(damage))
+            QBlockBreak.class, uuid, worldUuid,
+            (b, clause, id, worldId) ->
+                clause.columns(b.id, b.worldId, b.blockid, b.damage, b.amount)
+                    .values(id, worldId, blockid, damage, 1).execute(),
+            (b, clause, id, worldId) ->
+                clause.where(b.id.eq(id), b.worldId.eq(worldId), b.blockid.eq(blockid), b.damage.eq(damage))
                     .set(b.amount, b.amount.add(1)).execute()
         );
     }
@@ -53,14 +54,15 @@ public class BlockListener implements Listener {
         final short blockid = (short) event.getBlock().getTypeId();
         final short damage = Util.damageValue(blockid, event.getBlock().getData());
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
 
         plugin.getThreadManager().schedule(
-            QBlockPlace.class, uuid,
-            (b, clause, id) ->
-                clause.columns(b.id, b.blockid, b.damage, b.amount)
-                    .values(id, blockid, damage, 1).execute(),
-            (b, clause, id) ->
-                clause.where(b.id.eq(id), b.blockid.eq(blockid), b.damage.eq(damage))
+            QBlockPlace.class, uuid, worldUuid,
+            (b, clause, id, worldId) ->
+                clause.columns(b.id, b.worldId, b.blockid, b.damage, b.amount)
+                    .values(id, worldId, blockid, damage, 1).execute(),
+            (b, clause, id, worldId) ->
+                clause.where(b.id.eq(id), b.worldId.eq(worldId), b.blockid.eq(blockid), b.damage.eq(damage))
                     .set(b.amount, b.amount.add(1)).execute()
         );
     }

@@ -54,22 +54,23 @@ public class ItemsCraftedListener implements Listener {
                     final short item = (short) toCraft.getType().getId();
                     final short damage = toCraft.getData().getData();
                     final UUID uuid = player.getUniqueId();
+                    final UUID worldUuid = player.getWorld().getUID();
 
-                    updateData(item, damage, uuid, newItemsCount);
+                    updateData(item, damage, uuid, worldUuid, newItemsCount);
                 }
             }
         }
     }
 
-    private void updateData(final short itemid, short initDamage, final UUID uuid, final int amount) {
+    private void updateData(final short itemid, short initDamage, final UUID uuid, final UUID worldUuid, final int amount) {
         final short damage = Util.damageValue(itemid, initDamage);
         plugin.getThreadManager().schedule(
-            QItemsCrafted.class, uuid,
-            (i, clause, id) ->
-                clause.columns(i.id, i.item, i.damage, i.amount)
-                    .values(id, itemid, damage, amount).execute(),
-            (i, clause, id) ->
-                clause.where(i.id.eq(id), i.item.eq(itemid), i.damage.eq(damage))
+            QItemsCrafted.class, uuid, worldUuid,
+            (i, clause, id, worldId) ->
+                clause.columns(i.id, i.worldId, i.item, i.damage, i.amount)
+                    .values(id, worldId, itemid, damage, amount).execute(),
+            (i, clause, id, worldId) ->
+                clause.where(i.id.eq(id), i.worldId.eq(worldId), i.item.eq(itemid), i.damage.eq(damage))
                     .set(i.amount, i.amount.add(amount)).execute()
         );
     }
@@ -105,8 +106,9 @@ public class ItemsCraftedListener implements Listener {
                 final short item = (short) compareItem.getType().getId();
                 final short damage = compareItem.getData().getData();
                 final UUID uuid = player.getUniqueId();
+                final UUID worldUuid = player.getUniqueId();
 
-                updateData(item, damage, uuid, newItemsCount);
+                updateData(item, damage, uuid, worldUuid, newItemsCount);
             }
         }, ticks);
     }

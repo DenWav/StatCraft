@@ -31,17 +31,18 @@ public class ItemDropListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemDrop(PlayerDropItemEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final short itemid = (short) event.getItemDrop().getItemStack().getTypeId();
         final short damage = Util.damageValue(itemid, event.getItemDrop().getItemStack().getData().getData());
         final int amount = event.getItemDrop().getItemStack().getAmount();
 
         plugin.getThreadManager().schedule(
-            QItemDrops.class, uuid,
-            (i, clause, id) ->
-                clause.columns(i.id, i.item, i.damage, i.amount)
-                    .values(id, itemid, damage, amount).execute(),
-            (i, clause, id) ->
-                clause.where(i.id.eq(id), i.item.eq(itemid), i.damage.eq(damage))
+            QItemDrops.class, uuid, worldUuid,
+            (i, clause, id, worldId) ->
+                clause.columns(i.id, i.worldId, i.item, i.damage, i.amount)
+                    .values(id, worldId, itemid, damage, amount).execute(),
+            (i, clause, id, worldId) ->
+                clause.where(i.id.eq(id), i.worldId.eq(worldId), i.item.eq(itemid), i.damage.eq(damage))
                     .set(i.amount, i.amount.add(amount)).execute()
         );
     }

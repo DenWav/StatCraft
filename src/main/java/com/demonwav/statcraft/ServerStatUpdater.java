@@ -28,21 +28,35 @@ public class ServerStatUpdater {
 
         @Override
         public void run() {
-            for (Player player : plugin.getServer().getOnlinePlayers()) {
-                for (final MoveCode code : MoveCode.values()) {
-                    Statistic stat = code.getStat();
-                    final int value = player.getStatistic(stat);
-                    final UUID uuid = player.getUniqueId();
+            plugin.getServer().getOnlinePlayers().forEach(this::run);
+        }
 
-                    plugin.getThreadManager().schedule(
-                        QMove.class, uuid,
-                        (m, clause, id) ->
-                            clause.columns(m.id, m.vehicle, m.distance).values(id, code.getCode(), value).execute(),
-                        (m, clause, id) ->
-                            clause.where(m.id.eq(id), m.vehicle.eq(code.getCode())).set(m.distance, value).execute()
-                    );
-                }
+        public void run(final Player player) {
+            run(player, player.getWorld().getUID());
+        }
+
+        public void run(final Player player, final UUID worldUuid) {
+            for (final MoveCode code : MoveCode.values()) {
+                Statistic stat = code.getStat();
+                final int value = player.getStatistic(stat);
+                final UUID uuid = player.getUniqueId();
+
+                plugin.getThreadManager().schedule(
+                    QMove.class, uuid, worldUuid,
+                    (m, query, id, worldId) ->
+                        get(query.from(m).where(m.id.eq(id), m.vehicle.eq(code.getCode())).uniqueResult(m.distance.sum())),
+                    (m, clause, id, worldId, currentTotal) ->
+                        clause.columns(m.id, m.worldId, m.vehicle, m.distance)
+                            .values(id, worldId, code.getCode(), value - currentTotal).execute(),
+                    (m, clause, id, worldId, currentTotal) ->
+                        clause.where(m.id.eq(id), m.worldId.eq(worldId), m.vehicle.eq(code.getCode()))
+                            .set(m.distance, m.distance.add(value - currentTotal)).execute()
+                );
             }
+        }
+
+        private static int get(Integer i) {
+            return i == null ? 0 : i;
         }
     }
 }

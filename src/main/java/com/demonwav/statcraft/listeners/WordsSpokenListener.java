@@ -10,7 +10,6 @@
 package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
-import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.querydsl.QMessagesSpoken;
 import com.demonwav.statcraft.querydsl.QSeen;
 import com.demonwav.statcraft.querydsl.QWordFrequency;
@@ -34,6 +33,7 @@ public class WordsSpokenListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSpokenMessage(AsyncPlayerChatEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final String[] message = event.getMessage().trim().split("\\s+|[\\-_]+");
         final int currentTime = (int) (System.currentTimeMillis() / 1000L);
 
@@ -46,46 +46,36 @@ public class WordsSpokenListener implements Listener {
         }
 
         plugin.getThreadManager().schedule(
-            QSeen.class, uuid,
-            (s, clause, id) ->
+            QSeen.class, uuid, worldUuid,
+            (s, clause, id, worldId) ->
                 clause.columns(s.id, s.lastSpokeTime).values(id, currentTime).execute(),
-            (s, clause, id) ->
+            (s, clause, id, worldId) ->
                 clause.where(s.id.eq(id)).set(s.lastSpokeTime, currentTime).execute()
         );
 
         plugin.getThreadManager().schedule(
-            QMessagesSpoken.class, uuid,
-            (m, clause, id) ->
-                clause.columns(m.id, m.amount, m.wordsSpoken).values(id, 1, words.size()).execute(),
-            (m, clause, id) ->
-                clause.where(m.id.eq(id)).set(m.amount, m.amount.add(1))
-                    .set(m.wordsSpoken, m.wordsSpoken.add(words.size())).execute()
+            QMessagesSpoken.class, uuid, worldUuid,
+            (m, clause, id, worldId) ->
+                clause.columns(m.id, m.worldId, m.amount, m.wordsSpoken).values(id, worldId, 1, words.size()).execute(),
+            (m, clause, id, worldID) ->
+                clause.where(m.id.eq(id), m.worldId.eq(worldID))
+                    .set(m.amount, m.amount.add(1))
+                    .set(m.wordsSpoken, m.wordsSpoken.add(words.size()))
+                    .execute()
         );
 
-        plugin.getThreadManager().scheduleRaw(
-            QWordFrequency.class, (connection) -> {
-                if (plugin.config().getStats().isSpecificWordsSpoken()) {
-                    for (String word : words) {
-                        Util.runQuery(
-                            QWordFrequency.class, uuid,
-                            (w, clause, id) ->
-                                clause.columns(w.id, w.word, w.amount).values(id, word, 1).execute(),
-                            (w, clause, id) ->
-                                clause.where(w.id.eq(id), w.word.eq(word)).set(w.amount, w.amount.add(1)).execute(),
-                            connection, plugin
-                        );
-                    }
-                } else {
-                    Util.runQuery(
-                        QWordFrequency.class, uuid,
-                        (w, clause, id) ->
-                            clause.columns(w.id, w.word, w.amount).values(id, "§", 1).execute(),
-                        (w, clause, id) ->
-                            clause.where(w.id.eq(id), w.word.eq("§")).set(w.amount, w.amount.add(1)).execute(),
-                        connection, plugin
-                    );
-                }
+
+        if (plugin.config().getStats().isSpecificWordsSpoken()) {
+            for (String word : words) {
+                plugin.getThreadManager().schedule(
+                    QWordFrequency.class, uuid, worldUuid,
+                    (w, clause, id, worldId) ->
+                        clause.columns(w.id, w.worldId, w.word, w.amount).values(id, worldId, word, 1).execute(),
+                    (w, clause, id, worldId) ->
+                        clause.where(w.id.eq(id), w.worldId.eq(worldId), w.word.eq(word)).set(w.amount, w.amount.add(1)).execute()
+                );
             }
-        );
+        }
+
     }
 }

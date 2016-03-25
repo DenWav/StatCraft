@@ -20,8 +20,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class DamageDealtListener implements Listener {
@@ -38,16 +36,15 @@ public class DamageDealtListener implements Listener {
         Entity damagee = event.getEntity();
         if (damager instanceof Player) {
             final UUID uuid = damager.getUniqueId();
+            final UUID worldUuid = damager.getWorld().getUID();
             final int damageDealt = (int) Math.round(event.getFinalDamage());
 
             if (damagee instanceof LivingEntity) {
                 final LivingEntity entity = (LivingEntity) event.getEntity();
 
                 plugin.getThreadManager().schedule(
-                    QDamageDealt.class, uuid,
-                    (d, query, id) -> {
-                        Map<String, String> map = new HashMap<>();
-
+                    QDamageDealt.class, uuid, worldUuid,
+                    (d, query, id, worldId) -> {
                         // For special entities which are clumped together
                         // currently only skeletons and wither skeletons fall under this category
                         EntityCode code = EntityCode.fromEntity(entity);
@@ -59,13 +56,12 @@ public class DamageDealtListener implements Listener {
                             entityValue = code.getName(entity.getName());
                         }
 
-                        map.put("entityValue", entityValue);
-                        return map;
-                    }, (d, clause, id, map) ->
-                        clause.columns(d.id, d.entity, d.amount)
-                            .values(id, map.get("entityValue"), damageDealt).execute(),
-                    (d, clause, id, map) ->
-                        clause.where(d.id.eq(id), d.entity.eq(map.get("entityValue")))
+                        return entityValue;
+                    }, (d, clause, id, worldId, entityValue) ->
+                        clause.columns(d.id, d.worldId, d.entity, d.amount)
+                            .values(id, worldId, entityValue, damageDealt).execute(),
+                    (d, clause, id, worldId, entityValue) ->
+                        clause.where(d.id.eq(id), d.worldId.eq(worldId), d.entity.eq(entityValue))
                             .set(d.amount, d.amount.add(damageDealt)).execute()
                 );
             }

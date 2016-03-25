@@ -11,8 +11,6 @@ package com.demonwav.statcraft.sql;
 
 import com.mysema.query.sql.RelationalPath;
 
-import java.util.Map;
-
-public interface QueryRunnerMap<T extends RelationalPath<?>, S, K, V> {
-    void run(T t, S s, Map<K, V> map);
+public interface QueryRunnerMap<T extends RelationalPath<?>, S, R> {
+    void run(T t, S s, R r);
 }

@@ -40,6 +40,7 @@ public class SCArrowsShot extends SCTemplate {
         return sender.hasPermission("statcraft.user.arrowsshot");
     }
 
+    @SuppressWarnings("Duplicates")
     @Override
     @SecondaryArgument({"distance", "farthest"})
     public String playerStatResponse(String name, List<String> args, Connection connection) {
@@ -76,14 +77,14 @@ public class SCArrowsShot extends SCTemplate {
 
                 switch (code) {
                     case NORMAL_ARROW:
-                        normal = projectiles.getAmount();
-                        normalDistance = projectiles.getTotalDistance();
-                        normalMaxThrow = projectiles.getMaxThrow();
+                        normal += projectiles.getAmount();
+                        normalDistance += projectiles.getTotalDistance();
+                        normalMaxThrow = Math.max(normalMaxThrow, projectiles.getMaxThrow());
                         break;
                     case FLAMING_ARROW:
-                        flaming = projectiles.getAmount();
-                        flamingDistance = projectiles.getTotalDistance();
-                        flamingMaxThrow = projectiles.getMaxThrow();
+                        flaming += projectiles.getAmount();
+                        flamingDistance += projectiles.getTotalDistance();
+                        flamingMaxThrow = Math.max(flamingMaxThrow, projectiles.getMaxThrow());
                         break;
                 }
             }
@@ -183,7 +184,7 @@ public class SCArrowsShot extends SCTemplate {
             .groupBy(pl.name)
             .orderBy(path.desc())
             .limit(num)
-            .list(pl.name, path);
+            .list(pl.name, path.sum());
 
         if (distance)
             return topListDistanceResponse(title, list);

@@ -44,7 +44,7 @@ public class SCOnFire extends SCTemplate {
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
             QOnFire o = QOnFire.onFire;
-            Integer result = query.from(o).where(o.id.eq(id)).uniqueResult(o.time);
+            Integer result = query.from(o).where(o.id.eq(id)).uniqueResult(o.time.sum());
 
             return new TimeResponseBuilder(plugin)
                     .setName(name)
@@ -74,9 +74,9 @@ public class SCOnFire extends SCTemplate {
                 .leftJoin(p)
                 .on(o.id.eq(p.id))
                 .groupBy(p.name)
-                .orderBy(o.time.desc())
+                .orderBy(o.time.sum().desc())
                 .limit(num)
-                .list(p.name, o.time);
+                .list(p.name, o.time.sum());
 
         return topListTimeResponse("On Fire", list);
     }

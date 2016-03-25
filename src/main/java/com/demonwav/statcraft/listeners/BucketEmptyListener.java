@@ -32,6 +32,7 @@ public class BucketEmptyListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final BucketCode code;
         if (event.getBucket() == Material.LAVA_BUCKET) {
             code = BucketCode.LAVA;
@@ -40,12 +41,12 @@ public class BucketEmptyListener implements Listener {
         }
 
         plugin.getThreadManager().schedule(
-            QBucketEmpty.class, uuid,
-            (e, clause, id) ->
-                clause.columns(e.id, e.type, e.amount)
-                    .values(id, code.getCode(), 1).execute(),
-            (e, clause, id) ->
-                clause.where(e.id.eq(id), e.type.eq(code.getCode()))
+            QBucketEmpty.class, uuid, worldUuid,
+            (e, clause, id, worldId) ->
+                clause.columns(e.id, e.worldId, e.type, e.amount)
+                    .values(id, worldId, code.getCode(), 1).execute(),
+            (e, clause, id, worldId) ->
+                clause.where(e.id.eq(id), e.worldId.eq(worldId), e.type.eq(code.getCode()))
                     .set(e.amount, e.amount.add(1)).execute()
         );
     }
@@ -54,15 +55,16 @@ public class BucketEmptyListener implements Listener {
     public void onPlayerConsume(PlayerItemConsumeEvent event) {
         if (event.getItem().getType() == Material.MILK_BUCKET) {
             final UUID uuid = event.getPlayer().getUniqueId();
+            final UUID worldUuid = event.getPlayer().getWorld().getUID();
             final BucketCode code = BucketCode.MILK;
 
             plugin.getThreadManager().schedule(
-                QBucketEmpty.class, uuid,
-                (e, clause, id) ->
-                    clause.columns(e.id, e.type, e.amount)
-                        .values(id, code.getCode(), 1).execute(),
-                (e, clause, id) ->
-                    clause.where(e.id.eq(id), e.type.eq(code.getCode()))
+                QBucketEmpty.class, uuid, worldUuid,
+                (e, clause, id, worldId) ->
+                    clause.columns(e.id, e.worldId, e.type, e.amount)
+                        .values(id, worldId, code.getCode(), 1).execute(),
+                (e, clause, id, worldId) ->
+                    clause.where(e.id.eq(id), e.worldId.eq(worldId), e.type.eq(code.getCode()))
                         .set(e.amount, e.amount.add(1)).execute()
             );
         }

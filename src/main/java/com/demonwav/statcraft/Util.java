@@ -25,7 +25,6 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.UUID;
 
 public class Util {
@@ -279,16 +278,15 @@ public class Util {
      * @param <T> The RelationalPath that represents the relevant table
      */
     @SuppressWarnings("Duplicates")
-    public static <T extends RelationalPath<?>, K, V> void runQuery(final Class<T> clazz,
-                                                                    final QueryFunction<T, K, V> workBefore,
-                                                                    final QueryRunnerMap<T, SQLInsertClause, K, V> insertClause,
-                                                                    final QueryRunnerMap<T, SQLUpdateClause, K, V> updateClause,
+    public static <T extends RelationalPath<?>, R> void runQuery(final Class<T> clazz,
+                                                                    final QueryFunction<T, R> workBefore,
+                                                                    final QueryRunnerMap<T, SQLInsertClause, R> insertClause,
+                                                                    final QueryRunnerMap<T, SQLUpdateClause, R> updateClause,
                                                                     final Connection connection,
                                                                     final StatCraft plugin) {
         try {
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
-
-            final Map<K, V> map = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(connection));
+            final R r = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(connection));
 
             try {
                 SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, path);
@@ -296,14 +294,14 @@ public class Util {
                 if (clause == null)
                     return;
 
-                insertClause.run(path, clause, map);
+                insertClause.run(path, clause, r);
             } catch (QueryException e) {
                 SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, path);
 
                 if (clause == null)
                     return;
 
-                updateClause.run(path, clause, map);
+                updateClause.run(path, clause, r);
             }
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             // By the class generator we use, this should never happen
@@ -316,13 +314,15 @@ public class Util {
      * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
      * caller.
      * <p>
-     * For convenience this method also allows a player's UUID to be passed in. The database id of the player will be
-     * fetched before the insert and update functions are called, and the id will be passed to them.
+     * For convenience this method also allows a player's UUID and world UUID to be passed in. The database id of the
+     * player and world will be fetched before the insert and update functions are called, and the id will be passed to
+     * them. This is not an expensive operation as both of these values are cached.
      * <p>
      * Thanks to type inferencing no type parameters should need to be provided.
      *
      * @param clazz The relevant table for this query
-     * @param uuid The UUID of the relevant player
+     * @param playerId The UUID of the relevant player
+     * @param worldId The UUID of the relevant world
      * @param insertClause The action to run for the insert query
      * @param updateClause The action to run for the update query if the insert fails
      * @param plugin The StatCraft object
@@ -330,13 +330,15 @@ public class Util {
      */
     @SuppressWarnings("Duplicates")
     public static <T extends RelationalPath<?>> void runQuery(final Class<T> clazz,
-                                                              final UUID uuid,
+                                                              final UUID playerId,
+                                                              final UUID worldId,
                                                               final QueryIdRunner<T, SQLInsertClause> insertClause,
                                                               final QueryIdRunner<T, SQLUpdateClause> updateClause,
                                                               final Connection connection,
                                                               final StatCraft plugin) {
         try {
-            final int id = plugin.getDatabaseManager().getPlayerId(uuid);
+            final int id = plugin.getDatabaseManager().getPlayerId(playerId);
+            final int wid = plugin.getDatabaseManager().getWorldId(worldId);
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
 
             try {
@@ -345,14 +347,14 @@ public class Util {
                 if (clause == null)
                     return;
 
-                insertClause.run(path, clause, id);
+                insertClause.run(path, clause, id, wid);
             } catch (QueryException e) {
                 SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, path);
 
                 if (clause == null)
                     return;
 
-                updateClause.run(path, clause, id);
+                updateClause.run(path, clause, id, wid);
             }
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             // By the class generator we use, this should never happen
@@ -368,31 +370,34 @@ public class Util {
      * Because of this, if the map is modified in the insert function, these modifications will be present in the update
      * function.
      * <p>
-     * For convenience this method also allows a player's UUID to be passed in. The database id of the player will be
-     * fetched before the insert and update functions are called, and the id will be passed to them.
+     * For convenience this method also allows a player's UUID and a world's UUID to be passed in. The database id of
+     * the player and world will be fetched before the insert and update functions are called, and the id will be
+     * passed to them. This is not an expensive operation as both of these values are cached.
      * <p>
      * Thanks to type inferencing no type parameters should need to be provided.
      *
      * @param clazz The relevant table for this query
-     * @param uuid The UUID of the relevant player
+     * @param playerId The UUID of the relevant player
+     * @param worldId The UUID of the relevant world
      * @param workBefore The action to run before the queries, returning a map which will be passed to the two queries
      * @param insertClause The action to run for the insert query
      * @param updateClause The action to run for the update query if the insert fails
      * @param plugin The StatCraft object
      * @param <T> The RelationalPath that represents the relevant table
      */
-    public static <T extends RelationalPath<?>, K, V> void runQuery(final Class<T> clazz,
-                                                                    final UUID uuid,
-                                                                    final QueryIdFunction<T, K, V> workBefore,
-                                                                    final QueryIdRunnerMap<T, SQLInsertClause, K, V> insertClause,
-                                                                    final QueryIdRunnerMap<T, SQLUpdateClause, K, V> updateClause,
+    public static <T extends RelationalPath<?>, R> void runQuery(final Class<T> clazz,
+                                                                    final UUID playerId,
+                                                                    final UUID worldId,
+                                                                    final QueryIdFunction<T, R> workBefore,
+                                                                    final QueryIdRunnerMap<T, SQLInsertClause, R> insertClause,
+                                                                    final QueryIdRunnerMap<T, SQLUpdateClause, R> updateClause,
                                                                     final Connection connection,
                                                                     final StatCraft plugin) {
         try {
-            final int id = plugin.getDatabaseManager().getPlayerId(uuid);
+            final int id = plugin.getDatabaseManager().getPlayerId(playerId);
+            final int wid = plugin.getDatabaseManager().getWorldId(worldId);
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
-
-            final Map<K, V> map = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(connection), id);
+            final R r = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(connection), id, wid);
 
             try {
                 SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, path);
@@ -400,14 +405,14 @@ public class Util {
                 if (clause == null)
                     return;
 
-                insertClause.run(path, clause, id, map);
+                insertClause.run(path, clause, id, wid, r);
             } catch (QueryException e) {
                 SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, path);
 
                 if (clause == null)
                     return;
 
-                updateClause.run(path, clause, id, map);
+                updateClause.run(path, clause, id, wid, r);
             }
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             // By the class generator we use, this should never happen

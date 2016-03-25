@@ -14,10 +14,8 @@ import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.commands.ResponseBuilder;
 import com.demonwav.statcraft.commands.SecondaryArgument;
 import com.demonwav.statcraft.magic.MoveCode;
-import com.demonwav.statcraft.querydsl.Move;
 import com.demonwav.statcraft.querydsl.QMove;
 import com.demonwav.statcraft.querydsl.QPlayers;
-
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
 import org.apache.commons.lang.WordUtils;
@@ -28,6 +26,8 @@ import java.sql.Connection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.demonwav.statcraft.querydsl.QMove.move;
 
 public class SCMove extends SCTemplate {
 
@@ -49,7 +49,7 @@ public class SCMove extends SCTemplate {
         try {
             int id = getId(name);
 
-            QMove m = QMove.move;
+            QMove m = move;
             SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
@@ -67,7 +67,7 @@ public class SCMove extends SCTemplate {
             } else {
                 arg = args.get(0);
                 if (arg.equalsIgnoreCase("breakdown")) {
-                    List<Move> list = query.from(m).where(m.id.eq(id)).orderBy(m.distance.desc()).list(m);
+                    List<Tuple> list = query.from(m).where(m.id.eq(id)).groupBy(m.vehicle).orderBy(m.distance.sum().desc()).list(m.vehicle, m.distance.sum());
 
                     StringBuilder sb = new StringBuilder();
 
@@ -81,20 +81,31 @@ public class SCMove extends SCTemplate {
                         .append("Move Breakdown")
                         .append(" -");
 
-                    for (Move move : list) {
-                        MoveCode code = MoveCode.fromCode(move.getVehicle());
-                        if (code != null)
-                        sb  .append("\n")
-                            .append(ChatColor.valueOf(plugin.config().getColors().getStatLabel()))
-                            .append(WordUtils.capitalizeFully(code.name()))
-                            .append(": ")
-                            .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
-                            .append(Util.distanceUnits(move.getDistance()));
+                    for (Tuple tuple : list) {
+                        Byte vehicle = tuple.get(m.vehicle);
+                        if (vehicle == null) {
+                            continue;
+                        }
+
+                        MoveCode code = MoveCode.fromCode(vehicle);
+                        if (code != null) {
+                            Integer distance = tuple.get(m.distance.sum());
+                            if (distance == null) {
+                                continue;
+                            }
+
+                            sb.append("\n")
+                                .append(ChatColor.valueOf(plugin.config().getColors().getStatLabel()))
+                                .append(WordUtils.capitalizeFully(code.name()))
+                                .append(": ")
+                                .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
+                                .append(Util.distanceUnits(distance));
+                        }
                     }
                     return sb.toString();
                 } else {
                     MoveCode code = MoveCode.valueOf(arg.toUpperCase());
-                    Integer result = query.from(m).where(m.id.eq(id), m.vehicle.eq(code.getCode())).uniqueResult(m.distance);
+                    Integer result = query.from(m).where(m.id.eq(id), m.vehicle.eq(code.getCode())).uniqueResult(m.distance.sum());
                     if (result == null)
                         throw new Exception();
 
@@ -119,7 +130,7 @@ public class SCMove extends SCTemplate {
     @SecondaryArgument({"walking", "crouching", "sprinting", "swimming", "falling", "climbing",
         "flying", "diving", "minecart", "boat", "pig", "horse", "elytra"})
     public String serverStatListResponse(int num, List<String> args, Connection connection) {
-        QMove m = QMove.move;
+        QMove m = move;
         QPlayers p = QPlayers.players;
         SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
         if (query == null)

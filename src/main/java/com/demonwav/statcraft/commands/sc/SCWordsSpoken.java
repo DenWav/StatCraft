@@ -11,6 +11,7 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.commands.ResponseBuilder;
+import com.demonwav.statcraft.querydsl.QMessagesSpoken;
 import com.demonwav.statcraft.querydsl.QPlayers;
 import com.demonwav.statcraft.querydsl.QWordFrequency;
 
@@ -43,8 +44,8 @@ public class SCWordsSpoken extends SCTemplate {
             SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
-            QWordFrequency w = QWordFrequency.wordFrequency;
-            Integer result = query.from(w).where(w.id.eq(id)).uniqueResult(w.amount.sum());
+            QMessagesSpoken m = QMessagesSpoken.messagesSpoken;
+            Integer result = query.from(m).where(m.id.eq(id)).uniqueResult(m.wordsSpoken.sum());
 
             return new ResponseBuilder(plugin)
                     .setName(name)

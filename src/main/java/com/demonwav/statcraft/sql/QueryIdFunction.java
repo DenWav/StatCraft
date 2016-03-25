@@ -12,9 +12,7 @@ package com.demonwav.statcraft.sql;
 import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.SQLQuery;
 
-import java.util.Map;
+public interface QueryIdFunction<T extends RelationalPath<?>, R> {
 
-public interface QueryIdFunction<T extends RelationalPath<?>, K, V> {
-
-    Map<K, V> run(T t, SQLQuery query, int id);
+    R run(T t, SQLQuery query, int id, int worldId);
 }

@@ -68,15 +68,17 @@ public class SCJumps extends SCTemplate {
         QJumps j = QJumps.jumps;
         QPlayers p = QPlayers.players;
         SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
+        if (query == null)
+            return "Sorry, there seems to be an issue connecting to the database right now.";
 
         List<Tuple> list = query
             .from(j)
             .leftJoin(p)
             .on(j.id.eq(p.id))
             .groupBy(p.name)
-            .orderBy(j.amount.desc())
+            .orderBy(j.amount.sum().desc())
             .limit(num)
-            .list(p.name, j.amount);
+            .list(p.name, j.amount.sum());
 
         return topListResponse("Jumps", list);
     }

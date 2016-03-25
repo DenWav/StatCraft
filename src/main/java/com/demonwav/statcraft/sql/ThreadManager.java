@@ -63,19 +63,21 @@ public class ThreadManager implements Runnable {
     }
 
     public <T extends RelationalPath<?>> void schedule(final Class<T> clazz,
-                                                       final UUID uuid,
+                                                       final UUID playerId,
+                                                       final UUID worldId,
                                                        final QueryIdRunner<T, SQLInsertClause> insertRunner,
                                                        final QueryIdRunner<T, SQLUpdateClause> updateRunner) {
-        final QueryRunnable<T> queryRunnable = new QueryRunnable<>(clazz, uuid, insertRunner, updateRunner, plugin);
+        final QueryRunnable<T> queryRunnable = new QueryRunnable<>(clazz, playerId, worldId, insertRunner, updateRunner, plugin);
         scheduleRaw(clazz, queryRunnable);
     }
 
-    public <T extends RelationalPath<?>, K, V> void schedule(final Class<T> clazz,
-                                                             final UUID uuid,
-                                                             final QueryIdFunction<T, K, V> workBefore,
-                                                             final QueryIdRunnerMap<T, SQLInsertClause, K, V> insertRunner,
-                                                             final QueryIdRunnerMap<T, SQLUpdateClause, K, V> updateRunner) {
-        final QueryRunnableMap<T, K, V> queryRunnableMap = new QueryRunnableMap<>(clazz, uuid, workBefore, insertRunner, updateRunner, plugin);
+    public <T extends RelationalPath<?>, R> void schedule(final Class<T> clazz,
+                                                             final UUID playerId,
+                                                             final UUID worldId,
+                                                             final QueryIdFunction<T, R> workBefore,
+                                                             final QueryIdRunnerMap<T, SQLInsertClause, R> insertRunner,
+                                                             final QueryIdRunnerMap<T, SQLUpdateClause, R> updateRunner) {
+        final QueryRunnableMap<T, R> queryRunnableMap = new QueryRunnableMap<>(clazz, playerId, worldId, workBefore, insertRunner, updateRunner, plugin);
         scheduleRaw(clazz, queryRunnableMap);
     }
 

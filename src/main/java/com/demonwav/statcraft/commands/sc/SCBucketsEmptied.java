@@ -61,13 +61,13 @@ public class SCBucketsEmptied extends SCTemplate {
 
                 switch (code) {
                     case WATER:
-                        water = bucketEmpty.getAmount();
+                        water += bucketEmpty.getAmount();
                         break;
                     case LAVA:
-                        lava = bucketEmpty.getAmount();
+                        lava += bucketEmpty.getAmount();
                         break;
                     case MILK:
-                        milk = bucketEmpty.getAmount();
+                        milk += bucketEmpty.getAmount();
                         break;
                 }
             }

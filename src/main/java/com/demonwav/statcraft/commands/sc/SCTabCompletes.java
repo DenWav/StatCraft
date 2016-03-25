@@ -44,7 +44,7 @@ public class SCTabCompletes extends SCTemplate {
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
             QTabComplete t = QTabComplete.tabComplete;
-            Integer result = query.from(t).where(t.id.eq(id)).uniqueResult(t.amount);
+            Integer result = query.from(t).where(t.id.eq(id)).uniqueResult(t.amount.sum());
 
             return new ResponseBuilder(plugin)
                     .setName(name)

@@ -71,7 +71,7 @@ public class SCLastSlept extends SCTemplate {
                     return "Sorry, there seems to be an issue connecting to the database right now.";
                 QSleep s = QSleep.sleep;
 
-                Integer result = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
+                Integer result = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed.max());
                 if (result == null) {
                     throw new Exception();
                 }

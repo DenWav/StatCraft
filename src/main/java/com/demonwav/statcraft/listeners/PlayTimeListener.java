@@ -37,6 +37,7 @@ public class PlayTimeListener implements Listener {
     public void onJoin(final PlayerJoinEvent event) {
         final String name = event.getPlayer().getName();
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
         plugin.getThreadManager().scheduleRaw(
@@ -44,6 +45,7 @@ public class PlayTimeListener implements Listener {
             (conn) -> {
                 // This MUST be done before the other two jobs
                 final int id = plugin.setupPlayer(event.getPlayer(), conn);
+                final int worldId = plugin.getDatabaseManager().getWorldId(worldUuid);
                 plugin.players.put(name, uuid);
 
                 if (plugin.config().getStats().isJoins()) {
@@ -53,9 +55,9 @@ public class PlayTimeListener implements Listener {
                             Util.runQuery(
                                 QJoins.class,
                                 (j, clause) ->
-                                    clause.columns(j.id, j.amount).values(id, 1).execute(),
+                                    clause.columns(j.id, j.worldId, j.amount).values(id, worldId, 1).execute(),
                                 (j, clause) ->
-                                    clause.where(j.id.eq(id)).set(j.amount, j.amount.add(1)).execute(),
+                                    clause.where(j.id.eq(id), j.worldId.eq(worldId)).set(j.amount, j.amount.add(1)).execute(),
                                 connection,
                                 plugin
                             )
@@ -84,24 +86,27 @@ public class PlayTimeListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onLeave(PlayerQuitEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
         plugin.getThreadManager().schedule(
-            QSeen.class, uuid,
-            (s, clause, id) ->
+            QSeen.class, uuid, worldUuid,
+            (s, clause, id, worldId) ->
                 clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute(),
-            (s, clause, id) ->
+            (s, clause, id, worldId) ->
                 clause.where(s.id.eq(id)).set(s.lastLeaveTime, currentTime).execute()
         );
 
         final int currentPlayTime = (int) Math.round(event.getPlayer().getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
 
         plugin.getThreadManager().schedule(
-            QPlayTime.class, uuid,
-            (p, clause, id) ->
+            QPlayTime.class, uuid, worldUuid,
+            (p, clause, id, worldId) ->
                 clause.columns(p.id, p.amount).values(id, currentPlayTime).execute(),
-            (p, clause, id) ->
+            (p, clause, id, worldId) ->
                 clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute()
         );
+
+        plugin.getMoveUpdater().run(event.getPlayer());
     }
 }

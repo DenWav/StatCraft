@@ -22,8 +22,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class DamageTakenListener implements Listener {
@@ -39,15 +37,16 @@ public class DamageTakenListener implements Listener {
         if (event.getEntity() instanceof Player && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK
                 && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
             final UUID uuid = event.getEntity().getUniqueId();
+            final UUID worldUuid = event.getEntity().getWorld().getUID();
             final int damageTaken = (int) Math.round(event.getFinalDamage());
 
             plugin.getThreadManager().schedule(
-                QDamageTaken.class, uuid,
-                (t, clause, id) ->
-                    clause.columns(t.id, t.entity, t.amount)
-                        .values(id, event.getCause().name(), damageTaken).execute(),
-                (t, clause, id) ->
-                    clause.where(t.id.eq(id), t.entity.eq(event.getCause().name()))
+                QDamageTaken.class, uuid, worldUuid,
+                (t, clause, id, worldId) ->
+                    clause.columns(t.id, t.worldId, t.entity, t.amount)
+                        .values(id, worldId, event.getCause().name(), damageTaken).execute(),
+                (t, clause, id, worldId) ->
+                    clause.where(t.id.eq(id), t.worldId.eq(worldId), t.entity.eq(event.getCause().name()))
                         .set(t.amount, t.amount.add(damageTaken)).execute()
             );
 
@@ -103,14 +102,13 @@ public class DamageTakenListener implements Listener {
     public void onEntityDamage(final EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player) {
             final UUID uuid = event.getEntity().getUniqueId();
+            final UUID worldUuid = event.getEntity().getWorld().getUID();
             final int damageTaken = (int) Math.round(event.getFinalDamage());
             final Entity entity = event.getDamager();
 
             plugin.getThreadManager().schedule(
-                QDamageTaken.class, uuid,
-                (d, query, id) -> {
-                    Map<String, String> map = new HashMap<>();
-
+                QDamageTaken.class, uuid, worldUuid,
+                (d, query, id, worldId) -> {
                     // For special entities which are clumped together
                     // currently only skeletons and wither skeletons fall under this category
                     EntityCode code = EntityCode.fromEntity(entity);
@@ -126,13 +124,12 @@ public class DamageTakenListener implements Listener {
                         }
                     }
 
-                    map.put("entityValue", entityValue);
-                    return map;
-                }, (t, clause, id, map) ->
-                    clause.columns(t.id, t.entity, t.amount)
-                        .values(id, map.get("entityValue"), damageTaken).execute(),
-                (t, clause, id, map) ->
-                    clause.where(t.id.eq(id), t.entity.eq(map.get("entityValue")))
+                    return entityValue;
+                }, (t, clause, id, worldId, entityValue) ->
+                    clause.columns(t.id, t.worldId, t.entity, t.amount)
+                        .values(id, worldId, entityValue, damageTaken).execute(),
+                (t, clause, id, worldId, entityValue) ->
+                    clause.where(t.id.eq(id), t.worldId.eq(worldId), t.entity.eq(entityValue))
                         .set(t.amount, t.amount.add(damageTaken)).execute()
             );
         }

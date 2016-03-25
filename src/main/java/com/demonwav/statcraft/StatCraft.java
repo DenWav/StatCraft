@@ -128,6 +128,7 @@ public class StatCraft extends JavaPlugin {
 
     private String timeZone;
     public ConcurrentHashMap<String, UUID> players = new ConcurrentHashMap<>();
+    private ServerStatUpdater.Move moveUpdater = new ServerStatUpdater.Move(this);
 
     // So we know if it's fully been enabled or not
     private AtomicBoolean enabler = new AtomicBoolean(false);
@@ -500,7 +501,7 @@ public class StatCraft extends JavaPlugin {
 
         if (config.getStats().isMove()) {
             // Every 2 seconds
-            getServer().getScheduler().runTaskTimer(this, new ServerStatUpdater.Move(this), 1, 40);
+            getServer().getScheduler().runTaskTimer(this, moveUpdater, 1, 40);
             statsEnabled.append(" move");
             new SCMove(this);
         }
@@ -712,6 +713,10 @@ public class StatCraft extends JavaPlugin {
      */
     public void setLastWitherTime(UUID uuid, int time) {
         lastWitherTime.put(uuid, time);
+    }
+
+    public ServerStatUpdater.Move getMoveUpdater() {
+        return moveUpdater;
     }
 
     public DatabaseManager getDatabaseManager() {

@@ -17,8 +17,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class SleepyTimeListener implements Listener {
@@ -32,54 +30,47 @@ public class SleepyTimeListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBedEnter(PlayerBedEnterEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
 
         plugin.getThreadManager().schedule(
-            QSleep.class, uuid,
-            (s, clause, id) ->
-                clause.columns(s.id, s.enterBed).values(id, currentTime).execute(),
-            (s, clause, id) ->
-                clause.where(s.id.eq(id)).set(s.enterBed, currentTime).execute()
+            QSleep.class, uuid, worldUuid,
+            (s, clause, id, worldId) ->
+                clause.columns(s.id, s.worldId, s.enterBed).values(id, worldId, currentTime).execute(),
+            (s, clause, id, worldId) ->
+                clause.where(s.id.eq(id), s.worldId.eq(worldId)).set(s.enterBed, currentTime).execute()
         );
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBedLeave(PlayerBedLeaveEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
 
         plugin.getThreadManager().schedule(
-            QSleep.class, uuid,
-            (l, clause, id) ->
-                clause.columns(l.id, l.leaveBed).values(id, currentTime).execute(),
-            (l, clause, id) ->
-                clause.where(l.id.eq(id)).set(l.leaveBed, currentTime).execute()
+            QSleep.class, uuid, worldUuid,
+            (l, clause, id, worldId) ->
+                clause.columns(l.id, l.worldId, l.leaveBed).values(id, worldId, currentTime).execute(),
+            (l, clause, id, worldId) ->
+                clause.where(l.id.eq(id), l.worldId.eq(worldId)).set(l.leaveBed, currentTime).execute()
         );
 
         plugin.getThreadManager().schedule(
-            QSleep.class, uuid,
-            (s, query, id) -> {
-                Map<String, Integer> map = new HashMap<>();
-
-                Integer enterBed = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
+            QSleep.class, uuid, worldUuid,
+            (s, query, id, worldId) -> {
+                Integer enterBed = query.from(s).where(s.id.eq(id), s.worldId.eq(worldId)).uniqueResult(s.enterBed);
                 enterBed = enterBed == null ? 0 : enterBed;
 
-                map.put("timeSlept", currentTime - enterBed);
-                if (enterBed == 0) {
-                    map.put("change", 0);
-                } else {
-                    map.put("change", 1);
-                }
-
-                return map;
+                return currentTime - enterBed;
             },
-            (s, clause, id, map) -> {
-                if (map.get("change") != 0) {
-                    clause.columns(s.id, s.timeSlept).values(id, map.get("timeSlept")).execute();
+            (s, clause, id, worldId, timeSlept) -> {
+                if (timeSlept != currentTime) {
+                    clause.columns(s.id, s.timeSlept).values(id, timeSlept).execute();
                 }
-            }, (s, clause, id, map) -> {
-                if (map.get("change") != 0) {
-                    clause.where(s.id.eq(id)).set(s.timeSlept, s.timeSlept.add(map.get("timeSlept"))).execute();
+            }, (s, clause, id, worldId, timeSlept) -> {
+                if (timeSlept != currentTime) {
+                    clause.where(s.id.eq(id), s.worldId.eq(worldId)).set(s.timeSlept, s.timeSlept.add(timeSlept)).execute();
                 }
             }
         );

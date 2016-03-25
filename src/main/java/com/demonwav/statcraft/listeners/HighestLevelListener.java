@@ -30,13 +30,14 @@ public class HighestLevelListener implements Listener {
     public void onLevel(PlayerLevelChangeEvent event) {
         final int newLevel = event.getNewLevel();
         final UUID uuid = event.getPlayer().getUniqueId();
+        final UUID worldUuid = event.getPlayer().getWorld().getUID();
 
         plugin.getThreadManager().schedule(
-            QHighestLevel.class, uuid,
-            (h, clause, id) ->
+            QHighestLevel.class, uuid, worldUuid,
+            (h, clause, id, worldId) ->
                 clause.columns(h.id, h.level)
                     .values(id, newLevel).execute(),
-            (h, clause, id) ->
+            (h, clause, id, worldId) ->
                 clause.where(h.id.eq(id), h.level.lt(newLevel)).set(h.level, newLevel).execute()
         );
     }

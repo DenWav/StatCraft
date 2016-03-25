@@ -31,14 +31,14 @@ public class JumpListener implements Listener {
     public void onJump(PlayerStatisticIncrementEvent event) {
         if (event.getStatistic() == Statistic.JUMP) {
             final UUID uuid = event.getPlayer().getUniqueId();
-            final String world = event.getPlayer().getWorld().getName();
+            final UUID worldUuid = event.getPlayer().getWorld().getUID();
 
             plugin.getThreadManager().schedule(
-                QJumps.class, uuid,
-                (j, clause, id) ->
-                    clause.columns(j.id, j.world, j.amount).values(id, world, 1).execute(),
-                (j, clause, id) ->
-                    clause.where(j.id.eq(id), j.world.eq(world)).set(j.amount, j.amount.add(1)).execute()
+                QJumps.class, uuid, worldUuid,
+                (j, clause, id, worldId) ->
+                    clause.columns(j.id, j.worldId, j.amount).values(id, worldId, 1).execute(),
+                (j, clause, id, worldId) ->
+                    clause.where(j.id.eq(id), j.worldId.eq(worldId)).set(j.amount, j.amount.add(1)).execute()
             );
         }
     }

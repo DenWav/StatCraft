@@ -45,7 +45,7 @@ public class SCMessagesSpoken extends SCTemplate {
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
             QMessagesSpoken m = QMessagesSpoken.messagesSpoken;
-            Integer result = query.from(m).where(m.id.eq(id)).uniqueResult(m.amount);
+            Integer result = query.from(m).where(m.id.eq(id)).uniqueResult(m.amount.sum());
 
             if (result == null)
                 throw new Exception();
@@ -77,9 +77,9 @@ public class SCMessagesSpoken extends SCTemplate {
             .leftJoin(p)
             .on(m.id.eq(p.id))
             .groupBy(p.name)
-            .orderBy(m.amount.desc())
+            .orderBy(m.amount.sum().desc())
             .limit(num)
-            .list(p.name, m.amount);
+            .list(p.name, m.amount.sum());
 
         return topListResponse("Messages Spoken", list);
     }

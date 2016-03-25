@@ -13,6 +13,7 @@ import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Table;
 import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.querydsl.QPlayers;
+import com.demonwav.statcraft.querydsl.QWorlds;
 import com.mysema.query.sql.MySQLTemplates;
 import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.SQLQuery;
@@ -25,6 +26,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.OfflinePlayer;
 import org.mariadb.jdbc.MariaDbDataSource;
 
+import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -39,7 +41,9 @@ public class DatabaseManager implements Closeable {
     private StatCraft plugin;
     private boolean connecting = true;
     private HikariDataSource dataSource;
+
     private ConcurrentHashMap<UUID, Integer> uuidMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<UUID, Integer> worldMap = new ConcurrentHashMap<>();
 
     public DatabaseManager(StatCraft plugin) {
         this.plugin = plugin;
@@ -51,7 +55,6 @@ public class DatabaseManager implements Closeable {
         config.addDataSourceProperty("portNumber", plugin.config().getMysql().getPort());
         config.addDataSourceProperty("serverName", plugin.config().getMysql().getHostname());
         config.setMaximumPoolSize(Table.values().length);
-
 
         dataSource = new HikariDataSource(config);
 
@@ -256,6 +259,11 @@ public class DatabaseManager implements Closeable {
         try (final Connection connection = getConnection()) {
             SQLQuery query = getNewQuery(connection);
             QPlayers p = QPlayers.players;
+
+            if (query == null) {
+                return -1;
+            }
+
             Integer res = query
                 .from(p)
                 .where(p.name.eq(name))
@@ -283,10 +291,13 @@ public class DatabaseManager implements Closeable {
                 // fix the UUID / name pairing
                 synchronized (this) {
                     SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, p);
-                    clause
-                        .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
-                        .set(p.name, name)
-                        .execute();
+
+                    if (clause != null) {
+                        clause
+                            .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
+                            .set(p.name, name)
+                            .execute();
+                    }
                 }
 
                 uuidMap.put(player.getUniqueId(), res);
@@ -301,6 +312,48 @@ public class DatabaseManager implements Closeable {
         }
     }
 
+    public int getWorldId(UUID uuid) {
+        if (worldMap.containsKey(uuid)) {
+            return worldMap.get(uuid);
+        }
+
+        try (final Connection connection = getConnection()) {
+            SQLQuery query = getNewQuery(connection);
+            QWorlds w = QWorlds.worlds;
+
+            if (query == null) {
+                return -1;
+            }
+
+            Integer res = query.from(w).where(w.uuid.eq(Util.UUIDToByte(uuid))).uniqueResult(w.worldId);
+            if (res != null) {
+                worldMap.put(uuid, res);
+                return res;
+            }
+
+            SQLInsertClause clause = getInsertClause(connection, w);
+            if (clause == null) {
+                return -1;
+            }
+            clause.columns(w.uuid).values((Object) Util.UUIDToByte(uuid)).execute();
+
+            query = getNewQuery(connection);
+            if (query == null) {
+                return -1;
+            }
+
+            res = query.from(w).where(w.uuid.eq(Util.UUIDToByte(uuid))).uniqueResult(w.worldId);
+            if (res != null) {
+                worldMap.put(uuid, res);
+            }
+            return res == null ? -1 : res;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    @Nullable
     public SQLQuery getNewQuery(Connection connection) {
         if (!connecting) {
             return new SQLQuery(connection, MySQLTemplates.DEFAULT);
@@ -309,6 +362,7 @@ public class DatabaseManager implements Closeable {
         }
     }
 
+    @Nullable
     public SQLUpdateClause getUpdateClause(Connection connection, RelationalPath<?> path) {
         if (!connecting) {
             return new SQLUpdateClause(connection, MySQLTemplates.DEFAULT, path);
@@ -317,6 +371,7 @@ public class DatabaseManager implements Closeable {
         }
     }
 
+    @Nullable
     public SQLInsertClause getInsertClause(Connection connection, RelationalPath<?> path) {
         if (!connecting) {
             return new SQLInsertClause(connection, MySQLTemplates.DEFAULT, path);

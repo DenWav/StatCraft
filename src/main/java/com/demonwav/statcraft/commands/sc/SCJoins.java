@@ -45,7 +45,7 @@ public class SCJoins extends SCTemplate {
                 return "Sorry, there seems to be an issue connecting to the database right now.";
             QJoins j = QJoins.joins;
 
-            Integer result = query.from(j).where(j.id.eq(id)).uniqueResult(j.amount);
+            Integer result = query.from(j).where(j.id.eq(id)).uniqueResult(j.amount.sum());
 
             return new ResponseBuilder(plugin)
                 .setName(name)
