@@ -18,6 +18,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
+import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -37,7 +38,7 @@ public class SCLastSlept extends SCTemplate {
     }
 
     @Override
-    public String playerStatResponse(String name, List<String> args) {
+    public String playerStatResponse(String name, List<String> args, Connection connection) {
         try {
             UUID uuid = plugin.players.get(name);
             OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
@@ -52,7 +53,7 @@ public class SCLastSlept extends SCTemplate {
                     throw new Exception();
                 }
 
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
                 if (query == null)
                     return "Sorry, there seems to be an issue connecting to the database right now.";
                 QSleep s = QSleep.sleep;
@@ -86,7 +87,7 @@ public class SCLastSlept extends SCTemplate {
     }
 
     @Override
-    public String serverStatListResponse(int num, List<String> args) {
+    public String serverStatListResponse(int num, List<String> args, Connection connection) {
         return null;
     }
 }

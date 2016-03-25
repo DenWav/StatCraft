@@ -17,6 +17,7 @@ import com.mysema.query.sql.SQLQuery;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -35,14 +36,14 @@ public class SCFirstJoin extends SCTemplate {
     }
 
     @Override
-    public String playerStatResponse(String name, List<String> args) {
+    public String playerStatResponse(String name, List<String> args, Connection connection) {
         try {
             int id = plugin.getDatabaseManager().getPlayerId(name);
             if (id < 0)
                 throw new Exception();
 
             QSeen s = QSeen.seen;
-            SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
 
@@ -71,7 +72,7 @@ public class SCFirstJoin extends SCTemplate {
     }
 
     @Override
-    public String serverStatListResponse(int num, List<String> args) {
+    public String serverStatListResponse(int num, List<String> args, Connection connection) {
         return null;
     }
 }

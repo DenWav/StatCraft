@@ -1,4 +1,4 @@
--- StatCraft Database Creation Script Generated on Wed Mar 23 22:39:27 CDT 2016
+-- StatCraft Database Creation Script Generated on Fri Mar 25 00:03:26 CDT 2016
 --
 -- Database: statcraft
 -- ----------------------------------------------------------------------------
@@ -431,4 +431,4 @@ CREATE TABLE `xp_gained` (
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Generated in 16.61ms
+-- Generated in 26.168466ms

@@ -10,17 +10,19 @@
 package com.demonwav.statcraft.sql;
 
 import com.demonwav.statcraft.StatCraft;
-import com.mysema.query.QueryException;
 import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.Bukkit;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
 
 /**
  *  This class ensures thread safety among tables, it will process each individual table on it's own thread,
@@ -32,7 +34,7 @@ public class ThreadManager implements Runnable {
 
     final private StatCraft plugin;
 
-    final private ConcurrentHashMap<Class<?>, ConcurrentLinkedQueue<Runnable>> map = new ConcurrentHashMap<>();
+    final private ConcurrentHashMap<Class<?>, ConcurrentLinkedQueue<Consumer<Connection>>> map = new ConcurrentHashMap<>();
     final private ConcurrentHashMap<Class<?>, Integer> work = new ConcurrentHashMap<>();
 
     public ThreadManager(StatCraft plugin) {
@@ -45,14 +47,14 @@ public class ThreadManager implements Runnable {
         work.entrySet().removeIf(e -> !Bukkit.getScheduler().isCurrentlyRunning(e.getValue()));
 
         // Start work that is waiting to be started
-        for (Iterator<Map.Entry<Class<?>, ConcurrentLinkedQueue<Runnable>>> it = map.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<Class<?>, ConcurrentLinkedQueue<Runnable>> entry = it.next();
+        for (Iterator<Map.Entry<Class<?>, ConcurrentLinkedQueue<Consumer<Connection>>>> it = map.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<Class<?>, ConcurrentLinkedQueue<Consumer<Connection>>> entry = it.next();
 
             if (!work.containsKey(entry.getKey())) {
                 work.put(
                     entry.getKey(),
                     plugin.getServer().getScheduler().runTaskAsynchronously(plugin,
-                        new WorkerInstance(entry.getValue())
+                        new WorkerInstance(entry.getValue(), plugin)
                     ).getTaskId()
                 );
                 it.remove();
@@ -78,8 +80,8 @@ public class ThreadManager implements Runnable {
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    public void scheduleRaw(final Class<?> clazz, final Runnable runnable) {
-        ConcurrentLinkedQueue<Runnable> queue;
+    public void scheduleRaw(final Class<?> clazz, final Consumer<Connection> consumer) {
+        ConcurrentLinkedQueue<Consumer<Connection>> queue;
         synchronized (clazz) {
             queue = map.get(clazz);
             if (queue == null) {
@@ -87,50 +89,27 @@ public class ThreadManager implements Runnable {
                 map.put(clazz, queue);
             }
         }
-        queue.offer(runnable);
+        queue.offer(consumer);
     }
 
     public void stop() {
         // We need to get all the work finished as quickly as possible
         work.clear();
-        map.entrySet().stream()
+        map.entrySet().parallelStream()
             .filter(e -> e.getValue() != null)
             .forEach(e -> {
-                ConcurrentLinkedQueue<Runnable> queue = e.getValue();
-                Runnable runnable = queue.poll();
-                while (runnable != null) {
-                    runnable.run();
-                    runnable = queue.poll();
+                ConcurrentLinkedQueue<Consumer<Connection>> queue = e.getValue();
+                try (final Connection connection = plugin.getDatabaseManager().getConnection()) {
+                    Consumer<Connection> consumer = queue.poll();
+                    while (consumer != null) {
+                        consumer.accept(connection);
+                        consumer = queue.poll();
+                    }
+                } catch (SQLException sqlEx) {
+                    sqlEx.printStackTrace();
                 }
             });
         map.clear();
-    }
-
-    private class WorkerInstance implements Runnable {
-
-        final private ConcurrentLinkedQueue<Runnable> work;
-
-        public WorkerInstance(final ConcurrentLinkedQueue<Runnable> work) {
-            this.work = work;
-        }
-
-        @Override
-        public void run() {
-            Runnable runnable = work.poll();
-            while (runnable != null) {
-                try {
-                    runnable.run();
-                } catch (QueryException e) {
-                    // This is more than likely cased by a connection exception
-                    plugin.incrementError();
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    // This is an issue unrelated to the database
-                    e.printStackTrace();
-                }
-                runnable = work.poll();
-            }
-        }
     }
 }
 

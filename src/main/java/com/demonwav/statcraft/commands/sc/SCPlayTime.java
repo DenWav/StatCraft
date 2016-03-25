@@ -20,6 +20,7 @@ import com.mysema.query.sql.SQLQuery;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,13 +37,13 @@ public class SCPlayTime extends SCTemplate {
     }
 
     @Override
-    public String playerStatResponse(String name, List<String> args) {
+    public String playerStatResponse(String name, List<String> args, Connection connection) {
         try {
             int id = plugin.getDatabaseManager().getPlayerId(name);
             if (id < 0)
                 throw new Exception();
 
-            SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
             QPlayTime t = QPlayTime.playTime;
@@ -58,7 +59,7 @@ public class SCPlayTime extends SCTemplate {
                 int now = (int)(System.currentTimeMillis() / 1000L);
 
                 QSeen s = QSeen.seen;
-                query = plugin.getDatabaseManager().getNewQuery();
+                query = plugin.getDatabaseManager().getNewQuery(connection);
                 Integer join = query.from(s).where(s.id.eq(id)).uniqueResult(s.lastJoinTime);
 
                 // Sanity check
@@ -81,8 +82,8 @@ public class SCPlayTime extends SCTemplate {
     }
 
     @Override
-    public String serverStatListResponse(int num, List<String> args) {
-        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+    public String serverStatListResponse(int num, List<String> args, Connection connection) {
+        SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
         if (query == null)
             return "Sorry, there seems to be an issue connecting to the database right now.";
         QPlayTime t = QPlayTime.playTime;

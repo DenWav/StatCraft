@@ -22,6 +22,7 @@ import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.types.path.NumberPath;
 import org.bukkit.command.CommandSender;
 
+import java.sql.Connection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,14 +40,14 @@ public class SCSnowballs extends SCTemplate {
     }
 
     @Override
-    public String playerStatResponse(String name, List<String> args) {
+    public String playerStatResponse(String name, List<String> args, Connection connection) {
         try {
             int id = plugin.getDatabaseManager().getPlayerId(name);
             if (id < 0)
                 throw new Exception();
 
             QProjectiles p = QProjectiles.projectiles;
-            SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
 
@@ -84,11 +85,11 @@ public class SCSnowballs extends SCTemplate {
 
     @Override
     @SecondaryArgument({"distance", "farthest"})
-    public String serverStatListResponse(int num, List<String> args) {
+    public String serverStatListResponse(int num, List<String> args, Connection connection) {
         boolean distance = false;
         QProjectiles p = QProjectiles.projectiles;
         QPlayers pl = QPlayers.players;
-        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
         if (query == null)
             return "Sorry, there seems to be an issue connecting to the database right now.";
 

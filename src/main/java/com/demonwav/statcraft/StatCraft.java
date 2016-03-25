@@ -100,6 +100,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -108,12 +110,10 @@ import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class StatCraft extends JavaPlugin {
 
     private DatabaseManager databaseManager;
-    private AtomicInteger errors = new AtomicInteger(0);
 
     private HashMap<UUID, Integer> lastFireTime = new HashMap<>();
     private HashMap<UUID, Integer> lastDrownTime = new HashMap<>();
@@ -178,11 +178,17 @@ public class StatCraft extends JavaPlugin {
     }
 
     private void setupPlayers() {
-        List<Players> players = getDatabaseManager().getNewQuery().from(QPlayers.players)
-            .list(QPlayers.players);
+        List<Players> players = null;
+        try (final Connection connection = getDatabaseManager().getConnection()) {
+            players = getDatabaseManager().getNewQuery(connection).from(QPlayers.players).list(QPlayers.players);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-        for (Players player : players) {
-            this.players.put(player.getName(), Util.byteToUUID(player.getUuid()));
+        if (players != null) {
+            for (Players player : players) {
+                this.players.put(player.getName(), Util.byteToUUID(player.getUuid()));
+            }
         }
     }
 
@@ -192,27 +198,33 @@ public class StatCraft extends JavaPlugin {
         getServer().getScheduler().runTaskAsynchronously(this, () -> {
             getServer().getOnlinePlayers().forEach(player -> {
                 // Insert game join / bed enter data
-                final int id = setupPlayer(player);
+                final int id;
+                try (final Connection connection = getDatabaseManager().getConnection()) {
+                    id = setupPlayer(player, connection);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    return;
+                }
 
                 getThreadManager().scheduleRaw(
-                    QSeen.class, () -> Util.runQuery(
+                    QSeen.class, (connection) -> Util.runQuery(
                             QSeen.class,
                             (s, clause) ->
                                 clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute(),
                             (s, clause) ->
                                 clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
-                            this
+                            connection, this
                         )
                 );
 
                 if (player.isSleeping()) {
                     getThreadManager().scheduleRaw(
-                        QSleep.class, () -> Util.runQuery(
+                        QSleep.class, (connection) -> Util.runQuery(
                            QSleep.class, (s, clause) ->
                                 clause.columns(s.id, s.enterBed).values(id, currentTime).execute(),
                             (s, clause) ->
                                 clause.where(s.id.eq(id)).set(s.enterBed, currentTime).execute(),
-                            this
+                            connection, this
                         )
                     );
                 }
@@ -229,54 +241,68 @@ public class StatCraft extends JavaPlugin {
             UUID uuid = player.getUniqueId();
             int id = getDatabaseManager().getPlayerId(uuid);
 
-            Util.runQuery(QSeen.class, (s, clause) ->
-                    clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute(),
-                (s, clause) ->
-                    clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
-                this
-            );
+            try (final Connection connection = getDatabaseManager().getConnection()) {
+                Util.runQuery(QSeen.class, (s, clause) ->
+                        clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute(),
+                    (s, clause) ->
+                        clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
+                    connection, this
+                );
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
             final int currentPlayTime = (int) Math.round(player.getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
 
-            Util.runQuery(QPlayTime.class, (p, clause) ->
-                    clause.columns(p.id, p.amount).values(id, currentPlayTime).execute(),
-                (p, clause) ->
-                    clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute(),
-                this
-            );
-
-            if (player.isSleeping()){
-                Util.runQuery(QSleep.class, (s, query) -> {
-                        Map<String, Integer> map = new HashMap<>();
-
-                        Integer enterBed = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
-                        enterBed = enterBed == null ? 0 : enterBed;
-                        if (enterBed != 0) {
-                            map.put("timeSlept", currentTime - enterBed);
-                        } else {
-                            map.put("timeSlept", 0);
-                        }
-
-                        return map;
-                    }, (s, clause, map) -> {
-                        if (map.get("timeSlept") == 0) {
-                            clause.columns(s.id, s.leaveBed).values(id, currentTime).execute();
-                        } else {
-                            clause.columns(s.id, s.leaveBed, s.timeSlept)
-                                .values(id, currentTime, map.get("timeSlept")).execute();
-                        }
-                    }, (s, clause, map) -> {
-                        if (map.get("timeSlept") == 0) {
-                            clause.where(s.id.eq(id)).set(s.leaveBed, currentTime).execute();
-                        } else {
-                            clause.where(s.id.eq(id))
-                                .set(s.leaveBed, currentPlayTime)
-                                .set(s.timeSlept, map.get("timeSlept"))
-                                .execute();
-                        }
-                    },
-                    this
+            try (final Connection connection = getDatabaseManager().getConnection()) {
+                Util.runQuery(QPlayTime.class, (p, clause) ->
+                        clause.columns(p.id, p.amount).values(id, currentPlayTime).execute(),
+                    (p, clause) ->
+                        clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute(),
+                    connection, this
                 );
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+
+            if (player.isSleeping()) {
+                try (final Connection connection = getDatabaseManager().getConnection()) {
+                    Util.runQuery(QSleep.class, (s, query) -> {
+                            Map<String, Integer> map = new HashMap<>();
+
+                            Integer enterBed = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
+                            enterBed = enterBed == null ? 0 : enterBed;
+                            if (enterBed != 0) {
+                                map.put("timeSlept", currentTime - enterBed);
+                            } else {
+                                map.put("timeSlept", 0);
+                            }
+
+                            return map;
+                        }, (s, clause, map) -> {
+                            if (map.get("timeSlept") == 0) {
+                                clause.columns(s.id, s.leaveBed).values(id, currentTime).execute();
+                            } else {
+                                clause.columns(s.id, s.leaveBed, s.timeSlept)
+                                    .values(id, currentTime, map.get("timeSlept")).execute();
+                            }
+                        }, (s, clause, map) -> {
+                            if (map.get("timeSlept") == 0) {
+                                clause.where(s.id.eq(id)).set(s.leaveBed, currentTime).execute();
+                            } else {
+                                clause.where(s.id.eq(id))
+                                    .set(s.leaveBed, currentPlayTime)
+                                    .set(s.timeSlept, map.get("timeSlept"))
+                                    .execute();
+                            }
+                        },
+                        connection, this
+                    );
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
             }
         });
     }
@@ -515,12 +541,12 @@ public class StatCraft extends JavaPlugin {
         getServer().getScheduler().cancelTasks(this);
      }
 
-    public int setupPlayer(OfflinePlayer player) {
+    public int setupPlayer(OfflinePlayer player, Connection connection) {
         byte[] array = Util.UUIDToByte(player.getUniqueId());
         String name = player.getName();
         // Check player / id listing
         QPlayers p = QPlayers.players;
-        SQLQuery query = getDatabaseManager().getNewQuery();
+        SQLQuery query = getDatabaseManager().getNewQuery(connection);
 
         if (query == null)
             return -1;
@@ -528,13 +554,13 @@ public class StatCraft extends JavaPlugin {
         Players result = query.from(p).where(p.uuid.eq(array)).uniqueResult(p);
 
         if (result == null) {
-            SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
+            SQLUpdateClause update = getDatabaseManager().getUpdateClause(connection, p);
             // Blank out any conflicting names
             update
                 .where(p.name.eq(name))
                 .set(p.name, "")
                 .execute();
-            SQLInsertClause insert = getDatabaseManager().getInsertClause(p);
+            SQLInsertClause insert = getDatabaseManager().getInsertClause(connection, p);
             // Insert new player listing
             insert
                 .columns(p.uuid, p.name)
@@ -543,7 +569,7 @@ public class StatCraft extends JavaPlugin {
 
             checkBlanks();
         } else if (!result.getName().equals(name)) {
-            SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
+            SQLUpdateClause update = getDatabaseManager().getUpdateClause(connection, p);
             // Blank out any conflicting names
             update
                 .where(p.name.eq(name))
@@ -561,16 +587,16 @@ public class StatCraft extends JavaPlugin {
         int id = getDatabaseManager().getPlayerId(player.getUniqueId());
 
         if (config.getStats().isFirstJoinTime()) {
-            query = getDatabaseManager().getNewQuery();
+            query = getDatabaseManager().getNewQuery(connection);
             QSeen s = QSeen.seen;
             Integer time = query.from(s).where(s.id.eq(id)).uniqueResult(s.firstJoinTime);
             time = time == null ? 0 : time;
             if (time != (int)(player.getFirstPlayed() / 1000L)) {
                 try {
-                    SQLInsertClause clause = getDatabaseManager().getInsertClause(s);
+                    SQLInsertClause clause = getDatabaseManager().getInsertClause(connection, s);
                     clause.columns(s.id, s.firstJoinTime).values(id, (int) (player.getFirstPlayed() / 1000L)).execute();
                 } catch (QueryException e) {
-                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(s);
+                    SQLUpdateClause clause = getDatabaseManager().getUpdateClause(connection, s);
                     clause.where(s.id.eq(id)).set(s.firstJoinTime, (int)(player.getFirstPlayed() / 1000L)).execute();
                 }
             }
@@ -583,7 +609,7 @@ public class StatCraft extends JavaPlugin {
                     clause.columns(pl.id, pl.amount).values(id, currentPlayTime).execute(),
                 (pl, clause) ->
                     clause.where(pl.id.eq(id)).set(pl.amount, currentPlayTime).execute(),
-                this
+                connection, this
             );
         }
 
@@ -699,17 +725,6 @@ public class StatCraft extends JavaPlugin {
         return threadManager;
     }
 
-    public void incrementError() {
-        if (errors.incrementAndGet() > 15) {
-            clearError();
-            getDatabaseManager().reconnect();
-        }
-    }
-
-    private void clearError() {
-        errors.set(0);
-    }
-
     private static String getCurrentName(UUID uuid) {
         // Get JSON from Mojang API
         final String url = "https://api.mojang.com/user/profiles/" + uuid.toString().replaceAll("-", "") + "/names";
@@ -768,9 +783,9 @@ public class StatCraft extends JavaPlugin {
     }
 
     private void checkBlanks() {
-        getThreadManager().scheduleRaw(QPlayers.class, () -> {
+        getThreadManager().scheduleRaw(QPlayers.class, (connection) -> {
             QPlayers p = QPlayers.players;
-            SQLQuery query = getDatabaseManager().getNewQuery();
+            SQLQuery query = getDatabaseManager().getNewQuery(connection);
 
             if (query == null)
                 return;
@@ -782,7 +797,7 @@ public class StatCraft extends JavaPlugin {
                 try {
                     name = getCurrentName(uuid);
 
-                    SQLUpdateClause update = getDatabaseManager().getUpdateClause(p);
+                    SQLUpdateClause update = getDatabaseManager().getUpdateClause(connection, p);
                     update
                         .where(p.uuid.eq(players.getUuid()))
                         .set(p.name, name)

@@ -24,6 +24,7 @@ import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.sql.Connection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,13 +44,13 @@ public class SCMove extends SCTemplate {
     @Override
     @SecondaryArgument({"walking", "crouching", "sprinting", "swimming", "falling", "climbing",
                         "flying", "diving", "minecart", "boat", "pig", "horse", "breakdown", "elytra"})
-    public String playerStatResponse(String name, List<String> args) {
+    public String playerStatResponse(String name, List<String> args, Connection connection) {
         String arg = null;
         try {
             int id = plugin.getDatabaseManager().getPlayerId(name);
 
             QMove m = QMove.move;
-            SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
 
@@ -117,10 +118,10 @@ public class SCMove extends SCTemplate {
     @Override
     @SecondaryArgument({"walking", "crouching", "sprinting", "swimming", "falling", "climbing",
         "flying", "diving", "minecart", "boat", "pig", "horse", "elytra"})
-    public String serverStatListResponse(int num, List<String> args) {
+    public String serverStatListResponse(int num, List<String> args, Connection connection) {
         QMove m = QMove.move;
         QPlayers p = QPlayers.players;
-        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
         if (query == null)
             return "Sorry, there seems to be an issue connecting to the database right now.";
 

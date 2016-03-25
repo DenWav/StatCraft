@@ -22,6 +22,7 @@ import com.mysema.query.sql.dml.SQLUpdateClause;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
+import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Map;
@@ -234,19 +235,20 @@ public class Util {
     public  static <T extends RelationalPath<?>> void runQuery(final Class<T> clazz,
                                                                final QueryRunner<T, SQLInsertClause> insertClause,
                                                                final QueryRunner<T, SQLUpdateClause> updateClause,
+                                                               final Connection connection,
                                                                final StatCraft plugin) {
         try {
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
 
             try {
-                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(path);
+                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, path);
 
                 if (clause == null)
                     return;
 
                 insertClause.run(path, clause);
             } catch (QueryException e) {
-                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(path);
+                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, path);
 
                 if (clause == null)
                     return;
@@ -276,25 +278,27 @@ public class Util {
      * @param plugin The StatCraft object
      * @param <T> The RelationalPath that represents the relevant table
      */
+    @SuppressWarnings("Duplicates")
     public static <T extends RelationalPath<?>, K, V> void runQuery(final Class<T> clazz,
                                                                     final QueryFunction<T, K, V> workBefore,
                                                                     final QueryRunnerMap<T, SQLInsertClause, K, V> insertClause,
                                                                     final QueryRunnerMap<T, SQLUpdateClause, K, V> updateClause,
+                                                                    final Connection connection,
                                                                     final StatCraft plugin) {
         try {
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
 
-            final Map<K, V> map = workBefore.run(path, plugin.getDatabaseManager().getNewQuery());
+            final Map<K, V> map = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(connection));
 
             try {
-                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(path);
+                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, path);
 
                 if (clause == null)
                     return;
 
                 insertClause.run(path, clause, map);
             } catch (QueryException e) {
-                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(path);
+                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, path);
 
                 if (clause == null)
                     return;
@@ -324,24 +328,26 @@ public class Util {
      * @param plugin The StatCraft object
      * @param <T> The RelationalPath that represents the relevant table
      */
+    @SuppressWarnings("Duplicates")
     public static <T extends RelationalPath<?>> void runQuery(final Class<T> clazz,
                                                               final UUID uuid,
                                                               final QueryIdRunner<T, SQLInsertClause> insertClause,
                                                               final QueryIdRunner<T, SQLUpdateClause> updateClause,
+                                                              final Connection connection,
                                                               final StatCraft plugin) {
         try {
             final int id = plugin.getDatabaseManager().getPlayerId(uuid);
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
 
             try {
-                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(path);
+                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, path);
 
                 if (clause == null)
                     return;
 
                 insertClause.run(path, clause, id);
             } catch (QueryException e) {
-                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(path);
+                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, path);
 
                 if (clause == null)
                     return;
@@ -380,22 +386,23 @@ public class Util {
                                                                     final QueryIdFunction<T, K, V> workBefore,
                                                                     final QueryIdRunnerMap<T, SQLInsertClause, K, V> insertClause,
                                                                     final QueryIdRunnerMap<T, SQLUpdateClause, K, V> updateClause,
+                                                                    final Connection connection,
                                                                     final StatCraft plugin) {
         try {
             final int id = plugin.getDatabaseManager().getPlayerId(uuid);
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
 
-            final Map<K, V> map = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(), id);
+            final Map<K, V> map = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(connection), id);
 
             try {
-                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(path);
+                SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, path);
 
                 if (clause == null)
                     return;
 
                 insertClause.run(path, clause, id, map);
             } catch (QueryException e) {
-                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(path);
+                SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, path);
 
                 if (clause == null)
                     return;

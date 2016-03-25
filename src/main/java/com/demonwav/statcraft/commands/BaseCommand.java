@@ -20,6 +20,8 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.event.Listener;
 
 import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -121,23 +123,28 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
             try {
                 Method method;
                 if (top) {
-                    method = clazz.getMethod("serverStatListResponse", int.class, List.class);
+                    method = clazz.getMethod("serverStatListResponse", int.class, List.class, Connection.class);
                 } else {
-                    method = clazz.getMethod("playerStatResponse", String.class, List.class);
+                    method = clazz.getMethod("playerStatResponse", String.class, List.class, Connection.class);
                 }
                 SecondaryArgument annotation = method.getAnnotation(SecondaryArgument.class);
                 if (annotation != null) {
                     secondaryArgs = annotation.value();
                 }
-            } catch (NoSuchMethodException e) {/*Won't happen*/e.printStackTrace();}
+            } catch (NoSuchMethodException e) {
+                // Won't happen
+                e.printStackTrace();
+            }
 
-            if (secondaryArgs != null)
+            if (secondaryArgs != null) {
                 secondaryArgsList.retainAll(Arrays.asList(secondaryArgs));
-            else
+            } else {
                 secondaryArgsList.retainAll(Collections.emptyList());
+            }
 
-            if (players.size() == 0)
+            if (players.size() == 0) {
                 players.add(sender.getName());
+            }
 
             // Asynchronously access the database and calculate the result, then call a sync task to return the output
             final boolean finalTop = top;
@@ -145,38 +152,44 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
             final int finalTopNumber = topNumber;
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                 if (finalTop) {
+                    try (final Connection connection = plugin.getDatabaseManager().getConnection()) {
+                        // the top argument takes precedence over player's names listed
+                        final String response = command.serverStatListResponse(finalTopNumber, secondaryArgsList, connection);
 
-                    // the top argument takes precedence over player's names listed
-                    final String response = command.serverStatListResponse(finalTopNumber, secondaryArgsList);
-
-                    plugin.getServer().getScheduler().runTask(plugin, () -> {
-                        if (response == null) {
-                            sender.sendMessage("\"-top\" cannot be used with this command.");
-                        } else {
-                            if (finalPublicCmd) {
-                                String endResponse = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
-                                        + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
-                                plugin.getServer().broadcastMessage(endResponse);
-                            } else {
-                                sender.sendMessage(response);
-                            }
-                        }
-                    });
-                } else {
-                    for (final String player : players) {
                         plugin.getServer().getScheduler().runTask(plugin, () -> {
-                            final String response = command.playerStatResponse(player, secondaryArgsList);
-
-                            if (finalPublicCmd) {
-                                String endResponse = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
-                                        + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
-                                plugin.getServer().broadcastMessage(endResponse);
+                            if (response == null) {
+                                sender.sendMessage("\"-top\" cannot be used with this command.");
                             } else {
-                                sender.sendMessage(response);
+                                if (finalPublicCmd) {
+                                    String endResponse = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
+                                        + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
+                                    plugin.getServer().broadcastMessage(endResponse);
+                                } else {
+                                    sender.sendMessage(response);
+                                }
                             }
                         });
-
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
+                } else {
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        try (final Connection connection = plugin.getDatabaseManager().getConnection()) {
+                            for (final String player : players) {
+                                final String response = command.playerStatResponse(player, secondaryArgsList, connection);
+
+                                if (finalPublicCmd) {
+                                    String endResponse = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
+                                        + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
+                                    plugin.getServer().broadcastMessage(endResponse);
+                                } else {
+                                    sender.sendMessage(response);
+                                }
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 }
             });
         }

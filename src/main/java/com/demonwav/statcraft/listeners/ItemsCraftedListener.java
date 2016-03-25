@@ -77,6 +77,7 @@ public class ItemsCraftedListener implements Listener {
     /** From here down is Comphenix's code */
     // HACK! The API doesn't allow us to easily determine the resulting number of
     // crafted items, so we're forced to compare the inventory before and after.
+    @SuppressWarnings("deprecation")
     private void schedulePostDetection(final HumanEntity player, final ItemStack compareItem) {
         final ItemStack[] preInv = player.getInventory().getContents();
         final int ticks = 1;

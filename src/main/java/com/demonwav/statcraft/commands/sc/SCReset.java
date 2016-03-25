@@ -23,6 +23,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -128,67 +129,71 @@ public class SCReset extends SCTemplate implements CustomResponse {
             }
 
             Statement st = null;
-            try {
-                plugin.getDatabaseManager().getConnection().setAutoCommit(false);
-                st = plugin.getDatabaseManager().getConnection().createStatement();
-
-                for (Table table : Table.values()) {
-                    if (!table.getName().equalsIgnoreCase("players")) {
-                        String tableName = StringEscapeUtils.escapeSql(table.getName());
-                        st.addBatch("DELETE FROM " + tableName + " WHERE " + tableName + " id = " + id);
-                    }
-                }
-
-                st.executeBatch();
-
-                plugin.getDatabaseManager().getConnection().commit();
-                plugin.getDatabaseManager().getConnection().setAutoCommit(true);
-            } catch (SQLException e) {
+            try (final Connection connection = plugin.getDatabaseManager().getConnection()) {
                 try {
-                    plugin.getDatabaseManager().getConnection().rollback();
-                    plugin.getDatabaseManager().getConnection().setAutoCommit(true);
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
-                }
-                e.printStackTrace();
-            } finally {
-                if (st != null) {
+                    connection.setAutoCommit(false);
+                    st = connection.createStatement();
+
+                    for (Table table : Table.values()) {
+                        if (!table.getName().equalsIgnoreCase("players")) {
+                            String tableName = StringEscapeUtils.escapeSql(table.getName());
+                            st.addBatch("DELETE FROM " + tableName + " WHERE " + tableName + " id = " + id + ";");
+                        }
+                    }
+
+                    st.executeBatch();
+
+                    connection.commit();
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
                     try {
-                        st.close();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+                        connection.rollback();
+                        connection.setAutoCommit(true);
+                    } catch (SQLException e1) {
+                        e1.printStackTrace();
+                    }
+                    e.printStackTrace();
+                } finally {
+                    if (st != null) {
+                        try {
+                            st.close();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-            }
 
-            // So we don't mess up play time / time slept, check if they are online or in the bed
-            // and add "join" values for now
-            OfflinePlayer player = plugin.getServer().getPlayer(uuid);
-            if (player != null && player.isOnline()) {
-                int currentTime = (int)(System.currentTimeMillis() / 1000L);
+                // So we don't mess up play time / time slept, check if they are online or in the bed
+                // and add "join" values for now
+                OfflinePlayer player = plugin.getServer().getPlayer(uuid);
+                if (player != null && player.isOnline()) {
+                    int currentTime = (int)(System.currentTimeMillis() / 1000L);
 
-                QSeen s = QSeen.seen;
-                SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+                    QSeen s = QSeen.seen;
+                    SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
 
-                if (query.from(s).where(s.id.eq(id)).exists()) {
-                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(s);
-                    clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
-                } else {
-                    SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(s);
-                    clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
-                }
-
-                if (player.getPlayer().isSleeping()) {
-                    QSleep sl = QSleep.sleep;
-
-                    if (query.from(sl).where(sl.id.eq(id)).exists()) {
-                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(sl);
-                        clause.where(sl.id.eq(id)).set(sl.enterBed, currentTime).execute();
+                    if (query.from(s).where(s.id.eq(id)).exists()) {
+                        SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, s);
+                        clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
                     } else {
-                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(sl);
-                        clause.columns(sl.id, sl.enterBed).values(id, currentTime).execute();
+                        SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, s);
+                        clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
+                    }
+
+                    if (player.getPlayer().isSleeping()) {
+                        QSleep sl = QSleep.sleep;
+
+                        if (query.from(sl).where(sl.id.eq(id)).exists()) {
+                            SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, sl);
+                            clause.where(sl.id.eq(id)).set(sl.enterBed, currentTime).execute();
+                        } else {
+                            SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, sl);
+                            clause.columns(sl.id, sl.enterBed).values(id, currentTime).execute();
+                        }
                     }
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
 
             if (sender.getName().equals(name))
@@ -237,8 +242,12 @@ public class SCReset extends SCTemplate implements CustomResponse {
 
 
     @Override
-    public String playerStatResponse(String name, List<String> args) { return null; }
+    public String playerStatResponse(String name, List<String> args, Connection connection) {
+        return null;
+    }
 
     @Override
-    public String serverStatListResponse(int num, List<String> args) { return null; }
+    public String serverStatListResponse(int num, List<String> args, Connection connection) {
+        return null;
+    }
 }

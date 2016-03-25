@@ -15,9 +15,11 @@ import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 
+import java.sql.Connection;
 import java.util.UUID;
+import java.util.function.Consumer;
 
-public class QueryRunnable<T extends RelationalPath<?>> implements Runnable {
+public class QueryRunnable<T extends RelationalPath<?>> implements Consumer<Connection> {
     private final Class<T> clazz;
     private final UUID uuid;
     private final QueryIdRunner<T, SQLInsertClause> insertClause;
@@ -41,7 +43,7 @@ public class QueryRunnable<T extends RelationalPath<?>> implements Runnable {
     }
 
     @Override
-    public void run() {
-        Util.runQuery(clazz, uuid, insertClause, updateClause, plugin);
+    public void accept(final Connection connection) {
+        Util.runQuery(clazz, uuid, insertClause, updateClause, connection, plugin);
     }
 }

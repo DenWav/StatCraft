@@ -23,6 +23,7 @@ import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.types.path.NumberPath;
 import org.bukkit.command.CommandSender;
 
+import java.sql.Connection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +42,7 @@ public class SCArrowsShot extends SCTemplate {
 
     @Override
     @SecondaryArgument({"distance", "farthest"})
-    public String playerStatResponse(String name, List<String> args) {
+    public String playerStatResponse(String name, List<String> args, Connection connection) {
         int total;
         int normal = 0;
         int flaming = 0;
@@ -57,9 +58,11 @@ public class SCArrowsShot extends SCTemplate {
             if (id < 0)
                 throw new Exception();
 
-            SQLQuery query = plugin.getDatabaseManager().getNewQuery();
-            if (query == null)
+            SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
+            if (query == null) {
                 return "Sorry, there seems to be an issue connecting to the database right now.";
+            }
+
             QProjectiles p = QProjectiles.projectiles;
             List<Projectiles> result = query.from(p).where(p.id.eq(id),
                 p.type.eq(ProjectilesCode.NORMAL_ARROW.getCode()).or(p.type.eq(ProjectilesCode.FLAMING_ARROW.getCode()))
@@ -131,11 +134,11 @@ public class SCArrowsShot extends SCTemplate {
 
     @Override
     @SecondaryArgument({"distance", "farthest", "flaming"})
-    public String serverStatListResponse(int num, List<String> args) {
+    public String serverStatListResponse(int num, List<String> args, Connection connection) {
         boolean distance = false;
         QProjectiles p = QProjectiles.projectiles;
         QPlayers pl = QPlayers.players;
-        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
         if (query == null)
             return "Sorry, there seems to be an issue connecting to the database right now.";
 

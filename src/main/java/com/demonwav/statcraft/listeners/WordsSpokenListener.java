@@ -63,7 +63,7 @@ public class WordsSpokenListener implements Listener {
         );
 
         plugin.getThreadManager().scheduleRaw(
-            QWordFrequency.class, () -> {
+            QWordFrequency.class, (connection) -> {
                 if (plugin.config().getStats().isSpecificWordsSpoken()) {
                     for (String word : words) {
                         Util.runQuery(
@@ -72,7 +72,7 @@ public class WordsSpokenListener implements Listener {
                                 clause.columns(w.id, w.word, w.amount).values(id, word, 1).execute(),
                             (w, clause, id) ->
                                 clause.where(w.id.eq(id), w.word.eq(word)).set(w.amount, w.amount.add(1)).execute(),
-                            plugin
+                            connection, plugin
                         );
                     }
                 } else {
@@ -82,7 +82,7 @@ public class WordsSpokenListener implements Listener {
                             clause.columns(w.id, w.word, w.amount).values(id, "§", 1).execute(),
                         (w, clause, id) ->
                             clause.where(w.id.eq(id), w.word.eq("§")).set(w.amount, w.amount.add(1)).execute(),
-                        plugin
+                        connection, plugin
                     );
                 }
             }

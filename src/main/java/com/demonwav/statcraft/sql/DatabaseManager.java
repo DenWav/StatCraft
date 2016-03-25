@@ -13,19 +13,21 @@ import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Table;
 import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.querydsl.QPlayers;
-
 import com.mysema.query.sql.MySQLTemplates;
 import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.SQLTemplates;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.OfflinePlayer;
+import org.mariadb.jdbc.MariaDbDataSource;
 
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,18 +36,26 @@ import java.util.UUID;
 public class DatabaseManager implements Closeable {
 
     private StatCraft plugin;
-    private Connection connection;
-    final private String url;
     private boolean connecting = true;
+    private HikariDataSource dataSource;
 
     public DatabaseManager(StatCraft plugin) {
         this.plugin = plugin;
-        this.url = "jdbc:mysql://" + plugin.config().getMysql().getHostname() + ":" + plugin.config().getMysql().getPort() +
-            "/" + plugin.config().getMysql().getDatabase() + "?autoReconnect=true";
-        try {
-            connection = DriverManager.getConnection(url, plugin.config().getMysql().getUsername(), plugin.config().getMysql().getPassword());
+        HikariConfig config = new HikariConfig();
+        config.setDataSourceClassName(MariaDbDataSource.class.getName());
+        config.setUsername(plugin.config().getMysql().getUsername());
+        config.setPassword(plugin.config().getMysql().getPassword());
+        config.addDataSourceProperty("databaseName", plugin.config().getMysql().getDatabase());
+        config.addDataSourceProperty("portNumber", plugin.config().getMysql().getPort());
+        config.addDataSourceProperty("serverName", plugin.config().getMysql().getHostname());
+        config.setMaximumPoolSize(Table.values().length);
+
+        dataSource = new HikariDataSource(config);
+
+        try (Connection ignored = dataSource.getConnection()) {
             connecting = false;
         } catch (SQLException ex) {
+            ex.printStackTrace();
             plugin.getLogger().severe(red(" *** StatCraft was unable to communicate with the database,"));
             plugin.getLogger().severe(red(" *** please check your settings and reload, StatCraft will"));
             plugin.getLogger().severe(red(" *** now be disabled."));
@@ -53,25 +63,8 @@ public class DatabaseManager implements Closeable {
         }
     }
 
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void reconnect() {
-        try {
-            connection = DriverManager.getConnection(url, plugin.config().getMysql().getUsername(), plugin.config().getMysql().getPassword());
-        } catch (SQLException e) {
-            plugin.getLogger().warning("StatCraft is having issues connecting to the database. Will try to reconnect in 10 seconds.");
-            e.printStackTrace();
-            for (int i = 0 ; i < 1000; i++) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-            }
-            reconnect();
-        }
+    public Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
     }
 
     public void setupDatabase()  {
@@ -89,8 +82,10 @@ public class DatabaseManager implements Closeable {
         PreparedStatement intPst = null;
         ResultSet resultSet = null;
         ResultSet intResultSet = null;
-        try (PreparedStatement pst =
-                     connection.prepareStatement("SELECT ENGINE FROM information_schema.TABLES where TABLE_NAME = ?;")) {
+        try (
+            final Connection connection = getConnection();
+            final PreparedStatement pst = connection.prepareStatement("SELECT ENGINE FROM information_schema.TABLES where TABLE_NAME = ?;")
+        ) {
             pst.setString(1, table.getName());
             try {
                 // This can fail because there is no table
@@ -104,8 +99,8 @@ public class DatabaseManager implements Closeable {
                 return;
             }
 
-            DatabaseMetaData dbm = getConnection().getMetaData();
-            ResultSet tables = dbm.getTables(null, null, plugin.config().getMysql().getDatabase() + "." + table.getName(), null);
+            DatabaseMetaData dbm = connection.getMetaData();
+            ResultSet tables = dbm.getTables(null, null, table.getName(), null);
             if (tables.next() && resultSet.next()) {
                 // Table exists
                 // Make sure the engine is correct
@@ -114,7 +109,7 @@ public class DatabaseManager implements Closeable {
                     remakeTable(table, true);
                 } else {
                     // Make sure the columns are correct
-                    intPst = connection.prepareStatement(String.format("SHOW COLUMNS FROM %s;", table.getName()));
+                    intPst = connection.prepareStatement(String.format("SHOW COLUMNS FROM %s;", StringEscapeUtils.escapeSql(table.getName())));
                     intResultSet = intPst.executeQuery();
 
                     // Make sure there are columns
@@ -140,8 +135,7 @@ public class DatabaseManager implements Closeable {
                         remakeTable(table, true);
                     }
                 }
-            }
-            else {
+            } else {
                 // Table does not exist
                remakeTable(table, false);
             }
@@ -202,8 +196,11 @@ public class DatabaseManager implements Closeable {
     }
 
     private void dropTable(Table table) {
-        try (PreparedStatement pst = getConnection().prepareStatement(
-                String.format("DROP TABLE IF EXISTS %s;", table.getName()))) {
+        try (
+            final Connection connection = getConnection();
+            final PreparedStatement pst = connection.prepareStatement(
+                String.format("DROP TABLE IF EXISTS %s;", StringEscapeUtils.escapeSql(table.getName())))
+        ) {
             pst.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -211,91 +208,105 @@ public class DatabaseManager implements Closeable {
     }
 
     private void createTable(Table table) {
-        try (PreparedStatement pst = getConnection().prepareStatement(table.getCreate())) {
+        try (
+            final Connection connection = getConnection();
+            final PreparedStatement pst = connection.prepareStatement(table.getCreate())
+        ) {
             pst.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    @Override
     public void close() {
-        try {
-            if (connection != null)
-                connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if (dataSource != null) {
+            dataSource.close();
         }
     }
 
     public int getPlayerId(UUID uuid) {
         byte[] array = Util.UUIDToByte(uuid);
-        SQLQuery query = new SQLQuery(getConnection(), SQLTemplates.DEFAULT);
-        Integer res = query
-            .from(QPlayers.players)
-            .where(QPlayers.players.uuid.eq(array))
-            .uniqueResult(QPlayers.players.id);
+        try (Connection connection = getConnection()) {
+            SQLQuery query = new SQLQuery(connection, SQLTemplates.DEFAULT);
+            Integer res = query
+                .from(QPlayers.players)
+                .where(QPlayers.players.uuid.eq(array))
+                .uniqueResult(QPlayers.players.id);
 
-        return res == null ? -1 : res;
-    }
-
-    public int getPlayerId(String name) {
-        SQLQuery query = getNewQuery();
-        QPlayers p = QPlayers.players;
-        Integer res = query
-            .from(p)
-            .where(p.name.eq(name))
-            .uniqueResult(p.id);
-
-        if (res == null) {
-            // it failed to find a player by that name, so attempt to do a UUID lookup
-            @SuppressWarnings("deprecation")
-            OfflinePlayer player = plugin.getServer().getOfflinePlayer(name);
-
-            // Check if it's an offline UUID
-            if (player.getUniqueId().version() < 4)
-                return -1;
-
-            res = query
-                .from(p)
-                .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
-                .uniqueResult(p.id);
-
-            if (res == null)
-                return -1;
-
-            // fix the UUID / name pairing
-            synchronized (this) {
-                SQLUpdateClause clause = new SQLUpdateClause(getConnection(), SQLTemplates.DEFAULT, p);
-                clause
-                    .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
-                    .set(p.name, name)
-                    .execute();
-            }
-
-            return res;
-        } else {
-            return res;
+            return res == null ? -1 : res;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
         }
     }
 
-    public SQLQuery getNewQuery() {
-        if (!connecting)
-            return new SQLQuery(getConnection(), MySQLTemplates.DEFAULT);
-        else
-            return null;
+    public int getPlayerId(String name) {
+        try (final Connection connection = getConnection()) {
+            SQLQuery query = getNewQuery(connection);
+            QPlayers p = QPlayers.players;
+            Integer res = query
+                .from(p)
+                .where(p.name.eq(name))
+                .uniqueResult(p.id);
+
+            if (res == null) {
+                // it failed to find a player by that name, so attempt to do a UUID lookup
+                @SuppressWarnings("deprecation")
+                OfflinePlayer player = plugin.getServer().getOfflinePlayer(name);
+
+                // Check if it's an offline UUID
+                if (player.getUniqueId().version() < 4)
+                    return -1;
+
+                res = query
+                    .from(p)
+                    .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
+                    .uniqueResult(p.id);
+
+                if (res == null)
+                    return -1;
+
+                // fix the UUID / name pairing
+                synchronized (this) {
+                    SQLUpdateClause clause = new SQLUpdateClause(connection, SQLTemplates.DEFAULT, p);
+                    clause
+                        .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
+                        .set(p.name, name)
+                        .execute();
+                }
+
+                return res;
+            } else {
+                return res;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
-    public SQLUpdateClause getUpdateClause(RelationalPath path) {
-        if (!connecting)
-            return new SQLUpdateClause(getConnection(), MySQLTemplates.DEFAULT, path);
-        else
+    public SQLQuery getNewQuery(Connection connection) {
+        if (!connecting) {
+            return new SQLQuery(connection, MySQLTemplates.DEFAULT);
+        } else {
             return null;
+        }
     }
 
-    public SQLInsertClause getInsertClause(RelationalPath path) {
-        if (!connecting)
-            return new SQLInsertClause(getConnection(), MySQLTemplates.DEFAULT, path);
-        else
+    public SQLUpdateClause getUpdateClause(Connection connection, RelationalPath<?> path) {
+        if (!connecting) {
+            return new SQLUpdateClause(connection, MySQLTemplates.DEFAULT, path);
+        } else {
             return null;
+        }
+    }
+
+    public SQLInsertClause getInsertClause(Connection connection, RelationalPath<?> path) {
+        if (!connecting) {
+            return new SQLInsertClause(connection, MySQLTemplates.DEFAULT, path);
+        } else {
+            return null;
+        }
     }
 }

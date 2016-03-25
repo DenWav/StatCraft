@@ -17,6 +17,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -56,9 +57,9 @@ public abstract class SCTemplate {
 
     public abstract boolean hasPermission(CommandSender sender, String[] args);
 
-    public abstract String playerStatResponse(String name, List<String> args);
+    public abstract String playerStatResponse(String name, List<String> args, Connection connection);
 
-    public abstract String serverStatListResponse(int num, List<String> args);
+    public abstract String serverStatListResponse(int num, List<String> args, Connection connection);
 
     protected String topListResponse(String name, List<Tuple> list) {
         StringBuilder sb = new StringBuilder();

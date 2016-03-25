@@ -12,8 +12,6 @@ package com.demonwav.statcraft.listeners;
 import com.demonwav.statcraft.ServerStatUpdater;
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
-import com.demonwav.statcraft.querydsl.Jumps;
-import com.demonwav.statcraft.querydsl.Move;
 import com.demonwav.statcraft.querydsl.QJoins;
 import com.demonwav.statcraft.querydsl.QPlayTime;
 import com.demonwav.statcraft.querydsl.QPlayers;
@@ -43,21 +41,22 @@ public class PlayTimeListener implements Listener {
 
         plugin.getThreadManager().scheduleRaw(
             QPlayers.class,
-            () -> {
+            (conn) -> {
                 // This MUST be done before the other two jobs
-                final int id = plugin.setupPlayer(event.getPlayer());
+                final int id = plugin.setupPlayer(event.getPlayer(), conn);
                 plugin.players.put(name, uuid);
 
                 if (plugin.config().getStats().isJoins()) {
                     plugin.getThreadManager().scheduleRaw(
                         QJoins.class,
-                        () ->
+                        (connection) ->
                             Util.runQuery(
                                 QJoins.class,
                                 (j, clause) ->
                                     clause.columns(j.id, j.amount).values(id, 1).execute(),
                                 (j, clause) ->
                                     clause.where(j.id.eq(id)).set(j.amount, j.amount.add(1)).execute(),
+                                connection,
                                 plugin
                             )
                     );
@@ -65,21 +64,22 @@ public class PlayTimeListener implements Listener {
 
                 plugin.getThreadManager().scheduleRaw(
                     QSeen.class,
-                    () ->
+                    (connection) ->
                         Util.runQuery(
                             QSeen.class,
                             (s, clause) ->
                                 clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute(),
                             (s, clause) ->
                                 clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
+                            connection,
                             plugin
                         )
                 );
             }
         );
 
-        plugin.getThreadManager().scheduleRaw(Move.class, new ServerStatUpdater.Move(plugin));
-        plugin.getThreadManager().scheduleRaw(Jumps.class, new ServerStatUpdater.Jump(plugin));
+        new ServerStatUpdater.Move(plugin).run();
+        new ServerStatUpdater.Jump(plugin).run();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

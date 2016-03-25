@@ -18,6 +18,7 @@ import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
 import org.bukkit.command.CommandSender;
 
+import java.sql.Connection;
 import java.util.List;
 
 public class SCJumps extends SCTemplate {
@@ -33,14 +34,14 @@ public class SCJumps extends SCTemplate {
     }
 
     @Override
-    public String playerStatResponse(String name, List<String> args) {
+    public String playerStatResponse(String name, List<String> args, Connection connection) {
         try {
             int id = plugin.getDatabaseManager().getPlayerId(name);
             if (id < 0)
                 throw new Exception();
 
             QJumps j = QJumps.jumps;
-            SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+            SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
 
@@ -63,10 +64,10 @@ public class SCJumps extends SCTemplate {
     }
 
     @Override
-    public String serverStatListResponse(int num, List<String> args) {
+    public String serverStatListResponse(int num, List<String> args, Connection connection) {
         QJumps j = QJumps.jumps;
         QPlayers p = QPlayers.players;
-        SQLQuery query = plugin.getDatabaseManager().getNewQuery();
+        SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
 
         List<Tuple> list = query
             .from(j)
