@@ -37,17 +37,30 @@ public class SCLastSeen extends SCTemplate {
         return sender.hasPermission("statcraft.user.lastseen");
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public String playerStatResponse(String name, List<String> args, Connection connection) {
         try {
             UUID uuid = plugin.players.get(name);
-            OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
+            OfflinePlayer player;
+            if (uuid == null) {
+                player = plugin.getServer().getOfflinePlayer(name);
+            } else {
+                player = plugin.getServer().getOfflinePlayer(uuid);
+            }
 
             if (player.isOnline()) {
                 return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) +
                     name + ChatColor.valueOf(plugin.config().getColors().getStatValue()) +
                     " is online now!";
             } else {
+                // only use this new UUID if it's a real player
+                if (uuid == null && player.getUniqueId().version() < 4) {
+                    throw new Exception();
+                } else if (uuid == null) {
+                    uuid = player.getUniqueId();
+                }
+
                 int id = plugin.getDatabaseManager().getPlayerId(uuid);
                 if (id < 0) {
                     throw new Exception();

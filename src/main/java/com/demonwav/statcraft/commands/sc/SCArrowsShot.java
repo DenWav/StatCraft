@@ -54,7 +54,7 @@ public class SCArrowsShot extends SCTemplate {
         int flamingMaxThrow = 0;
 
         try {
-            int id = plugin.getDatabaseManager().getPlayerId(name);
+            int id = getId(name);
             if (id < 0)
                 throw new Exception();
 

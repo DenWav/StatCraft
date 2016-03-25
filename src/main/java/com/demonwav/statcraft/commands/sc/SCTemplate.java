@@ -164,4 +164,12 @@ public abstract class SCTemplate {
 
         return sb.toString();
     }
+
+    protected int getId(String name) {
+        if (plugin.players.containsKey(name)) {
+            return plugin.getDatabaseManager().getPlayerId(plugin.players.get(name));
+        } else {
+            return plugin.getDatabaseManager().getPlayerId(name);
+        }
+    }
 }

@@ -32,12 +32,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DatabaseManager implements Closeable {
 
     private StatCraft plugin;
     private boolean connecting = true;
     private HikariDataSource dataSource;
+    private ConcurrentHashMap<UUID, Integer> uuidMap = new ConcurrentHashMap<>();
 
     public DatabaseManager(StatCraft plugin) {
         this.plugin = plugin;
@@ -226,6 +228,10 @@ public class DatabaseManager implements Closeable {
     }
 
     public int getPlayerId(UUID uuid) {
+        if (uuidMap.containsKey(uuid)) {
+            return uuidMap.get(uuid);
+        }
+
         byte[] array = Util.UUIDToByte(uuid);
         try (Connection connection = getConnection()) {
             SQLQuery query = new SQLQuery(connection, SQLTemplates.DEFAULT);
@@ -233,6 +239,10 @@ public class DatabaseManager implements Closeable {
                 .from(QPlayers.players)
                 .where(QPlayers.players.uuid.eq(array))
                 .uniqueResult(QPlayers.players.id);
+
+            if (res != null) {
+                uuidMap.put(uuid, res);
+            }
 
             return res == null ? -1 : res;
         } catch (SQLException e) {
@@ -256,25 +266,29 @@ public class DatabaseManager implements Closeable {
                 OfflinePlayer player = plugin.getServer().getOfflinePlayer(name);
 
                 // Check if it's an offline UUID
-                if (player.getUniqueId().version() < 4)
+                if (player.getUniqueId().version() < 4) {
                     return -1;
+                }
 
                 res = query
                     .from(p)
                     .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
                     .uniqueResult(p.id);
 
-                if (res == null)
+                if (res == null) {
                     return -1;
+                }
 
                 // fix the UUID / name pairing
                 synchronized (this) {
-                    SQLUpdateClause clause = new SQLUpdateClause(connection, SQLTemplates.DEFAULT, p);
+                    SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, p);
                     clause
                         .where(p.uuid.eq(Util.UUIDToByte(player.getUniqueId())))
                         .set(p.name, name)
                         .execute();
                 }
+
+                uuidMap.put(player.getUniqueId(), res);
 
                 return res;
             } else {

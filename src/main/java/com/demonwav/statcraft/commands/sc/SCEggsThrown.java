@@ -53,7 +53,7 @@ public class SCEggsThrown extends SCTemplate {
         int unHatchedMaxThrow = 0;
         int hatchedMaxThrow = 0;
         try {
-            int id = plugin.getDatabaseManager().getPlayerId(name);
+            int id = getId(name);
             if (id < 0)
                 throw new Exception();
 

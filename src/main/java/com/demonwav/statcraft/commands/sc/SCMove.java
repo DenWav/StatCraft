@@ -47,7 +47,7 @@ public class SCMove extends SCTemplate {
     public String playerStatResponse(String name, List<String> args, Connection connection) {
         String arg = null;
         try {
-            int id = plugin.getDatabaseManager().getPlayerId(name);
+            int id = getId(name);
 
             QMove m = QMove.move;
             SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);

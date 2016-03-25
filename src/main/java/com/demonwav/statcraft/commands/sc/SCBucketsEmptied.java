@@ -38,7 +38,7 @@ public class SCBucketsEmptied extends SCTemplate {
     @Override
     public String playerStatResponse(String name, List<String> args, Connection connection) {
         try {
-            int id = plugin.getDatabaseManager().getPlayerId(name);
+            int id = getId(name);
             if (id < 0)
                 throw new Exception();
 

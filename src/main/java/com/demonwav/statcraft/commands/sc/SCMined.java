@@ -109,7 +109,7 @@ public class SCMined extends SCTemplate implements CustomResponse {
             try (final Connection connection = plugin.getDatabaseManager().getConnection()) {
                 String response;
                 try {
-                    int id = plugin.getDatabaseManager().getPlayerId(name);
+                    int id = getId(name);
                     if (id < 0)
                         throw new Exception();
 
