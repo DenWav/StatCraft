@@ -1,7 +1,7 @@
 /*
  * StatCraft Bukkit Plugin
  *
- * Copyright (c) 2015 Kyle Wood (DemonWav)
+ * Copyright (c) 2016 Kyle Wood (DemonWav)
  * http://demonwav.com
  *
  * MIT License
@@ -58,7 +58,7 @@ public class StatsConfig extends AnnotatedConfig {
     private boolean onFireAnnounce = true;
     @ConfigComment({"Message to show to the players when an on_fire announcement is made.",
                     "~ is the player's name."})
-    private String onFireAnnounceMessage = "~  is on fire! Oh no!";
+    private String onFireAnnounceMessage = "~ is on fire! Oh no!";
 
     @NewLine
     @ConfigComment("Record number of times a player changes worlds (such as nether portals).")

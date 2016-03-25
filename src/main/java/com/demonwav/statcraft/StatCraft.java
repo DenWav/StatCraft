@@ -1,7 +1,7 @@
 /*
  * StatCraft Bukkit Plugin
  *
- * Copyright (c) 2015 Kyle Wood (DemonWav)
+ * Copyright (c) 2016 Kyle Wood (DemonWav)
  * http://demonwav.com
  *
  * MIT License
@@ -62,6 +62,7 @@ import com.demonwav.statcraft.listeners.HighestLevelListener;
 import com.demonwav.statcraft.listeners.ItemDropListener;
 import com.demonwav.statcraft.listeners.ItemPickUpListener;
 import com.demonwav.statcraft.listeners.ItemsCraftedListener;
+import com.demonwav.statcraft.listeners.JumpListener;
 import com.demonwav.statcraft.listeners.KickListener;
 import com.demonwav.statcraft.listeners.KillListener;
 import com.demonwav.statcraft.listeners.OnFireListener;
@@ -498,15 +499,15 @@ public class StatCraft extends JavaPlugin {
         }
 
         if (config.getStats().isMove()) {
-            // Every 30 seconds
-            getServer().getScheduler().runTaskTimerAsynchronously(this, new ServerStatUpdater.Move(this), 1, 600);
+            // Every 2 seconds
+            getServer().getScheduler().runTaskTimer(this, new ServerStatUpdater.Move(this), 1, 40);
             statsEnabled.append(" move");
             new SCMove(this);
         }
 
         if (config.getStats().isJumps()) {
             // Every 10 seconds
-            getServer().getScheduler().runTaskTimerAsynchronously(this, new ServerStatUpdater.Jump(this), 1, 200);
+            getServer().getPluginManager().registerEvents(new JumpListener(this), this);
             statsEnabled.append(" jumps");
             new SCJumps(this);
         }

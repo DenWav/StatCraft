@@ -1,7 +1,7 @@
 /*
  * StatCraft Bukkit Plugin
  *
- * Copyright (c) 2015 Kyle Wood (DemonWav)
+ * Copyright (c) 2016 Kyle Wood (DemonWav)
  * http://demonwav.com
  *
  * MIT License
@@ -79,7 +79,6 @@ public class PlayTimeListener implements Listener {
         );
 
         new ServerStatUpdater.Move(plugin).run();
-        new ServerStatUpdater.Jump(plugin).run();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

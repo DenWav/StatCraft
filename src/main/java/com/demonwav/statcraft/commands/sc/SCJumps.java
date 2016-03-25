@@ -1,7 +1,7 @@
 /*
  * StatCraft Bukkit Plugin
  *
- * Copyright (c) 2015 Kyle Wood (DemonWav)
+ * Copyright (c) 2016 Kyle Wood (DemonWav)
  * http://demonwav.com
  *
  * MIT License
@@ -45,7 +45,7 @@ public class SCJumps extends SCTemplate {
             if (query == null)
                 return "Sorry, there seems to be an issue connecting to the database right now.";
 
-            Integer result = query.from(j).where(j.id.eq(id)).uniqueResult(j.amount);
+            Integer result = query.from(j).where(j.id.eq(id)).uniqueResult(j.amount.sum());
             if (result == null)
                 throw new Exception();
 

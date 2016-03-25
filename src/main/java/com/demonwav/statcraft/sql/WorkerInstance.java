@@ -1,3 +1,12 @@
+/*
+ * StatCraft Bukkit Plugin
+ *
+ * Copyright (c) 2016 Kyle Wood (DemonWav)
+ * http://demonwav.com
+ *
+ * MIT License
+ */
+
 package com.demonwav.statcraft.sql;
 
 import com.demonwav.statcraft.StatCraft;

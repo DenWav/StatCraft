@@ -1,7 +1,7 @@
 /*
  * StatCraft Bukkit Plugin
  *
- * Copyright (c) 2015 Kyle Wood (DemonWav)
+ * Copyright (c) 2016 Kyle Wood (DemonWav)
  * http://demonwav.com
  *
  * MIT License
@@ -51,6 +51,7 @@ public class DatabaseManager implements Closeable {
         config.addDataSourceProperty("portNumber", plugin.config().getMysql().getPort());
         config.addDataSourceProperty("serverName", plugin.config().getMysql().getHostname());
         config.setMaximumPoolSize(Table.values().length);
+
 
         dataSource = new HikariDataSource(config);
 

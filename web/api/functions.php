@@ -1,5 +1,14 @@
 <?php
 /**
+ * StatCraft Bukkit Plugin
+ *
+ * Copyright (c) 2016 Kyle Wood (DemonWav)
+ * http://demonwav.com
+ *
+ * MIT License
+ */
+
+/**
  * Gets a database handle
  * 
  * @return resource Database handle

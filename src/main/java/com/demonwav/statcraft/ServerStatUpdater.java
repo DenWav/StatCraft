@@ -1,7 +1,7 @@
 /*
  * StatCraft Bukkit Plugin
  *
- * Copyright (c) 2015 Kyle Wood (DemonWav)
+ * Copyright (c) 2016 Kyle Wood (DemonWav)
  * http://demonwav.com
  *
  * MIT License
@@ -10,7 +10,6 @@
 package com.demonwav.statcraft;
 
 import com.demonwav.statcraft.magic.MoveCode;
-import com.demonwav.statcraft.querydsl.QJumps;
 import com.demonwav.statcraft.querydsl.QMove;
 import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
@@ -43,31 +42,6 @@ public class ServerStatUpdater {
                             clause.where(m.id.eq(id), m.vehicle.eq(code.getCode())).set(m.distance, value).execute()
                     );
                 }
-            }
-        }
-    }
-
-    public static class Jump implements Runnable {
-
-        private StatCraft plugin;
-
-        public Jump(StatCraft plugin) {
-            this.plugin = plugin;
-        }
-
-        @Override
-        public void run() {
-            for (Player player : plugin.getServer().getOnlinePlayers()) {
-                final int jumps = player.getStatistic(Statistic.JUMP);
-                final UUID uuid = player.getUniqueId();
-
-                plugin.getThreadManager().schedule(
-                    QJumps.class, uuid,
-                    (j, clause, id) ->
-                        clause.columns(j.id, j.amount).values(id, jumps).execute(),
-                    (j, clause, id) ->
-                        clause.where(j.id.eq(id)).set(j.amount, jumps).execute()
-                );
             }
         }
     }

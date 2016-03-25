@@ -1,4 +1,4 @@
--- StatCraft Database Creation Script Generated on Fri Mar 25 00:03:26 CDT 2016
+-- StatCraft Database Creation Script Generated on Fri Mar 25 01:55:38 CDT 2016
 --
 -- Database: statcraft
 -- ----------------------------------------------------------------------------
@@ -238,7 +238,8 @@ DROP TABLE IF EXISTS `jumps`;
 CREATE TABLE `jumps` (
   `id` int(10) unsigned NOT NULL,
   `amount` int(10) unsigned NOT NULL,
-  UNIQUE KEY `id` (`id`)
+  `world` varchar(50) NOT NULL,
+  UNIQUE KEY `id` (`id`,`world`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -431,4 +432,4 @@ CREATE TABLE `xp_gained` (
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Generated in 26.168466ms
+-- Generated in 20.962359ms

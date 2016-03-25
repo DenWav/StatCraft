@@ -1,5 +1,14 @@
 <?php
-	header("Content-Type:application/json;charset=utf-8");
+/**
+ * StatCraft Bukkit Plugin
+ *
+ * Copyright (c) 2016 Kyle Wood (DemonWav)
+ * http://demonwav.com
+ *
+ * MIT License
+ */
+
+header("Content-Type:application/json;charset=utf-8");
 	require_once('functions.php');
 	
 	// Get script return parameters.
