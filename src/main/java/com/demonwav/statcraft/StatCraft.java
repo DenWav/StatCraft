@@ -112,14 +112,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class StatCraft extends JavaPlugin {
+public final class StatCraft extends JavaPlugin {
 
     private DatabaseManager databaseManager;
 
-    private HashMap<UUID, Integer> lastFireTime = new HashMap<>();
-    private HashMap<UUID, Integer> lastDrownTime = new HashMap<>();
-    private HashMap<UUID, Integer> lastPoisonTime = new HashMap<>();
-    private HashMap<UUID, Integer> lastWitherTime = new HashMap<>();
+    private ConcurrentHashMap<UUID, Integer> lastFireTime = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<UUID, Integer> lastDrownTime = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<UUID, Integer> lastPoisonTime = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<UUID, Integer> lastWitherTime = new ConcurrentHashMap<>();
 
     private ThreadManager threadManager = new ThreadManager(this);
 
@@ -137,176 +137,48 @@ public class StatCraft extends JavaPlugin {
     private Config config;
     final private FileYamlStorage<Config> configStorage = new FileYamlStorage<>(new File(getDataFolder(), "config.yml"), Config.class, this);
 
-    public Config config() {
+    public final Config config() {
         return config;
     }
 
     @Override
-    final public void onEnable() {
+    public final void onEnable() {
         config = configStorage.load();
         verifyConfigColors();
         configStorage.save();
 
         databaseManager = new DatabaseManager(this);
-        if (isEnabled()) {
-            databaseManager.setupDatabase();
-            if (!isEnabled())
-                return;
-
-            // set the time zone of the server
-            if (config().getTimezone().equalsIgnoreCase("auto")) {
-                TimeZone tz = Calendar.getInstance().getTimeZone();
-                timeZone = tz.getDisplayName(false, TimeZone.SHORT);
-            } else {
-                timeZone = config().getTimezone();
-            }
-
-            // Register timers
-            getServer().getScheduler().runTaskTimer(this, threadManager, 1, 1);
-
-            getCommand("sc").setExecutor(baseCommand);
-
-            /* ****************************************************** */
-            /* To protect against NoClassDefFoundError in onDisable() */
-            /* */ QSeen.seen.getClass();                           /* */
-            /* */ QPlayTime.playTime.getClass();                   /* */
-            /* */ QSleep.sleep.getClass();                         /* */
-            /* ****************************************************** */
-
-            createListeners();
-            initializePlaytimeAndBed();
-            setupPlayers();
+        if (!isEnabled()) {
+            return;
         }
-    }
-
-    private void setupPlayers() {
-        List<Players> players = null;
-        try (final Connection connection = getDatabaseManager().getConnection()) {
-            players = getDatabaseManager().getNewQuery(connection).from(QPlayers.players).list(QPlayers.players);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        databaseManager.setupDatabase();
+        if (!isEnabled()) {
+            return;
         }
 
-        if (players != null) {
-            for (Players player : players) {
-                this.players.put(player.getName(), Util.byteToUUID(player.getUuid()));
-            }
+        // set the time zone of the server
+        if (config().getTimezone().equalsIgnoreCase("auto")) {
+            TimeZone tz = Calendar.getInstance().getTimeZone();
+            timeZone = tz.getDisplayName(false, TimeZone.SHORT);
+        } else {
+            timeZone = config().getTimezone();
         }
-    }
 
-    private void initializePlaytimeAndBed() {
-        final int currentTime = (int)(System.currentTimeMillis() / 1000L);
+        // Register timers
+        getServer().getScheduler().runTaskTimer(this, threadManager, 1, 1);
 
-        getServer().getScheduler().runTaskAsynchronously(this, () -> {
-            getServer().getOnlinePlayers().forEach(player -> {
-                // Insert game join / bed enter data
-                final int id;
-                try (final Connection connection = getDatabaseManager().getConnection()) {
-                    id = setupPlayer(player, connection);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    return;
-                }
+        getCommand("sc").setExecutor(baseCommand);
 
-                getThreadManager().scheduleRaw(
-                    QSeen.class, (connection) -> Util.runQuery(
-                            QSeen.class,
-                            (s, clause) ->
-                                clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute(),
-                            (s, clause) ->
-                                clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
-                            connection, this
-                        )
-                );
+        /* ****************************************************** */
+        /* To protect against NoClassDefFoundError in onDisable() */
+        /* */ QSeen.seen.getClass();                           /* */
+        /* */ QPlayTime.playTime.getClass();                   /* */
+        /* */ QSleep.sleep.getClass();                         /* */
+        /* ****************************************************** */
 
-                if (player.isSleeping()) {
-                    getThreadManager().scheduleRaw(
-                        QSleep.class, (connection) -> Util.runQuery(
-                           QSleep.class, (s, clause) ->
-                                clause.columns(s.id, s.enterBed).values(id, currentTime).execute(),
-                            (s, clause) ->
-                                clause.where(s.id.eq(id)).set(s.enterBed, currentTime).execute(),
-                            connection, this
-                        )
-                    );
-                }
-            });
-            enabler.set(true);
-        });
-    }
-
-    private void finishPlaytimeAndBed() {
-        final int currentTime = (int)(System.currentTimeMillis() / 1000L);
-
-        // We can't start an async task here, so just do it on the main thread
-        getServer().getOnlinePlayers().forEach(player -> {
-            UUID uuid = player.getUniqueId();
-            int id = getDatabaseManager().getPlayerId(uuid);
-
-            try (final Connection connection = getDatabaseManager().getConnection()) {
-                Util.runQuery(QSeen.class, (s, clause) ->
-                        clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute(),
-                    (s, clause) ->
-                        clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
-                    connection, this
-                );
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-            final int currentPlayTime = (int) Math.round(player.getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
-
-            try (final Connection connection = getDatabaseManager().getConnection()) {
-                Util.runQuery(QPlayTime.class, (p, clause) ->
-                        clause.columns(p.id, p.amount).values(id, currentPlayTime).execute(),
-                    (p, clause) ->
-                        clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute(),
-                    connection, this
-                );
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-
-            if (player.isSleeping()) {
-                try (final Connection connection = getDatabaseManager().getConnection()) {
-                    Util.runQuery(QSleep.class, (s, query) -> {
-                            Map<String, Integer> map = new HashMap<>();
-
-                            Integer enterBed = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
-                            enterBed = enterBed == null ? 0 : enterBed;
-                            if (enterBed != 0) {
-                                map.put("timeSlept", currentTime - enterBed);
-                            } else {
-                                map.put("timeSlept", 0);
-                            }
-
-                            return map;
-                        }, (s, clause, map) -> {
-                            if (map.get("timeSlept") == 0) {
-                                clause.columns(s.id, s.leaveBed).values(id, currentTime).execute();
-                            } else {
-                                clause.columns(s.id, s.leaveBed, s.timeSlept)
-                                    .values(id, currentTime, map.get("timeSlept")).execute();
-                            }
-                        }, (s, clause, map) -> {
-                            if (map.get("timeSlept") == 0) {
-                                clause.where(s.id.eq(id)).set(s.leaveBed, currentTime).execute();
-                            } else {
-                                clause.where(s.id.eq(id))
-                                    .set(s.leaveBed, currentPlayTime)
-                                    .set(s.timeSlept, map.get("timeSlept"))
-                                    .execute();
-                            }
-                        },
-                        connection, this
-                    );
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
+        createListeners();
+        initializePlaytimeAndBed();
+        setupPlayers();
     }
 
     private void verifyConfigColors() {
@@ -320,7 +192,7 @@ public class StatCraft extends JavaPlugin {
             } catch (Exception e) {
                 try {
                     getLogger().warning("The color value '" + field.get(config().getColors()) + "' specified for colors." +
-                            field.getName() + " is invalid, resetting to the default value of " + field.get(defaultConfig));
+                        field.getName() + " is invalid, resetting to the default value of " + field.get(defaultConfig));
                     field.set(config().getColors(), field.get(defaultConfig));
                 } catch (IllegalAccessException e1) {
                     e1.printStackTrace();
@@ -529,21 +401,154 @@ public class StatCraft extends JavaPlugin {
         new SCReset(this);
     }
 
+    private void initializePlaytimeAndBed() {
+        final int currentTime = (int)(System.currentTimeMillis() / 1000L);
+
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            getServer().getOnlinePlayers().forEach(player -> {
+                // Insert game join / bed enter data
+                final int id;
+                try (final Connection connection = getDatabaseManager().getConnection()) {
+                    id = setupPlayer(player, connection);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    return;
+                }
+
+                getThreadManager().scheduleRaw(
+                    QSeen.class, (connection) -> Util.runQuery(
+                            QSeen.class,
+                            (s, clause) ->
+                                clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute(),
+                            (s, clause) ->
+                                clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
+                            connection, this
+                        )
+                );
+
+                if (player.isSleeping()) {
+                    getThreadManager().scheduleRaw(
+                        QSleep.class, (connection) -> Util.runQuery(
+                           QSleep.class, (s, clause) ->
+                                clause.columns(s.id, s.enterBed).values(id, currentTime).execute(),
+                            (s, clause) ->
+                                clause.where(s.id.eq(id)).set(s.enterBed, currentTime).execute(),
+                            connection, this
+                        )
+                    );
+                }
+            });
+            enabler.set(true);
+        });
+    }
+
+    private void setupPlayers() {
+        List<Players> players = null;
+        try (final Connection connection = getDatabaseManager().getConnection()) {
+            SQLQuery query = getDatabaseManager().getNewQuery(connection);
+            if (query != null) {
+                players = query.from(QPlayers.players).list(QPlayers.players);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (players != null) {
+            for (Players player : players) {
+                this.players.put(player.getName(), Util.byteToUUID(player.getUuid()));
+            }
+        }
+    }
+
     @Override
-    final public void onDisable() {
+    public final  void onDisable() {
         if (enabler.get())
             finishPlaytimeAndBed();
 
         if (threadManager != null)
-            threadManager.stop();
+            threadManager.close();
 
         if (getDatabaseManager() != null)
             getDatabaseManager().close();
 
         getServer().getScheduler().cancelTasks(this);
-     }
+    }
 
-    public int setupPlayer(OfflinePlayer player, Connection connection) {
+    private void finishPlaytimeAndBed() {
+        final int currentTime = (int)(System.currentTimeMillis() / 1000L);
+
+        // We can't start an async task here, so just do it on the main thread
+        getServer().getOnlinePlayers().forEach(player -> {
+            UUID uuid = player.getUniqueId();
+            int id = getDatabaseManager().getPlayerId(uuid);
+
+            try (final Connection connection = getDatabaseManager().getConnection()) {
+                Util.runQuery(QSeen.class, (s, clause) ->
+                        clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute(),
+                    (s, clause) ->
+                        clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
+                    connection, this
+                );
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            final int currentPlayTime = (int) Math.round(player.getStatistic(Statistic.PLAY_ONE_TICK) * 0.052);
+
+            try (final Connection connection = getDatabaseManager().getConnection()) {
+                Util.runQuery(QPlayTime.class, (p, clause) ->
+                        clause.columns(p.id, p.amount).values(id, currentPlayTime).execute(),
+                    (p, clause) ->
+                        clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute(),
+                    connection, this
+                );
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+
+            if (player.isSleeping()) {
+                try (final Connection connection = getDatabaseManager().getConnection()) {
+                    Util.runQuery(QSleep.class, (s, query) -> {
+                            Map<String, Integer> map = new HashMap<>();
+
+                            Integer enterBed = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
+                            enterBed = enterBed == null ? 0 : enterBed;
+                            if (enterBed != 0) {
+                                map.put("timeSlept", currentTime - enterBed);
+                            } else {
+                                map.put("timeSlept", 0);
+                            }
+
+                            return map;
+                        }, (s, clause, map) -> {
+                            if (map.get("timeSlept") == 0) {
+                                clause.columns(s.id, s.leaveBed).values(id, currentTime).execute();
+                            } else {
+                                clause.columns(s.id, s.leaveBed, s.timeSlept)
+                                    .values(id, currentTime, map.get("timeSlept")).execute();
+                            }
+                        }, (s, clause, map) -> {
+                            if (map.get("timeSlept") == 0) {
+                                clause.where(s.id.eq(id)).set(s.leaveBed, currentTime).execute();
+                            } else {
+                                clause.where(s.id.eq(id))
+                                    .set(s.leaveBed, currentPlayTime)
+                                    .set(s.timeSlept, map.get("timeSlept"))
+                                    .execute();
+                            }
+                        },
+                        connection, this
+                    );
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+    }
+
+    public final int setupPlayer(final OfflinePlayer player, Connection connection) {
         byte[] array = Util.UUIDToByte(player.getUniqueId());
         String name = player.getName();
         // Check player / id listing
@@ -557,12 +562,21 @@ public class StatCraft extends JavaPlugin {
 
         if (result == null) {
             SQLUpdateClause update = getDatabaseManager().getUpdateClause(connection, p);
+
+            if (update == null)
+                return -1;
+
             // Blank out any conflicting names
             update
                 .where(p.name.eq(name))
                 .set(p.name, "")
                 .execute();
             SQLInsertClause insert = getDatabaseManager().getInsertClause(connection, p);
+
+            if (insert == null) {
+                return -1;
+            }
+
             // Insert new player listing
             insert
                 .columns(p.uuid, p.name)
@@ -572,6 +586,11 @@ public class StatCraft extends JavaPlugin {
             checkBlanks();
         } else if (!result.getName().equals(name)) {
             SQLUpdateClause update = getDatabaseManager().getUpdateClause(connection, p);
+
+            if (update == null) {
+                return -1;
+            }
+
             // Blank out any conflicting names
             update
                 .where(p.name.eq(name))
@@ -590,15 +609,26 @@ public class StatCraft extends JavaPlugin {
 
         if (config.getStats().isFirstJoinTime()) {
             query = getDatabaseManager().getNewQuery(connection);
+
+            if (query == null) {
+                return -1;
+            }
+
             QSeen s = QSeen.seen;
             Integer time = query.from(s).where(s.id.eq(id)).uniqueResult(s.firstJoinTime);
             time = time == null ? 0 : time;
             if (time != (int)(player.getFirstPlayed() / 1000L)) {
                 try {
                     SQLInsertClause clause = getDatabaseManager().getInsertClause(connection, s);
+                    if (clause == null) {
+                        return -1;
+                    }
                     clause.columns(s.id, s.firstJoinTime).values(id, (int) (player.getFirstPlayed() / 1000L)).execute();
                 } catch (QueryException e) {
                     SQLUpdateClause clause = getDatabaseManager().getUpdateClause(connection, s);
+                    if (clause == null) {
+                        return -1;
+                    }
                     clause.where(s.id.eq(id)).set(s.firstJoinTime, (int)(player.getFirstPlayed() / 1000L)).execute();
                 }
             }
@@ -618,120 +648,7 @@ public class StatCraft extends JavaPlugin {
         return id;
     }
 
-    /**
-     * Returns the time zone.
-     * <p>
-     * The time zone was either set explicitly by the admin in the config file, or was determined automatically by
-     * the plugin.
-     *
-     * @return The time zone the plugin is using for the displayed times
-     * @see java.util.TimeZone
-     */
-    public String getTimeZone() {
-        return timeZone;
-    }
-
-    /**
-     * Returns the last time a player was on fire
-     *
-     * @param uuid The uuid of the player that was on fire
-     * @return The time that the player was last on fire
-     */
-    public int getLastFireTime(UUID uuid) {
-        Integer time = lastFireTime.get(uuid);
-        return time == null ? 0 : time;
-    }
-
-    /**
-     * Returns the last time a player was drowning
-     *
-     * @param uuid The uuid of the player that was drowning
-     * @return The time that the player was last drowning
-     */
-    public int getLastDrownTime(UUID uuid) {
-        Integer time = lastDrownTime.get(uuid);
-        return time == null ? 0 : time;
-    }
-
-    /**
-     * Returns the last time a player was poisoned
-     *
-     * @param uuid The uuid of the player that was poisoned
-     * @return The time that the player was last poisoned
-     */
-    public int getLastPoisonTime(UUID uuid) {
-        Integer time = lastPoisonTime.get(uuid);
-        return time == null ? 0 : time;
-    }
-
-    /**
-     * Returns the last time a player was withering away
-     *
-     * @param uuid The uuid of the player that was withering away
-     * @return The time that the player was last withering away
-     */
-    public int getLastWitherTime(UUID uuid) {
-        Integer time = lastWitherTime.get(uuid);
-        return time == null ? 0 : time;
-    }
-
-    /**
-     * Sets the last time a player is on fire
-     *
-     * @param uuid The uuid of the player that is on fire
-     * @param time The time the player was on fire
-     */
-    public void setLastFireTime(UUID uuid, int time) {
-        lastFireTime.put(uuid, time);
-    }
-
-    /**
-     * Sets the last time a player is drowning
-     *
-     * @param uuid The uuid of the player that is drowning
-     * @param time The time the player was drowning
-     */
-    public void setLastDrowningTime(UUID uuid, int time) {
-        lastDrownTime.put(uuid, time);
-    }
-
-    /**
-     * Sets the last time a player is poisoned
-     *
-     * @param uuid The uuid of the player that is poisoned
-     * @param time The time the player was poisoned
-     */
-    public void setLastPoisonTime(UUID uuid, int time) {
-        lastPoisonTime.put(uuid, time);
-    }
-
-    /**
-     * Sets the last time a player is withering away
-     *
-     * @param uuid The uuid of the player that is withering awawy
-     * @param time The time the player is withering away
-     */
-    public void setLastWitherTime(UUID uuid, int time) {
-        lastWitherTime.put(uuid, time);
-    }
-
-    public ServerStatUpdater.Move getMoveUpdater() {
-        return moveUpdater;
-    }
-
-    public DatabaseManager getDatabaseManager() {
-        return databaseManager;
-    }
-
-    public BaseCommand getBaseCommand() {
-        return baseCommand;
-    }
-
-    public ThreadManager getThreadManager() {
-        return threadManager;
-    }
-
-    private static String getCurrentName(UUID uuid) {
+    private String getCurrentName(final UUID uuid) {
         // Get JSON from Mojang API
         final String url = "https://api.mojang.com/user/profiles/" + uuid.toString().replaceAll("-", "") + "/names";
         HttpURLConnection conn;
@@ -793,8 +710,9 @@ public class StatCraft extends JavaPlugin {
             QPlayers p = QPlayers.players;
             SQLQuery query = getDatabaseManager().getNewQuery(connection);
 
-            if (query == null)
+            if (query == null) {
                 return;
+            }
 
             List<Players> result = query.from(p).where(p.name.eq("")).list(p);
             for (Players players : result) {
@@ -804,6 +722,9 @@ public class StatCraft extends JavaPlugin {
                     name = getCurrentName(uuid);
 
                     SQLUpdateClause update = getDatabaseManager().getUpdateClause(connection, p);
+                    if (update == null) {
+                        return ;
+                    }
                     update
                         .where(p.uuid.eq(players.getUuid()))
                         .set(p.name, name)
@@ -814,5 +735,118 @@ public class StatCraft extends JavaPlugin {
                 }
             }
         });
+    }
+
+    /**
+     * Returns the time zone.
+     * <p>
+     * The time zone was either set explicitly by the admin in the config file, or was determined automatically by
+     * the plugin.
+     *
+     * @return The time zone the plugin is using for the displayed times
+     * @see java.util.TimeZone
+     */
+    public final String getTimeZone() {
+        return timeZone;
+    }
+
+    /**
+     * Returns the last time a player was on fire
+     *
+     * @param uuid The uuid of the player that was on fire
+     * @return The time that the player was last on fire
+     */
+    public final int getLastFireTime(final UUID uuid) {
+        Integer time = lastFireTime.get(uuid);
+        return time == null ? 0 : time;
+    }
+
+    /**
+     * Returns the last time a player was drowning
+     *
+     * @param uuid The uuid of the player that was drowning
+     * @return The time that the player was last drowning
+     */
+    public final int getLastDrownTime(final UUID uuid) {
+        Integer time = lastDrownTime.get(uuid);
+        return time == null ? 0 : time;
+    }
+
+    /**
+     * Returns the last time a player was poisoned
+     *
+     * @param uuid The uuid of the player that was poisoned
+     * @return The time that the player was last poisoned
+     */
+    public final int getLastPoisonTime(final UUID uuid) {
+        Integer time = lastPoisonTime.get(uuid);
+        return time == null ? 0 : time;
+    }
+
+    /**
+     * Returns the last time a player was withering away
+     *
+     * @param uuid The uuid of the player that was withering away
+     * @return The time that the player was last withering away
+     */
+    public final int getLastWitherTime(final UUID uuid) {
+        Integer time = lastWitherTime.get(uuid);
+        return time == null ? 0 : time;
+    }
+
+    /**
+     * Sets the last time a player is on fire
+     *
+     * @param uuid The uuid of the player that is on fire
+     * @param time The time the player was on fire
+     */
+    public final void setLastFireTime(final UUID uuid, final int time) {
+        lastFireTime.put(uuid, time);
+    }
+
+    /**
+     * Sets the last time a player is drowning
+     *
+     * @param uuid The uuid of the player that is drowning
+     * @param time The time the player was drowning
+     */
+    public final void setLastDrowningTime(final UUID uuid, final int time) {
+        lastDrownTime.put(uuid, time);
+    }
+
+    /**
+     * Sets the last time a player is poisoned
+     *
+     * @param uuid The uuid of the player that is poisoned
+     * @param time The time the player was poisoned
+     */
+    public final void setLastPoisonTime(final UUID uuid, final int time) {
+        lastPoisonTime.put(uuid, time);
+    }
+
+    /**
+     * Sets the last time a player is withering away
+     *
+     * @param uuid The uuid of the player that is withering awawy
+     * @param time The time the player is withering away
+     */
+    public final void setLastWitherTime(final UUID uuid, final int time) {
+        lastWitherTime.put(uuid, time);
+    }
+
+    public final ServerStatUpdater.Move getMoveUpdater() {
+        return moveUpdater;
+    }
+
+    public final DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    public final BaseCommand getBaseCommand() {
+        return baseCommand;
+    }
+
+    public final ThreadManager getThreadManager() {
+        return threadManager;
     }
 }

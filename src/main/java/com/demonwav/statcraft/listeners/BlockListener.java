@@ -23,7 +23,7 @@ import java.util.UUID;
 
 public class BlockListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public BlockListener(StatCraft plugin) {
         this.plugin = plugin;

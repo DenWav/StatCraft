@@ -20,7 +20,7 @@ import java.util.UUID;
 
 public class ToolsBrokenListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public ToolsBrokenListener(StatCraft plugin) {
         this.plugin = plugin;

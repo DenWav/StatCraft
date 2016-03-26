@@ -58,11 +58,14 @@ public class SCTimeSlept extends SCTemplate {
                 int now = (int)(System.currentTimeMillis() / 1000L);
 
                 query = plugin.getDatabaseManager().getNewQuery(connection);
-                Integer enter = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
+                if (query != null) {
+                    Integer enter = query.from(s).where(s.id.eq(id)).uniqueResult(s.enterBed);
 
-                // Sanity check
-                if (enter != null && enter != 0 && now != 0)
-                    result = result + (now - enter);
+                    // Sanity check
+                    if (enter != null && enter != 0 && now != 0) {
+                        result = result + (now - enter);
+                    }
+                }
             }
 
             return new TimeResponseBuilder(plugin)

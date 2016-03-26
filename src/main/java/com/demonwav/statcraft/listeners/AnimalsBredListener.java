@@ -36,7 +36,7 @@ public class AnimalsBredListener implements Listener {
 
     // TODO: figure out how to implement this
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
     private HashMap<UUID, Player> breedMap = new HashMap<>();
 
     public AnimalsBredListener(StatCraft plugin) {
@@ -59,7 +59,8 @@ public class AnimalsBredListener implements Listener {
                     case CHICKEN:
                     case OCELOT:
                     case WOLF:
-//                        Ageable[] parents = entity.getParents();
+//                      Ageable[] parents = entity.getParents();
+                        @SuppressWarnings("MismatchedReadAndWriteOfArray")
                         Ageable[] parents = new Ageable[0];
                         if (parents.length != 0) {
                             Player firstPlayer = null;

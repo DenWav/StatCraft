@@ -20,7 +20,7 @@ import java.util.UUID;
 
 public class TabCompleteListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public TabCompleteListener(StatCraft plugin) {
         this.plugin = plugin;

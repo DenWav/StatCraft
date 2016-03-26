@@ -16,26 +16,26 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public class ServerStatUpdater {
+public final class ServerStatUpdater {
 
-    public static class Move implements Runnable {
+    public static final class Move implements Runnable {
 
-        private StatCraft plugin;
+        private final StatCraft plugin;
 
         public Move(StatCraft plugin) {
             this.plugin = plugin;
         }
 
         @Override
-        public void run() {
+        public final void run() {
             plugin.getServer().getOnlinePlayers().forEach(this::run);
         }
 
-        public void run(final Player player) {
+        public final void run(final Player player) {
             run(player, player.getWorld().getUID());
         }
 
-        public void run(final Player player, final UUID worldUuid) {
+        public final void run(final Player player, final UUID worldUuid) {
             for (final MoveCode code : MoveCode.values()) {
                 Statistic stat = code.getStat();
                 final int value = player.getStatistic(stat);

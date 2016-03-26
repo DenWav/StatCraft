@@ -28,7 +28,7 @@ import java.util.UUID;
 
 public class DeathListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public DeathListener(StatCraft plugin) {
         this.plugin = plugin;

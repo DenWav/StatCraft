@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class JumpListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public JumpListener(StatCraft plugin) {
         this.plugin = plugin;

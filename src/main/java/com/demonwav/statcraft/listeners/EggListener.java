@@ -24,7 +24,7 @@ import java.util.UUID;
 
 public class EggListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public EggListener(StatCraft plugin) {
         this.plugin = plugin;

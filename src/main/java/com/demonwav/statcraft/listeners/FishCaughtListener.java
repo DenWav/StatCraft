@@ -23,7 +23,7 @@ import java.util.UUID;
 
 public class FishCaughtListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public FishCaughtListener(StatCraft plugin) {
         this.plugin = plugin;

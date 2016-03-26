@@ -18,8 +18,8 @@ import static org.junit.Assert.*;
 
 public class UtilTest {
 
-    final static UUID uuid = UUID.fromString("c43d2930-22aa-40f4-aca6-82e6540044cc");
-    final static byte[] array = new byte[]{-60, 61, 41, 48, 34, -86, 64, -12, -84, -90, -126, -26, 84, 0, 68, -52};
+    private static final UUID uuid = UUID.fromString("c43d2930-22aa-40f4-aca6-82e6540044cc");
+    private static final byte[] array = new byte[]{-60, 61, 41, 48, 34, -86, 64, -12, -84, -90, -126, -26, 84, 0, 68, -52};
 
     @Test
     public void testUUIDToByte() {

@@ -20,7 +20,7 @@ import java.util.UUID;
 
 public class HighestLevelListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public HighestLevelListener(StatCraft plugin) {
         this.plugin = plugin;

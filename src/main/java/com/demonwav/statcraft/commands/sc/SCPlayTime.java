@@ -13,12 +13,15 @@ import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.commands.TimeResponseBuilder;
 import com.demonwav.statcraft.querydsl.QPlayTime;
 import com.demonwav.statcraft.querydsl.QPlayers;
+import com.demonwav.statcraft.querydsl.QSeen;
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.UUID;
 
 public class SCPlayTime extends SCTemplate {
 
@@ -47,6 +50,23 @@ public class SCPlayTime extends SCTemplate {
 
             if (result == null)
                 result = 0;
+
+            UUID uuid = plugin.players.get(name);
+            OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
+
+            if (player != null && player.isOnline()) {
+                int now = (int)(System.currentTimeMillis() / 1000L);
+
+                QSeen s = QSeen.seen;
+                query = plugin.getDatabaseManager().getNewQuery(connection);
+                if (query != null) {
+                    Integer join = query.from(s).where(s.id.eq(id)).uniqueResult(s.lastJoinTime.max());
+
+                    // Sanity check
+                    if (join != null && join != 0 && now != 0)
+                        result = result + (now - join);
+                }
+            }
 
             return new TimeResponseBuilder(plugin)
                     .setName(name)

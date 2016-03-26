@@ -27,7 +27,7 @@ import java.util.UUID;
  *  https://forums.bukkit.org/threads/cant-get-amount-of-shift-click-craft-item.79090/ */
 public class ItemsCraftedListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public ItemsCraftedListener(StatCraft plugin) {
         this.plugin = plugin;

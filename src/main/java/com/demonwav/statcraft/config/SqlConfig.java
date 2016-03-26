@@ -13,9 +13,11 @@ import com.demonwav.statcraft.config.com.md_5.config.AnnotatedConfig;
 import com.demonwav.statcraft.config.com.md_5.config.ConfigComment;
 import com.demonwav.statcraft.config.com.md_5.config.NewLine;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class SqlConfig extends AnnotatedConfig {
+@EqualsAndHashCode(callSuper = true)
+public final class SqlConfig extends AnnotatedConfig {
 
     private String hostname = "localhost";
     private String username = "statcraft";

@@ -24,7 +24,7 @@ import java.util.UUID;
 
 public class KillListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public KillListener(StatCraft plugin) {
         this.plugin = plugin;

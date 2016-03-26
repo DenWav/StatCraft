@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
+public final class BaseCommand implements CommandExecutor, TabCompleter, Listener {
 
     private StatCraft plugin;
     // TreeMap keeps the commands sorted alphabetically
@@ -41,14 +41,14 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
         this.plugin = plugin;
     }
 
-    public void registerCommand(String cmd, SCTemplate command) {
+    public final void registerCommand(String cmd, SCTemplate command) {
         if (subCommands.containsKey(cmd))
             throw new CommandAlreadyDefinedException(cmd);
         subCommands.put(cmd, command);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+    public final boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
         if (args.length == 0) {
             sender.sendMessage(ChatColor.GRAY + "Available commands: ");
             StringBuilder stringBuilder = new StringBuilder();
@@ -196,7 +196,7 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+    public final List<String> onTabComplete(CommandSender sender, Command cmd, String commandLabel, String[] args) {
         if (args.length == 1) {
             // Return a list of only the commands they are allowed to run
             List<String> result = subCommands.entrySet().stream()

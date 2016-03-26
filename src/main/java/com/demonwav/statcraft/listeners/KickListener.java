@@ -20,7 +20,7 @@ import java.util.UUID;
 
 public class KickListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public KickListener(StatCraft plugin) {
         this.plugin = plugin;

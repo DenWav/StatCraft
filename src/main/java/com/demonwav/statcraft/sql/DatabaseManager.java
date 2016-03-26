@@ -36,7 +36,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DatabaseManager implements Closeable {
+public final class DatabaseManager implements Closeable {
 
     private StatCraft plugin;
     private boolean connecting = true;
@@ -56,11 +56,10 @@ public class DatabaseManager implements Closeable {
         config.addDataSourceProperty("serverName", plugin.config().getMysql().getHostname());
         config.setMaximumPoolSize(Table.values().length);
 
-        dataSource = new HikariDataSource(config);
-
-        try (Connection ignored = dataSource.getConnection()) {
+        try {
+            dataSource = new HikariDataSource(config);
             connecting = false;
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             plugin.getLogger().severe(red(" *** StatCraft was unable to communicate with the database,"));
             plugin.getLogger().severe(red(" *** please check your settings and reload, StatCraft will"));
@@ -69,11 +68,11 @@ public class DatabaseManager implements Closeable {
         }
     }
 
-    public Connection getConnection() throws SQLException {
+    public final Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
-    public void setupDatabase()  {
+    public final void setupDatabase()  {
         for (Table table : Table.values()) {
             checkTable(table);
             if (!plugin.isEnabled())
@@ -225,13 +224,13 @@ public class DatabaseManager implements Closeable {
     }
 
     @Override
-    public void close() {
+    public final void close() {
         if (dataSource != null) {
             dataSource.close();
         }
     }
 
-    public int getPlayerId(UUID uuid) {
+    public final int getPlayerId(UUID uuid) {
         if (uuidMap.containsKey(uuid)) {
             return uuidMap.get(uuid);
         }
@@ -255,7 +254,7 @@ public class DatabaseManager implements Closeable {
         }
     }
 
-    public int getPlayerId(String name) {
+    public final int getPlayerId(String name) {
         try (final Connection connection = getConnection()) {
             SQLQuery query = getNewQuery(connection);
             QPlayers p = QPlayers.players;
@@ -312,7 +311,7 @@ public class DatabaseManager implements Closeable {
         }
     }
 
-    public int getWorldId(UUID uuid) {
+    public final int getWorldId(UUID uuid) {
         if (worldMap.containsKey(uuid)) {
             return worldMap.get(uuid);
         }
@@ -354,7 +353,7 @@ public class DatabaseManager implements Closeable {
     }
 
     @Nullable
-    public SQLQuery getNewQuery(Connection connection) {
+    public final SQLQuery getNewQuery(Connection connection) {
         if (!connecting) {
             return new SQLQuery(connection, MySQLTemplates.DEFAULT);
         } else {
@@ -363,7 +362,7 @@ public class DatabaseManager implements Closeable {
     }
 
     @Nullable
-    public SQLUpdateClause getUpdateClause(Connection connection, RelationalPath<?> path) {
+    public final SQLUpdateClause getUpdateClause(Connection connection, RelationalPath<?> path) {
         if (!connecting) {
             return new SQLUpdateClause(connection, MySQLTemplates.DEFAULT, path);
         } else {
@@ -372,7 +371,7 @@ public class DatabaseManager implements Closeable {
     }
 
     @Nullable
-    public SQLInsertClause getInsertClause(Connection connection, RelationalPath<?> path) {
+    public final SQLInsertClause getInsertClause(Connection connection, RelationalPath<?> path) {
         if (!connecting) {
             return new SQLInsertClause(connection, MySQLTemplates.DEFAULT, path);
         } else {

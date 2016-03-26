@@ -24,7 +24,7 @@ import java.util.UUID;
 
 public class EnderPearlListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public EnderPearlListener(StatCraft plugin) {
         this.plugin = plugin;

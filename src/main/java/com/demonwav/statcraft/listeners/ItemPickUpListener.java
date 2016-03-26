@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class ItemPickUpListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public ItemPickUpListener(StatCraft plugin) {
         this.plugin = plugin;

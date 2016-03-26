@@ -25,7 +25,7 @@ import java.util.UUID;
 
 public class SnowballListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public SnowballListener(StatCraft plugin) {
         this.plugin = plugin;

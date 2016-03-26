@@ -172,23 +172,31 @@ public class SCReset extends SCTemplate implements CustomResponse {
                     QSeen s = QSeen.seen;
                     SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
 
-                    if (query.from(s).where(s.id.eq(id)).exists()) {
+                    if (query != null && query.from(s).where(s.id.eq(id)).exists()) {
                         SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, s);
-                        clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
+                        if (clause != null) {
+                            clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute();
+                        }
                     } else {
                         SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, s);
-                        clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
+                        if (clause != null) {
+                            clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute();
+                        }
                     }
 
                     if (player.getPlayer().isSleeping()) {
                         QSleep sl = QSleep.sleep;
 
-                        if (query.from(sl).where(sl.id.eq(id)).exists()) {
+                        if (query != null && query.from(sl).where(sl.id.eq(id)).exists()) {
                             SQLUpdateClause clause = plugin.getDatabaseManager().getUpdateClause(connection, sl);
-                            clause.where(sl.id.eq(id)).set(sl.enterBed, currentTime).execute();
+                            if (clause != null) {
+                                clause.where(sl.id.eq(id)).set(sl.enterBed, currentTime).execute();
+                            }
                         } else {
                             SQLInsertClause clause = plugin.getDatabaseManager().getInsertClause(connection, sl);
-                            clause.columns(sl.id, sl.enterBed).values(id, currentTime).execute();
+                            if (clause != null) {
+                                clause.columns(sl.id, sl.enterBed).values(id, currentTime).execute();
+                            }
                         }
                     }
                 }

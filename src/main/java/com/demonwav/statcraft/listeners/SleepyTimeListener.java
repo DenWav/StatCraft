@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class SleepyTimeListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public SleepyTimeListener(StatCraft plugin) {
         this.plugin = plugin;

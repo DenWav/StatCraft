@@ -20,6 +20,7 @@ import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
@@ -27,16 +28,18 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class Util {
+public final class Util {
 
-    public static byte[] UUIDToByte(UUID uuid) {
+    @NotNull
+    public static byte[] UUIDToByte(@NotNull  UUID uuid) {
         ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
         byteBuffer.putLong(uuid.getMostSignificantBits());
         byteBuffer.putLong(uuid.getLeastSignificantBits());
         return byteBuffer.array();
     }
 
-    public static UUID byteToUUID(byte[] array) {
+    @NotNull
+    public static UUID byteToUUID(@NotNull  byte[] array) {
         ByteBuffer buffer = ByteBuffer.wrap(array);
         return new UUID(buffer.getLong(), buffer.getLong());
     }
@@ -223,7 +226,7 @@ public class Util {
      * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
      * caller.
      * <p>
-     * Thanks to type inferencing no type parameters should need to be provided.
+     * Thanks to type inferencing no type parameters should need to be explicitly provided.
      *
      * @param clazz The relevant table for this query
      * @param insertClause The action to run for the insert query
@@ -263,27 +266,25 @@ public class Util {
     /**
      * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
      * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
-     * caller. This also allows work to be done before the insert and update queries, with parameters saved in a map.
-     * The map object this work function returns will be passed to the insert and update functions, and in that order.
-     * Because of this, if the map is modified in the insert function, these modifications will be present in the update
-     * function.
+     * caller. This also allows work to be done before the insert and update queries. The work function can return any
+     * object, and this object will be passed to the insert and update functions, and in that order. Because of this, if
+     * the object is modified in the insert function, these modifications will be present in the update function.
      * <p>
-     * Thanks to type inferencing no type parameters should need to be provided.
+     * Thanks to type inferencing no type parameters should need to be explicitly provided.
      *
      * @param clazz The relevant table for this query
-     * @param workBefore The action to run before the queries, returning a map which will be passed to the two queries
+     * @param workBefore The action to run before the queries, returning an object which will be passed to the two queries
      * @param insertClause The action to run for the insert query
      * @param updateClause The action to run for the update query if the insert fails
      * @param plugin The StatCraft object
      * @param <T> The RelationalPath that represents the relevant table
      */
-    @SuppressWarnings("Duplicates")
     public static <T extends RelationalPath<?>, R> void runQuery(final Class<T> clazz,
-                                                                    final QueryFunction<T, R> workBefore,
-                                                                    final QueryRunnerMap<T, SQLInsertClause, R> insertClause,
-                                                                    final QueryRunnerMap<T, SQLUpdateClause, R> updateClause,
-                                                                    final Connection connection,
-                                                                    final StatCraft plugin) {
+                                                                 final QueryFunction<T, R> workBefore,
+                                                                 final QueryRunnerMap<T, SQLInsertClause, R> insertClause,
+                                                                 final QueryRunnerMap<T, SQLUpdateClause, R> updateClause,
+                                                                 final Connection connection,
+                                                                 final StatCraft plugin) {
         try {
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
             final R r = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(connection));
@@ -318,7 +319,7 @@ public class Util {
      * player and world will be fetched before the insert and update functions are called, and the id will be passed to
      * them. This is not an expensive operation as both of these values are cached.
      * <p>
-     * Thanks to type inferencing no type parameters should need to be provided.
+     * Thanks to type inferencing no type parameters should need to be explicitly provided.
      *
      * @param clazz The relevant table for this query
      * @param playerId The UUID of the relevant player
@@ -328,7 +329,6 @@ public class Util {
      * @param plugin The StatCraft object
      * @param <T> The RelationalPath that represents the relevant table
      */
-    @SuppressWarnings("Duplicates")
     public static <T extends RelationalPath<?>> void runQuery(final Class<T> clazz,
                                                               final UUID playerId,
                                                               final UUID worldId,
@@ -365,34 +365,33 @@ public class Util {
     /**
      * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
      * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
-     * caller. This also allows work to be done before the insert and update queries, with parameters saved in a map.
-     * The map object this work function returns will be passed to the insert and update functions, and in that order.
-     * Because of this, if the map is modified in the insert function, these modifications will be present in the update
-     * function.
+     * caller. This also allows work to be done before the insert and update queries. The work function can return any
+     * object, and this object will be passed to the insert and update functions, and in that order. Because of this, if
+     * the object is modified in the insert function, these modifications will be present in the update function.
      * <p>
      * For convenience this method also allows a player's UUID and a world's UUID to be passed in. The database id of
      * the player and world will be fetched before the insert and update functions are called, and the id will be
      * passed to them. This is not an expensive operation as both of these values are cached.
      * <p>
-     * Thanks to type inferencing no type parameters should need to be provided.
+     * Thanks to type inferencing no type parameters should need to be explicitly provided.
      *
      * @param clazz The relevant table for this query
      * @param playerId The UUID of the relevant player
      * @param worldId The UUID of the relevant world
-     * @param workBefore The action to run before the queries, returning a map which will be passed to the two queries
+     * @param workBefore The action to run before the queries, returning an object which will be passed to the two queries
      * @param insertClause The action to run for the insert query
      * @param updateClause The action to run for the update query if the insert fails
      * @param plugin The StatCraft object
      * @param <T> The RelationalPath that represents the relevant table
      */
     public static <T extends RelationalPath<?>, R> void runQuery(final Class<T> clazz,
-                                                                    final UUID playerId,
-                                                                    final UUID worldId,
-                                                                    final QueryIdFunction<T, R> workBefore,
-                                                                    final QueryIdRunnerMap<T, SQLInsertClause, R> insertClause,
-                                                                    final QueryIdRunnerMap<T, SQLUpdateClause, R> updateClause,
-                                                                    final Connection connection,
-                                                                    final StatCraft plugin) {
+                                                                 final UUID playerId,
+                                                                 final UUID worldId,
+                                                                 final QueryIdFunction<T, R> workBefore,
+                                                                 final QueryIdRunnerMap<T, SQLInsertClause, R> insertClause,
+                                                                 final QueryIdRunnerMap<T, SQLUpdateClause, R> updateClause,
+                                                                 final Connection connection,
+                                                                 final StatCraft plugin) {
         try {
             final int id = plugin.getDatabaseManager().getPlayerId(playerId);
             final int wid = plugin.getDatabaseManager().getWorldId(worldId);

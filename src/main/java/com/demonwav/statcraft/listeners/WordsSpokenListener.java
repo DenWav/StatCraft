@@ -24,7 +24,7 @@ import java.util.UUID;
 
 public class WordsSpokenListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public WordsSpokenListener(StatCraft plugin) {
         this.plugin = plugin;

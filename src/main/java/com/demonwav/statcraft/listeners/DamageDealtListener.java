@@ -24,7 +24,7 @@ import java.util.UUID;
 
 public class DamageDealtListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public DamageDealtListener(StatCraft plugin) {
         this.plugin = plugin;

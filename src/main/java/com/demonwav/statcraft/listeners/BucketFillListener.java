@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class BucketFillListener implements Listener {
 
-    StatCraft plugin;
+    private final StatCraft plugin;
 
     public BucketFillListener(StatCraft plugin) {
         this.plugin = plugin;

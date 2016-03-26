@@ -25,7 +25,7 @@ import java.util.UUID;
 
 public class OnFireListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public OnFireListener(StatCraft plugin) {
         this.plugin = plugin;

@@ -27,7 +27,7 @@ import java.util.UUID;
 
 public class PlayTimeListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public PlayTimeListener(StatCraft plugin) {
         this.plugin = plugin;

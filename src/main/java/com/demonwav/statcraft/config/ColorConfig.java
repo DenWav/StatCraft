@@ -13,9 +13,11 @@ import com.demonwav.statcraft.config.com.md_5.config.AnnotatedConfig;
 import com.demonwav.statcraft.config.com.md_5.config.ConfigComment;
 import com.demonwav.statcraft.config.com.md_5.config.NewLine;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class ColorConfig extends AnnotatedConfig {
+@EqualsAndHashCode(callSuper = true)
+public final class ColorConfig extends AnnotatedConfig {
 
     @ConfigComment({"The color of the @<playername> text that proceeds a public command response, which denotes",
                     "who ran the command."})

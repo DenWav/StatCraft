@@ -15,6 +15,7 @@ import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 import org.bukkit.Bukkit;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -30,7 +31,7 @@ import java.util.function.Consumer;
  *  This will prevent multiple events firing for multiple players and multiple locations from causing thread
  *  errors on frequently accessed tables.
  */
-public class ThreadManager implements Runnable {
+public final class ThreadManager implements Runnable, Closeable {
 
     final private StatCraft plugin;
 
@@ -42,7 +43,7 @@ public class ThreadManager implements Runnable {
     }
 
     @Override
-    public void run() {
+    public final void run() {
         // Remove any work that has finished
         work.entrySet().removeIf(e -> !Bukkit.getScheduler().isCurrentlyRunning(e.getValue()));
 
@@ -62,7 +63,7 @@ public class ThreadManager implements Runnable {
         }
     }
 
-    public <T extends RelationalPath<?>> void schedule(final Class<T> clazz,
+    public final <T extends RelationalPath<?>> void schedule(final Class<T> clazz,
                                                        final UUID playerId,
                                                        final UUID worldId,
                                                        final QueryIdRunner<T, SQLInsertClause> insertRunner,
@@ -71,7 +72,7 @@ public class ThreadManager implements Runnable {
         scheduleRaw(clazz, queryRunnable);
     }
 
-    public <T extends RelationalPath<?>, R> void schedule(final Class<T> clazz,
+    public final <T extends RelationalPath<?>, R> void schedule(final Class<T> clazz,
                                                              final UUID playerId,
                                                              final UUID worldId,
                                                              final QueryIdFunction<T, R> workBefore,
@@ -82,7 +83,7 @@ public class ThreadManager implements Runnable {
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    public void scheduleRaw(final Class<?> clazz, final Consumer<Connection> consumer) {
+    public final void scheduleRaw(final Class<?> clazz, final Consumer<Connection> consumer) {
         ConcurrentLinkedQueue<Consumer<Connection>> queue;
         synchronized (clazz) {
             queue = map.get(clazz);
@@ -94,7 +95,8 @@ public class ThreadManager implements Runnable {
         queue.offer(consumer);
     }
 
-    public void stop() {
+    @Override
+    public final void close() {
         // We need to get all the work finished as quickly as possible
         work.clear();
         map.entrySet().parallelStream()

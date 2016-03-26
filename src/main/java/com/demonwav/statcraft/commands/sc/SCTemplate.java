@@ -11,17 +11,14 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
-
 import com.mysema.query.Tuple;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.sql.Connection;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class SCTemplate {
 
@@ -33,24 +30,8 @@ public abstract class SCTemplate {
     }
 
     public List<String> onTabComplete(CommandSender sender, String[] args) {
-        ArrayList<String> players = new ArrayList<>(plugin.players.keySet());
-        ArrayList<String> secondary = new ArrayList<>();
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            secondary.add(player.getName());
-        }
-
-        players.removeAll(secondary);
-
-        LinkedList<String> result = new LinkedList<>();
-
-        for (String s : secondary) {
-            if (s.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                result.add(s);
-        }
-        for (String s : players) {
-            if (s.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                result.add(s);
-        }
+        String word = args[args.length - 1];
+        List<String> result = plugin.players.keySet().stream().filter(s -> s.toLowerCase().startsWith(word.toLowerCase())).collect(Collectors.toList());
         result.sort(String.CASE_INSENSITIVE_ORDER);
         return result;
     }

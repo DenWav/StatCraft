@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class ItemDropListener implements Listener {
 
-    StatCraft plugin;
+    private final StatCraft plugin;
 
     public ItemDropListener(StatCraft plugin) {
         this.plugin = plugin;

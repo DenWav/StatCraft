@@ -20,7 +20,7 @@ import java.util.UUID;
 
 public class WorldChangeListener implements Listener {
 
-    private StatCraft plugin;
+    private final StatCraft plugin;
 
     public WorldChangeListener(StatCraft plugin) {
         this.plugin = plugin;
@@ -36,10 +36,10 @@ public class WorldChangeListener implements Listener {
             QWorldChange.class, uuid, fromWorldUuid,
             (w, query, id, worldId) ->
                 plugin.getDatabaseManager().getWorldId(toWorldUuid),
-            (w, clause, id, fromWorldId, toWorldId) -> {
+            (w, clause, id, fromWorldId, toWorldId) ->
                 clause.columns(w.id, w.toWorld, w.fromWorld, w.amount)
-                    .values(id, toWorldId, fromWorldId, 1).execute();
-            }, (w, clause, id, fromWorldId, toWorldId) ->
+                    .values(id, toWorldId, fromWorldId, 1).execute(),
+            (w, clause, id, fromWorldId, toWorldId) ->
                 clause.where(
                     w.id.eq(id),
                     w.toWorld.eq(toWorldId),
