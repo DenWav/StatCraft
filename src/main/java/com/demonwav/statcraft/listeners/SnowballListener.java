@@ -27,12 +27,12 @@ public class SnowballListener implements Listener {
 
     private final StatCraft plugin;
 
-    public SnowballListener(StatCraft plugin) {
+    public SnowballListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onSnowball(ProjectileHitEvent event) {
+    public void onSnowball(final ProjectileHitEvent event) {
         if (event.getEntity().getType() == EntityType.SNOWBALL && event.getEntity().getShooter() instanceof Player) {
             final Player player = (Player) event.getEntity().getShooter();
             final Location playerLocation = player.getLocation();

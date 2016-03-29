@@ -27,12 +27,12 @@ public class OnFireListener implements Listener {
 
     private final StatCraft plugin;
 
-    public OnFireListener(StatCraft plugin) {
+    public OnFireListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onFire(EntityDamageEvent event) {
+    public void onFire(final EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             final EntityDamageEvent.DamageCause cause = event.getCause();
             if (cause == EntityDamageEvent.DamageCause.FIRE_TICK) {
@@ -52,7 +52,7 @@ public class OnFireListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCombust(EntityCombustEvent event) {
+    public void onCombust(final EntityCombustEvent event) {
         if (plugin.config().getStats().isOnFireAnnounce())
         if (event.getEntity() instanceof Player) {
             UUID uuid = event.getEntity().getUniqueId();

@@ -29,7 +29,7 @@ public class PlayTimeListener implements Listener {
 
     private final StatCraft plugin;
 
-    public PlayTimeListener(StatCraft plugin) {
+    public PlayTimeListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
@@ -84,7 +84,7 @@ public class PlayTimeListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onLeave(PlayerQuitEvent event) {
+    public void onLeave(final PlayerQuitEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
         final int currentTime = (int)(System.currentTimeMillis() / 1000L);

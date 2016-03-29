@@ -25,12 +25,12 @@ public class BucketEmptyListener implements Listener {
 
     private final StatCraft plugin;
 
-    public BucketEmptyListener(StatCraft plugin) {
+    public BucketEmptyListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+    public void onBucketEmpty(final PlayerBucketEmptyEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
         final BucketCode code;
@@ -52,7 +52,7 @@ public class BucketEmptyListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerConsume(PlayerItemConsumeEvent event) {
+    public void onPlayerConsume(final PlayerItemConsumeEvent event) {
         if (event.getItem().getType() == Material.MILK_BUCKET) {
             final UUID uuid = event.getPlayer().getUniqueId();
             final String worldName = event.getPlayer().getWorld().getName();

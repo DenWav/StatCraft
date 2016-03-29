@@ -22,13 +22,13 @@ public class ToolsBrokenListener implements Listener {
 
     private final StatCraft plugin;
 
-    public ToolsBrokenListener(StatCraft plugin) {
+    public ToolsBrokenListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onToolBreak(PlayerItemBreakEvent event) {
+    public void onToolBreak(final PlayerItemBreakEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
         final short item = (short) event.getBrokenItem().getType().getId();

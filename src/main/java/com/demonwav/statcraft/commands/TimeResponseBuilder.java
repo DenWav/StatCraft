@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class TimeResponseBuilder extends ResponseBuilder {
 
-    public TimeResponseBuilder(StatCraft plugin) {
+    public TimeResponseBuilder(final StatCraft plugin) {
         super(plugin);
     }
 

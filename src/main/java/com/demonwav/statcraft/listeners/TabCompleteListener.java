@@ -22,12 +22,12 @@ public class TabCompleteListener implements Listener {
 
     private final StatCraft plugin;
 
-    public TabCompleteListener(StatCraft plugin) {
+    public TabCompleteListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onTabComplete(PlayerChatTabCompleteEvent event) {
+    public void onTabComplete(final PlayerChatTabCompleteEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
 

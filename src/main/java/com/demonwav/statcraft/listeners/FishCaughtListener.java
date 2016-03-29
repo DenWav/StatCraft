@@ -25,13 +25,13 @@ public class FishCaughtListener implements Listener {
 
     private final StatCraft plugin;
 
-    public FishCaughtListener(StatCraft plugin) {
+    public FishCaughtListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onFishCatch(PlayerFishEvent event) {
+    public void onFishCatch(final PlayerFishEvent event) {
         if (event.getCaught() != null) {
             final UUID uuid = event.getPlayer().getUniqueId();
             final String worldName = event.getPlayer().getWorld().getName();

@@ -23,12 +23,12 @@ public class SleepyTimeListener implements Listener {
 
     private final StatCraft plugin;
 
-    public SleepyTimeListener(StatCraft plugin) {
+    public SleepyTimeListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBedEnter(PlayerBedEnterEvent event) {
+    public void onBedEnter(final PlayerBedEnterEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
@@ -43,7 +43,7 @@ public class SleepyTimeListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBedLeave(PlayerBedLeaveEvent event) {
+    public void onBedLeave(final PlayerBedLeaveEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);

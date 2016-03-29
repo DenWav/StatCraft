@@ -23,12 +23,12 @@ public class JumpListener implements Listener {
 
     private final StatCraft plugin;
 
-    public JumpListener(StatCraft plugin) {
+    public JumpListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onJump(PlayerStatisticIncrementEvent event) {
+    public void onJump(final PlayerStatisticIncrementEvent event) {
         if (event.getStatistic() == Statistic.JUMP) {
             final UUID uuid = event.getPlayer().getUniqueId();
             final String worldName = event.getPlayer().getWorld().getName();

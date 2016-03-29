@@ -27,7 +27,7 @@ public class ArrowsShotListener implements Listener {
 
     private final StatCraft plugin;
 
-    public ArrowsShotListener(StatCraft plugin) {
+    public ArrowsShotListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 

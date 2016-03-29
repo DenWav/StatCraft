@@ -31,7 +31,7 @@ import java.util.function.Consumer;
  *  This will prevent multiple events firing for multiple players and multiple locations from causing thread
  *  errors on frequently accessed tables.
  */
-public final class ThreadManager implements Runnable, Closeable {
+public class ThreadManager implements Runnable, Closeable {
 
     final private StatCraft plugin;
 

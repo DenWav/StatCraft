@@ -26,12 +26,12 @@ public class WordsSpokenListener implements Listener {
 
     private final StatCraft plugin;
 
-    public WordsSpokenListener(StatCraft plugin) {
+    public WordsSpokenListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onSpokenMessage(AsyncPlayerChatEvent event) {
+    public void onSpokenMessage(final AsyncPlayerChatEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
         final String[] message = event.getMessage().trim().split("\\s+|[\\-_]+");

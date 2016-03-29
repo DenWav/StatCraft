@@ -23,12 +23,12 @@ public class BucketFillListener implements Listener {
 
     private final StatCraft plugin;
 
-    public BucketFillListener(StatCraft plugin) {
+    public BucketFillListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBucketFill(PlayerBucketFillEvent event) {
+    public void onBucketFill(final PlayerBucketFillEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
         final BucketCode code;

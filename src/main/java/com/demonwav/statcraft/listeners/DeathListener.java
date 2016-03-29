@@ -30,12 +30,12 @@ public class DeathListener implements Listener {
 
     private final StatCraft plugin;
 
-    public DeathListener(StatCraft plugin) {
+    public DeathListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onDeath(PlayerDeathEvent event) {
+    public void onDeath(final PlayerDeathEvent event) {
 
         final String message = event.getDeathMessage();
         final UUID uuid = event.getEntity().getUniqueId();

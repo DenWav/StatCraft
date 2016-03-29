@@ -19,26 +19,26 @@ import java.util.Map;
 
 public class ResponseBuilder {
 
-    protected StatCraft plugin;
+    protected final StatCraft plugin;
     protected String name = "";
     protected String statName = "";
     protected LinkedHashMap<String, String> stats = new LinkedHashMap<>();
 
-    public ResponseBuilder(StatCraft plugin) {
+    public ResponseBuilder(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
-    public ResponseBuilder setName(String name) {
+    public ResponseBuilder setName(final String name) {
         this.name = name;
         return this;
     }
 
-    public ResponseBuilder setStatName(String statName) {
+    public ResponseBuilder setStatName(final String statName) {
         this.statName = statName;
         return this;
     }
 
-    public ResponseBuilder addStat(String title, String value) {
+    public ResponseBuilder addStat(final String title, final String value) {
         stats.put(title, value);
         return this;
     }

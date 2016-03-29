@@ -26,14 +26,14 @@ public class DamageDealtListener implements Listener {
 
     private final StatCraft plugin;
 
-    public DamageDealtListener(StatCraft plugin) {
+    public DamageDealtListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onDamageDealt(EntityDamageByEntityEvent event) {
-        Entity damager = event.getDamager();
-        Entity damagee = event.getEntity();
+    public void onDamageDealt(final EntityDamageByEntityEvent event) {
+        final Entity damager = event.getDamager();
+        final Entity damagee = event.getEntity();
         if (damager instanceof Player) {
             final UUID uuid = damager.getUniqueId();
             final String worldName = damager.getWorld().getName();

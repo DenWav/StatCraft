@@ -28,7 +28,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public final class Util {
+public class Util {
 
     @NotNull
     public static byte[] UUIDToByte(@NotNull  UUID uuid) {

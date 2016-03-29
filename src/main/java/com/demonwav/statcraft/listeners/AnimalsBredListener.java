@@ -39,12 +39,12 @@ public class AnimalsBredListener implements Listener {
     private final StatCraft plugin;
     private HashMap<UUID, Player> breedMap = new HashMap<>();
 
-    public AnimalsBredListener(StatCraft plugin) {
+    public AnimalsBredListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onAnimalSpawn(CreatureSpawnEvent event) {
+    public void onAnimalSpawn(final CreatureSpawnEvent event) {
         if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
             if (event.getEntity() instanceof Ageable) {
                 Ageable entity = (Ageable) event.getEntity();

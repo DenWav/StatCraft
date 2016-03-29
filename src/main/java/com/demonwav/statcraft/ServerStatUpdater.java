@@ -16,9 +16,9 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public final class ServerStatUpdater {
+public class ServerStatUpdater {
 
-    public static final class Move implements Runnable {
+    public static class Move implements Runnable {
 
         private final StatCraft plugin;
 
@@ -27,15 +27,15 @@ public final class ServerStatUpdater {
         }
 
         @Override
-        public final void run() {
+        public void run() {
             plugin.getServer().getOnlinePlayers().forEach(this::run);
         }
 
-        public final void run(final Player player) {
+        public void run(final Player player) {
             run(player, player.getWorld().getName());
         }
 
-        public final void run(final Player player, final String worldName) {
+        public void run(final Player player, final String worldName) {
             for (final MoveCode code : MoveCode.values()) {
                 Statistic stat = code.getStat();
                 final int value = player.getStatistic(stat);

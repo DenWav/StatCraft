@@ -28,7 +28,7 @@ public class DamageTakenListener implements Listener {
 
     private final StatCraft plugin;
 
-    public DamageTakenListener(StatCraft plugin) {
+    public DamageTakenListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 

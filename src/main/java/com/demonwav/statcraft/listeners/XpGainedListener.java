@@ -22,12 +22,12 @@ public class XpGainedListener implements Listener {
 
     private final StatCraft plugin;
 
-    public XpGainedListener(StatCraft plugin) {
+    public XpGainedListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onXpGain(PlayerExpChangeEvent event) {
+    public void onXpGain(final PlayerExpChangeEvent event) {
         final int amount = event.getAmount();
         if (amount > 0) {
             final UUID uuid = event.getPlayer().getUniqueId();

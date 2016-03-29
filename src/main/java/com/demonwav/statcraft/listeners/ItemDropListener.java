@@ -23,13 +23,13 @@ public class ItemDropListener implements Listener {
 
     private final StatCraft plugin;
 
-    public ItemDropListener(StatCraft plugin) {
+    public ItemDropListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onItemDrop(PlayerDropItemEvent event) {
+    public void onItemDrop(final PlayerDropItemEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
         final short itemid = (short) event.getItemDrop().getItemStack().getTypeId();

@@ -31,24 +31,24 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-public final class BaseCommand implements CommandExecutor, TabCompleter, Listener {
+public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
 
     private StatCraft plugin;
     // TreeMap keeps the commands sorted alphabetically
     private TreeMap<String, SCTemplate> subCommands = new TreeMap<>();
 
-    public BaseCommand(StatCraft plugin) {
+    public BaseCommand(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
-    public final void registerCommand(String cmd, SCTemplate command) {
+    public void registerCommand(final String cmd, final SCTemplate command) {
         if (subCommands.containsKey(cmd))
             throw new CommandAlreadyDefinedException(cmd);
         subCommands.put(cmd, command);
     }
 
     @Override
-    public final boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+    public boolean onCommand(final CommandSender sender, final Command cmd, String commandLabel, final String[] args) {
         if (args.length == 0) {
             sender.sendMessage(ChatColor.GRAY + "Available commands: ");
             StringBuilder stringBuilder = new StringBuilder();
@@ -82,7 +82,7 @@ public final class BaseCommand implements CommandExecutor, TabCompleter, Listene
         return true;
     }
 
-    private void respondToCommand(final CommandSender sender, String[] args, final SCTemplate command) {
+    private void respondToCommand(final CommandSender sender, final String[] args, final SCTemplate command) {
         if (command instanceof CustomResponse) {
             ((CustomResponse) command).respondToCommand(sender, args);
         } else {
@@ -196,7 +196,7 @@ public final class BaseCommand implements CommandExecutor, TabCompleter, Listene
     }
 
     @Override
-    public final List<String> onTabComplete(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+    public List<String> onTabComplete(final CommandSender sender, final Command cmd, final String commandLabel, final String[] args) {
         if (args.length == 1) {
             // Return a list of only the commands they are allowed to run
             List<String> result = subCommands.entrySet().stream()

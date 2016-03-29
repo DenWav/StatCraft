@@ -26,12 +26,12 @@ public class KillListener implements Listener {
 
     private final StatCraft plugin;
 
-    public KillListener(StatCraft plugin) {
+    public KillListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onKill(EntityDeathEvent event) {
+    public void onKill(final EntityDeathEvent event) {
         if (event.getEntity().getKiller() != null) {
             final UUID uuid = event.getEntity().getKiller().getUniqueId();
             final String worldName = event.getEntity().getKiller().getWorld().getName();

@@ -22,12 +22,12 @@ public class KickListener implements Listener {
 
     private final StatCraft plugin;
 
-    public KickListener(StatCraft plugin) {
+    public KickListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerKick(PlayerKickEvent event) {
+    public void onPlayerKick(final PlayerKickEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();
         final String reason = event.getReason();

@@ -23,13 +23,13 @@ public class ItemPickUpListener implements Listener {
 
     private final StatCraft plugin;
 
-    public ItemPickUpListener(StatCraft plugin) {
+    public ItemPickUpListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onItemPickup(PlayerPickupItemEvent event) {
+    public void onItemPickup(final PlayerPickupItemEvent event) {
         final short itemid = (short) event.getItem().getItemStack().getTypeId();
         final short damage = Util.damageValue(itemid, event.getItem().getItemStack().getData().getData());
         final UUID uuid = event.getPlayer().getUniqueId();

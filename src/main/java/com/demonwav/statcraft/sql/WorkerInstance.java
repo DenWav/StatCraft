@@ -16,7 +16,7 @@ import java.sql.SQLException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
-public final class WorkerInstance implements Runnable {
+public class WorkerInstance implements Runnable {
 
     final private ConcurrentLinkedQueue<Consumer<Connection>> work;
     final private StatCraft plugin;
@@ -27,7 +27,7 @@ public final class WorkerInstance implements Runnable {
     }
 
     @Override
-    public final void run() {
+    public void run() {
         try (final Connection connection = plugin.getDatabaseManager().getConnection()) {
             Consumer<Connection> consumer = work.poll();
             while (consumer != null) {

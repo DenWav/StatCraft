@@ -26,12 +26,12 @@ public class EnderPearlListener implements Listener {
 
     private final StatCraft plugin;
 
-    public EnderPearlListener(StatCraft plugin) {
+    public EnderPearlListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEnderPearl(PlayerTeleportEvent event) {
+    public void onEnderPearl(final PlayerTeleportEvent event) {
         if (event.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
             final Player player = event.getPlayer();
             final Location toLocation = event.getTo();

@@ -26,12 +26,12 @@ public class EggListener implements Listener {
 
     private final StatCraft plugin;
 
-    public EggListener(StatCraft plugin) {
+    public EggListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEggHit(PlayerEggThrowEvent event) {
+    public void onEggHit(final PlayerEggThrowEvent event) {
         final Player player = event.getPlayer();
         final UUID uuid = player.getUniqueId();
         final String worldName = player.getWorld().getName();

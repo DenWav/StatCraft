@@ -36,7 +36,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class DatabaseManager implements Closeable {
+public class DatabaseManager implements Closeable {
 
     private StatCraft plugin;
     private boolean connecting = true;
@@ -68,11 +68,11 @@ public final class DatabaseManager implements Closeable {
         }
     }
 
-    public final Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
-    public final void setupDatabase()  {
+    public void setupDatabase()  {
         for (Table table : Table.values()) {
             checkTable(table);
             if (!plugin.isEnabled())
@@ -224,13 +224,13 @@ public final class DatabaseManager implements Closeable {
     }
 
     @Override
-    public final void close() {
+    public void close() {
         if (dataSource != null) {
             dataSource.close();
         }
     }
 
-    public final int getPlayerId(UUID uuid) {
+    public int getPlayerId(UUID uuid) {
         if (uuidMap.containsKey(uuid)) {
             return uuidMap.get(uuid);
         }
@@ -254,7 +254,7 @@ public final class DatabaseManager implements Closeable {
         }
     }
 
-    public final int getPlayerId(String name) {
+    public int getPlayerId(String name) {
         try (final Connection connection = getConnection()) {
             SQLQuery query = getNewQuery(connection);
             QPlayers p = QPlayers.players;
@@ -311,7 +311,7 @@ public final class DatabaseManager implements Closeable {
         }
     }
 
-    public final int getWorldId(final String worldName) {
+    public int getWorldId(final String worldName) {
         if (worldMap.containsKey(worldName)) {
             return worldMap.get(worldName);
         }
@@ -353,7 +353,7 @@ public final class DatabaseManager implements Closeable {
     }
 
     @Nullable
-    public final SQLQuery getNewQuery(Connection connection) {
+    public SQLQuery getNewQuery(Connection connection) {
         if (!connecting) {
             return new SQLQuery(connection, MySQLTemplates.DEFAULT);
         } else {
@@ -362,7 +362,7 @@ public final class DatabaseManager implements Closeable {
     }
 
     @Nullable
-    public final SQLUpdateClause getUpdateClause(Connection connection, RelationalPath<?> path) {
+    public SQLUpdateClause getUpdateClause(Connection connection, RelationalPath<?> path) {
         if (!connecting) {
             return new SQLUpdateClause(connection, MySQLTemplates.DEFAULT, path);
         } else {
@@ -371,7 +371,7 @@ public final class DatabaseManager implements Closeable {
     }
 
     @Nullable
-    public final SQLInsertClause getInsertClause(Connection connection, RelationalPath<?> path) {
+    public SQLInsertClause getInsertClause(Connection connection, RelationalPath<?> path) {
         if (!connecting) {
             return new SQLInsertClause(connection, MySQLTemplates.DEFAULT, path);
         } else {

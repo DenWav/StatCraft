@@ -25,7 +25,7 @@ public class BlockListener implements Listener {
 
     private final StatCraft plugin;
 
-    public BlockListener(StatCraft plugin) {
+    public BlockListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 

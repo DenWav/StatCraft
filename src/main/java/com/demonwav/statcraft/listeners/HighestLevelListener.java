@@ -22,12 +22,12 @@ public class HighestLevelListener implements Listener {
 
     private final StatCraft plugin;
 
-    public HighestLevelListener(StatCraft plugin) {
+    public HighestLevelListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onLevel(PlayerLevelChangeEvent event) {
+    public void onLevel(final PlayerLevelChangeEvent event) {
         final int newLevel = event.getNewLevel();
         final UUID uuid = event.getPlayer().getUniqueId();
         final String worldName = event.getPlayer().getWorld().getName();

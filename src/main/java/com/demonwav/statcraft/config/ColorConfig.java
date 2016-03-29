@@ -17,7 +17,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public final class ColorConfig extends AnnotatedConfig {
+public class ColorConfig extends AnnotatedConfig {
 
     @ConfigComment({"The color of the @<playername> text that proceeds a public command response, which denotes",
                     "who ran the command."})

@@ -22,12 +22,12 @@ public class WorldChangeListener implements Listener {
 
     private final StatCraft plugin;
 
-    public WorldChangeListener(StatCraft plugin) {
+    public WorldChangeListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerWorldChange(PlayerChangedWorldEvent event) {
+    public void onPlayerWorldChange(final PlayerChangedWorldEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
         final String fromWorldName = event.getFrom().getName();
         final String toWorldName = event.getPlayer().getWorld().getName();

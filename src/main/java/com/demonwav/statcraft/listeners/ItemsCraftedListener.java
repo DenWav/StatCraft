@@ -29,7 +29,7 @@ public class ItemsCraftedListener implements Listener {
 
     private final StatCraft plugin;
 
-    public ItemsCraftedListener(StatCraft plugin) {
+    public ItemsCraftedListener(final StatCraft plugin) {
         this.plugin = plugin;
     }
 
@@ -114,7 +114,7 @@ public class ItemsCraftedListener implements Listener {
     }
 
     @SuppressWarnings("deprecation")
-    private boolean hasSameItem(ItemStack a, ItemStack b) {
+    private boolean hasSameItem(final ItemStack a, final ItemStack b) {
         if (a == null)
             return b == null;
         else if (b == null)
@@ -126,12 +126,12 @@ public class ItemsCraftedListener implements Listener {
                Objects.equal(a.getEnchantments(), b.getEnchantments());
     }
 
-    private boolean isStackSumLegal(ItemStack a, ItemStack b) {
+    private boolean isStackSumLegal(final ItemStack a, final ItemStack b) {
         // See if we can create a new item stack with the combined elements of a and b
         return a == null || b == null || a.getAmount() + b.getAmount() <= a.getType().getMaxStackSize();
     }
 
-    private boolean hasItems(ItemStack stack) {
+    private boolean hasItems(final ItemStack stack) {
         return stack != null && stack.getAmount() > 0;
     }
 }
