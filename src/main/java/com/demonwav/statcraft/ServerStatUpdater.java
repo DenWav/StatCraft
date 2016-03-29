@@ -32,17 +32,17 @@ public final class ServerStatUpdater {
         }
 
         public final void run(final Player player) {
-            run(player, player.getWorld().getUID());
+            run(player, player.getWorld().getName());
         }
 
-        public final void run(final Player player, final UUID worldUuid) {
+        public final void run(final Player player, final String worldName) {
             for (final MoveCode code : MoveCode.values()) {
                 Statistic stat = code.getStat();
                 final int value = player.getStatistic(stat);
                 final UUID uuid = player.getUniqueId();
 
                 plugin.getThreadManager().schedule(
-                    QMove.class, uuid, worldUuid,
+                    QMove.class, uuid, worldName,
                     (m, query, id, worldId) ->
                         get(query.from(m).where(m.id.eq(id), m.vehicle.eq(code.getCode())).uniqueResult(m.distance.sum())),
                     (m, clause, id, worldId, currentTotal) ->

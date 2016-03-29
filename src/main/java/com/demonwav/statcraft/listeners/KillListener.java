@@ -34,12 +34,12 @@ public class KillListener implements Listener {
     public void onKill(EntityDeathEvent event) {
         if (event.getEntity().getKiller() != null) {
             final UUID uuid = event.getEntity().getKiller().getUniqueId();
-            final UUID worldUuid = event.getEntity().getWorld().getUID();
+            final String worldName = event.getEntity().getKiller().getWorld().getName();
             final LivingEntity entity = event.getEntity();
             final EntityCode code = EntityCode.fromEntity(event.getEntity());
 
             plugin.getThreadManager().schedule(
-                QKills.class, uuid, worldUuid,
+                QKills.class, uuid, worldName,
                 (k, query, id, worldId) -> {
                     String entityValue;
                     if (entity instanceof Player) {

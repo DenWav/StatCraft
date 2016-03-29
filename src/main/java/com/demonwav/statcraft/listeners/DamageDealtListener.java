@@ -36,14 +36,14 @@ public class DamageDealtListener implements Listener {
         Entity damagee = event.getEntity();
         if (damager instanceof Player) {
             final UUID uuid = damager.getUniqueId();
-            final UUID worldUuid = damager.getWorld().getUID();
+            final String worldName = damager.getWorld().getName();
             final int damageDealt = (int) Math.round(event.getFinalDamage());
 
             if (damagee instanceof LivingEntity) {
                 final LivingEntity entity = (LivingEntity) event.getEntity();
 
                 plugin.getThreadManager().schedule(
-                    QDamageDealt.class, uuid, worldUuid,
+                    QDamageDealt.class, uuid, worldName,
                     (d, query, id, worldId) -> {
                         // For special entities which are clumped together
                         // currently only skeletons and wither skeletons fall under this category

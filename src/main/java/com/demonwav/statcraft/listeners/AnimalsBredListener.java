@@ -77,11 +77,11 @@ public class AnimalsBredListener implements Listener {
                                     breedMap.remove(parents[i].getUniqueId());
 
                                     final UUID uuid = player.getUniqueId();
-                                    final UUID worldUuid = player.getWorld().getUID();
+                                    final String worldName = entity.getWorld().getName();
                                     final String type = entity.getType().name();
 
                                     plugin.getThreadManager().schedule(
-                                        QAnimalsBred.class, uuid, worldUuid,
+                                        QAnimalsBred.class, uuid, worldName,
                                         (a, clause, id, worldId) ->
                                             clause.columns(a.id, a.worldId, a.animal, a.amount)
                                                 .values(id, worldId, type, 1).execute(),

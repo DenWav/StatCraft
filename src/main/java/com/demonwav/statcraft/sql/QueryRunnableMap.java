@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 public class QueryRunnableMap<T extends RelationalPath<?>, R> implements Consumer<Connection> {
     private final Class<T> clazz;
     private final UUID playerId;
-    private final UUID worldId;
+    private final String worldName;
     private final QueryIdRunnerMap<T, SQLInsertClause, R> insertClause;
     private final QueryIdRunnerMap<T, SQLUpdateClause, R> updateClause;
     private final StatCraft plugin;
@@ -30,14 +30,14 @@ public class QueryRunnableMap<T extends RelationalPath<?>, R> implements Consume
 
     public QueryRunnableMap(final Class<T> clazz,
                             final UUID playerId,
-                            final UUID worldId,
+                            final String worldName,
                             final QueryIdFunction<T, R> workBefore,
                             final QueryIdRunnerMap<T, SQLInsertClause, R> insertClause,
                             final QueryIdRunnerMap<T, SQLUpdateClause, R> updateClause,
                             final StatCraft plugin) {
         this.clazz = clazz;
         this.playerId = playerId;
-        this.worldId = worldId;
+        this.worldName = worldName;
         this.workBefore = workBefore;
         this.insertClause = insertClause;
         this.updateClause = updateClause;
@@ -46,6 +46,6 @@ public class QueryRunnableMap<T extends RelationalPath<?>, R> implements Consume
 
     @Override
     public void accept(final Connection connection) {
-        Util.runQuery(clazz, playerId, worldId, workBefore, insertClause, updateClause, connection, plugin);
+        Util.runQuery(clazz, playerId, worldName, workBefore, insertClause, updateClause, connection, plugin);
     }
 }

@@ -31,10 +31,10 @@ public class XpGainedListener implements Listener {
         final int amount = event.getAmount();
         if (amount > 0) {
             final UUID uuid = event.getPlayer().getUniqueId();
-            final UUID worldUuid = event.getPlayer().getWorld().getUID();
+            final String worldName = event.getPlayer().getWorld().getName();
 
             plugin.getThreadManager().schedule(
-                QXpGained.class, uuid, worldUuid,
+                QXpGained.class, uuid, worldName,
                 (x, clause, id, worldId) ->
                     clause.columns(x.id, x.amount).values(id, amount).execute(),
                 (x, clause, id, worldId) ->

@@ -39,7 +39,7 @@ public class DeathListener implements Listener {
 
         final String message = event.getDeathMessage();
         final UUID uuid = event.getEntity().getUniqueId();
-        final UUID worldUuid = event.getEntity().getWorld().getUID();
+        final String worldName = event.getEntity().getWorld().getName();
         String cause;
 
         EntityDamageEvent damageEvent = event.getEntity().getLastDamageCause();
@@ -64,7 +64,7 @@ public class DeathListener implements Listener {
         }
 
         plugin.getThreadManager().schedule(
-            QDeath.class, uuid, worldUuid,
+            QDeath.class, uuid, worldName,
             (d, clause, id, worldId) ->
                 clause.columns(d.id, d.message, d.worldId, d.amount).values(id, message, worldId, 1).execute(),
             (d, clause, id, worldId) ->
@@ -73,7 +73,7 @@ public class DeathListener implements Listener {
         );
 
         plugin.getThreadManager().schedule(
-            QDeathByCause.class, uuid, worldUuid,
+            QDeathByCause.class, uuid, worldName,
             (c, clause, id, worldId) ->
                 clause.columns(c.id, c.cause, c.worldId, c.amount)
                     .values(id, cause, worldId, 1).execute(),

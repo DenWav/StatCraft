@@ -42,10 +42,10 @@ public class SnowballListener implements Listener {
             final int finalDistance = (int) Math.round(distance * 100.0);
 
             final UUID uuid = player.getUniqueId();
-            final UUID worldUuid = player.getWorld().getUID();
+            final String worldName = player.getWorld().getName();
 
             plugin.getThreadManager().schedule(
-                QProjectiles.class, uuid, worldUuid,
+                QProjectiles.class, uuid, worldName,
                 (p, clause, id, worldId) ->
                     clause.columns(p.id, p.worldId, p.type, p.amount, p.totalDistance, p.maxThrow)
                         .values(id, worldId, ProjectilesCode.SNOWBALL.getCode(), 1, finalDistance, finalDistance).execute(),

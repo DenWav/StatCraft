@@ -38,10 +38,10 @@ public class OnFireListener implements Listener {
             if (cause == EntityDamageEvent.DamageCause.FIRE_TICK) {
 
                 final UUID uuid = event.getEntity().getUniqueId();
-                final UUID worldUuid = event.getEntity().getWorld().getUID();
+                final String worldName = event.getEntity().getWorld().getName();
 
                 plugin.getThreadManager().schedule(
-                    QOnFire.class, uuid, worldUuid,
+                    QOnFire.class, uuid, worldName,
                     (o, clause, id, worldId) ->
                         clause.columns(o.id, o.worldId, o.time).values(id, worldId, 1).execute(),
                     (o, clause, id, worldId) ->

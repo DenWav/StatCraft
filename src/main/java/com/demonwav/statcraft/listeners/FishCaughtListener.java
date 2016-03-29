@@ -34,7 +34,7 @@ public class FishCaughtListener implements Listener {
     public void onFishCatch(PlayerFishEvent event) {
         if (event.getCaught() != null) {
             final UUID uuid = event.getPlayer().getUniqueId();
-            final UUID worldUuid = event.getPlayer().getWorld().getUID();
+            final String worldName = event.getPlayer().getWorld().getName();
             // shouldn't be an issue, but just to protect against a ClassCastException
             if (event.getCaught() instanceof Item) {
                 Item item = (Item) event.getCaught();
@@ -79,7 +79,7 @@ public class FishCaughtListener implements Listener {
                 }
 
                 plugin.getThreadManager().schedule(
-                    QFishCaught.class, uuid, worldUuid,
+                    QFishCaught.class, uuid, worldName,
                     (f, clause, id, worldId) ->
                         clause.columns(f.id, f.worldId, f.item, f.damage, f.type, f.amount)
                             .values(id, worldId, itemId, damage, code.getCode(), 1).execute(),

@@ -22,20 +22,20 @@ import java.util.function.Consumer;
 public class QueryRunnable<T extends RelationalPath<?>> implements Consumer<Connection> {
     private final Class<T> clazz;
     private final UUID playerId;
-    private final UUID worldId;
+    private final String worldName;
     private final QueryIdRunner<T, SQLInsertClause> insertClause;
     private final QueryIdRunner<T, SQLUpdateClause> updateClause;
     private final StatCraft plugin;
 
     public QueryRunnable(final Class<T> clazz,
                          final UUID playerId,
-                         final UUID worldId,
+                         final String worldName,
                          final QueryIdRunner<T, SQLInsertClause> insertClause,
                          final QueryIdRunner<T, SQLUpdateClause> updateClause,
                          final StatCraft plugin) {
         this.clazz = clazz;
         this.playerId = playerId;
-        this.worldId = worldId;
+        this.worldName = worldName;
         this.insertClause = insertClause;
         this.updateClause = updateClause;
         this.plugin = plugin;
@@ -43,6 +43,6 @@ public class QueryRunnable<T extends RelationalPath<?>> implements Consumer<Conn
 
     @Override
     public void accept(final Connection connection) {
-        Util.runQuery(clazz, playerId, worldId, insertClause, updateClause, connection, plugin);
+        Util.runQuery(clazz, playerId, worldName, insertClause, updateClause, connection, plugin);
     }
 }

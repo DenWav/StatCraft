@@ -34,7 +34,7 @@ public class EggListener implements Listener {
     public void onEggHit(PlayerEggThrowEvent event) {
         final Player player = event.getPlayer();
         final UUID uuid = player.getUniqueId();
-        final UUID worldUuid = player.getWorld().getUID();
+        final String worldName = player.getWorld().getName();
         final Location eggLocation = event.getEgg().getLocation();
         final Location playerLocation = player.getLocation();
         final boolean hatched = event.isHatching();
@@ -54,7 +54,7 @@ public class EggListener implements Listener {
         }
 
         plugin.getThreadManager().schedule(
-            QProjectiles.class, uuid, worldUuid,
+            QProjectiles.class, uuid, worldName,
             (p, clause, id, worldId) ->
                 clause.columns(p.id, p.worldId, p.type, p.amount, p.totalDistance, p.maxThrow)
                     .values(id, worldId, code.getCode(), 1, finalDistance, finalDistance).execute(),

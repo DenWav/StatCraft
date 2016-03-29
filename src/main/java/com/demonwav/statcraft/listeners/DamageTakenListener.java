@@ -37,11 +37,11 @@ public class DamageTakenListener implements Listener {
         if (event.getEntity() instanceof Player && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK
                 && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
             final UUID uuid = event.getEntity().getUniqueId();
-            final UUID worldUuid = event.getEntity().getWorld().getUID();
+            final String worldName = event.getEntity().getWorld().getName();
             final int damageTaken = (int) Math.round(event.getFinalDamage());
 
             plugin.getThreadManager().schedule(
-                QDamageTaken.class, uuid, worldUuid,
+                QDamageTaken.class, uuid, worldName,
                 (t, clause, id, worldId) ->
                     clause.columns(t.id, t.worldId, t.entity, t.amount)
                         .values(id, worldId, event.getCause().name(), damageTaken).execute(),
@@ -102,12 +102,12 @@ public class DamageTakenListener implements Listener {
     public void onEntityDamage(final EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player) {
             final UUID uuid = event.getEntity().getUniqueId();
-            final UUID worldUuid = event.getEntity().getWorld().getUID();
+            final String worldName = event.getEntity().getWorld().getName();
             final int damageTaken = (int) Math.round(event.getFinalDamage());
             final Entity entity = event.getDamager();
 
             plugin.getThreadManager().schedule(
-                QDamageTaken.class, uuid, worldUuid,
+                QDamageTaken.class, uuid, worldName,
                 (d, query, id, worldId) -> {
                     // For special entities which are clumped together
                     // currently only skeletons and wither skeletons fall under this category

@@ -33,7 +33,7 @@ public class WordsSpokenListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSpokenMessage(AsyncPlayerChatEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID worldUuid = event.getPlayer().getWorld().getUID();
+        final String worldName = event.getPlayer().getWorld().getName();
         final String[] message = event.getMessage().trim().split("\\s+|[\\-_]+");
         final int currentTime = (int) (System.currentTimeMillis() / 1000L);
 
@@ -46,7 +46,7 @@ public class WordsSpokenListener implements Listener {
         }
 
         plugin.getThreadManager().schedule(
-            QSeen.class, uuid, worldUuid,
+            QSeen.class, uuid, worldName,
             (s, clause, id, worldId) ->
                 clause.columns(s.id, s.lastSpokeTime).values(id, currentTime).execute(),
             (s, clause, id, worldId) ->
@@ -54,7 +54,7 @@ public class WordsSpokenListener implements Listener {
         );
 
         plugin.getThreadManager().schedule(
-            QMessagesSpoken.class, uuid, worldUuid,
+            QMessagesSpoken.class, uuid, worldName,
             (m, clause, id, worldId) ->
                 clause.columns(m.id, m.worldId, m.amount, m.wordsSpoken).values(id, worldId, 1, words.size()).execute(),
             (m, clause, id, worldID) ->
@@ -68,7 +68,7 @@ public class WordsSpokenListener implements Listener {
         if (plugin.config().getStats().isSpecificWordsSpoken()) {
             for (String word : words) {
                 plugin.getThreadManager().schedule(
-                    QWordFrequency.class, uuid, worldUuid,
+                    QWordFrequency.class, uuid, worldName,
                     (w, clause, id, worldId) ->
                         clause.columns(w.id, w.worldId, w.word, w.amount).values(id, worldId, word, 1).execute(),
                     (w, clause, id, worldId) ->

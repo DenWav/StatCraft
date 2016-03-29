@@ -65,20 +65,20 @@ public final class ThreadManager implements Runnable, Closeable {
 
     public final <T extends RelationalPath<?>> void schedule(final Class<T> clazz,
                                                        final UUID playerId,
-                                                       final UUID worldId,
+                                                       final String worldName,
                                                        final QueryIdRunner<T, SQLInsertClause> insertRunner,
                                                        final QueryIdRunner<T, SQLUpdateClause> updateRunner) {
-        final QueryRunnable<T> queryRunnable = new QueryRunnable<>(clazz, playerId, worldId, insertRunner, updateRunner, plugin);
+        final QueryRunnable<T> queryRunnable = new QueryRunnable<>(clazz, playerId, worldName, insertRunner, updateRunner, plugin);
         scheduleRaw(clazz, queryRunnable);
     }
 
     public final <T extends RelationalPath<?>, R> void schedule(final Class<T> clazz,
                                                              final UUID playerId,
-                                                             final UUID worldId,
+                                                             final String worldName,
                                                              final QueryIdFunction<T, R> workBefore,
                                                              final QueryIdRunnerMap<T, SQLInsertClause, R> insertRunner,
                                                              final QueryIdRunnerMap<T, SQLUpdateClause, R> updateRunner) {
-        final QueryRunnableMap<T, R> queryRunnableMap = new QueryRunnableMap<>(clazz, playerId, worldId, workBefore, insertRunner, updateRunner, plugin);
+        final QueryRunnableMap<T, R> queryRunnableMap = new QueryRunnableMap<>(clazz, playerId, worldName, workBefore, insertRunner, updateRunner, plugin);
         scheduleRaw(clazz, queryRunnableMap);
     }
 

@@ -35,7 +35,7 @@ public class ArrowsShotListener implements Listener {
     public void onArrowShot(final ProjectileHitEvent event) {
         if (event.getEntity().getShooter() instanceof Player && event.getEntity().getType() == EntityType.ARROW) {
             final UUID uuid = ((Player) event.getEntity().getShooter()).getUniqueId();
-            final UUID worldUuid = ((Player) event.getEntity().getShooter()).getWorld().getUID();
+            final String worldName = ((Player) event.getEntity().getShooter()).getWorld().getName();
             final ProjectilesCode code;
             if (event.getEntity().getFireTicks() > 0) {
                 code = ProjectilesCode.FLAMING_ARROW;
@@ -50,7 +50,7 @@ public class ArrowsShotListener implements Listener {
             final int finalDistance = (int) Math.round(distance * 100.0);
 
             plugin.getThreadManager().schedule(
-                QProjectiles.class, uuid, worldUuid,
+                QProjectiles.class, uuid, worldName,
                 (p, clause, id, worldId) ->
                     clause.columns(p.id, p.worldId, p.type, p.amount, p.totalDistance, p.maxThrow)
                         .values(id, worldId, code.getCode(), 1, finalDistance, finalDistance).execute(),

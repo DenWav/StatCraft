@@ -32,7 +32,7 @@ public class BucketEmptyListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID worldUuid = event.getPlayer().getWorld().getUID();
+        final String worldName = event.getPlayer().getWorld().getName();
         final BucketCode code;
         if (event.getBucket() == Material.LAVA_BUCKET) {
             code = BucketCode.LAVA;
@@ -41,7 +41,7 @@ public class BucketEmptyListener implements Listener {
         }
 
         plugin.getThreadManager().schedule(
-            QBucketEmpty.class, uuid, worldUuid,
+            QBucketEmpty.class, uuid, worldName,
             (e, clause, id, worldId) ->
                 clause.columns(e.id, e.worldId, e.type, e.amount)
                     .values(id, worldId, code.getCode(), 1).execute(),
@@ -55,11 +55,11 @@ public class BucketEmptyListener implements Listener {
     public void onPlayerConsume(PlayerItemConsumeEvent event) {
         if (event.getItem().getType() == Material.MILK_BUCKET) {
             final UUID uuid = event.getPlayer().getUniqueId();
-            final UUID worldUuid = event.getPlayer().getWorld().getUID();
+            final String worldName = event.getPlayer().getWorld().getName();
             final BucketCode code = BucketCode.MILK;
 
             plugin.getThreadManager().schedule(
-                QBucketEmpty.class, uuid, worldUuid,
+                QBucketEmpty.class, uuid, worldName,
                 (e, clause, id, worldId) ->
                     clause.columns(e.id, e.worldId, e.type, e.amount)
                         .values(id, worldId, code.getCode(), 1).execute(),

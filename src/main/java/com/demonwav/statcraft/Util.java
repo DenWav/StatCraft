@@ -323,7 +323,7 @@ public final class Util {
      *
      * @param clazz The relevant table for this query
      * @param playerId The UUID of the relevant player
-     * @param worldId The UUID of the relevant world
+     * @param worldName The UUID of the relevant world
      * @param insertClause The action to run for the insert query
      * @param updateClause The action to run for the update query if the insert fails
      * @param plugin The StatCraft object
@@ -331,14 +331,14 @@ public final class Util {
      */
     public static <T extends RelationalPath<?>> void runQuery(final Class<T> clazz,
                                                               final UUID playerId,
-                                                              final UUID worldId,
+                                                              final String worldName,
                                                               final QueryIdRunner<T, SQLInsertClause> insertClause,
                                                               final QueryIdRunner<T, SQLUpdateClause> updateClause,
                                                               final Connection connection,
                                                               final StatCraft plugin) {
         try {
             final int id = plugin.getDatabaseManager().getPlayerId(playerId);
-            final int wid = plugin.getDatabaseManager().getWorldId(worldId);
+            final int wid = plugin.getDatabaseManager().getWorldId(worldName);
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
 
             try {
@@ -377,7 +377,7 @@ public final class Util {
      *
      * @param clazz The relevant table for this query
      * @param playerId The UUID of the relevant player
-     * @param worldId The UUID of the relevant world
+     * @param worldName The UUID of the relevant world
      * @param workBefore The action to run before the queries, returning an object which will be passed to the two queries
      * @param insertClause The action to run for the insert query
      * @param updateClause The action to run for the update query if the insert fails
@@ -386,7 +386,7 @@ public final class Util {
      */
     public static <T extends RelationalPath<?>, R> void runQuery(final Class<T> clazz,
                                                                  final UUID playerId,
-                                                                 final UUID worldId,
+                                                                 final String worldName,
                                                                  final QueryIdFunction<T, R> workBefore,
                                                                  final QueryIdRunnerMap<T, SQLInsertClause, R> insertClause,
                                                                  final QueryIdRunnerMap<T, SQLUpdateClause, R> updateClause,
@@ -394,7 +394,7 @@ public final class Util {
                                                                  final StatCraft plugin) {
         try {
             final int id = plugin.getDatabaseManager().getPlayerId(playerId);
-            final int wid = plugin.getDatabaseManager().getWorldId(worldId);
+            final int wid = plugin.getDatabaseManager().getWorldId(worldName);
             final T path = clazz.getConstructor(String.class).newInstance(clazz.getSimpleName());
             final R r = workBefore.run(path, plugin.getDatabaseManager().getNewQuery(connection), id, wid);
 

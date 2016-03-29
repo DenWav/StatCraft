@@ -30,11 +30,11 @@ public class ToolsBrokenListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onToolBreak(PlayerItemBreakEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID worldUuid = event.getPlayer().getWorld().getUID();
+        final String worldName = event.getPlayer().getWorld().getName();
         final short item = (short) event.getBrokenItem().getType().getId();
 
         plugin.getThreadManager().schedule(
-            QToolsBroken.class, uuid, worldUuid,
+            QToolsBroken.class, uuid, worldName,
             (t, clause, id, worldId) ->
                 clause.columns(t.id, t.worldId, t.item, t.amount).values(id, worldId, item, 1).execute(),
             (t, clause, id, worldId) ->

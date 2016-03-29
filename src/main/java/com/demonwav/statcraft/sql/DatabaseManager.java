@@ -43,7 +43,7 @@ public final class DatabaseManager implements Closeable {
     private HikariDataSource dataSource;
 
     private ConcurrentHashMap<UUID, Integer> uuidMap = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<UUID, Integer> worldMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Integer> worldMap = new ConcurrentHashMap<>();
 
     public DatabaseManager(StatCraft plugin) {
         this.plugin = plugin;
@@ -311,9 +311,9 @@ public final class DatabaseManager implements Closeable {
         }
     }
 
-    public final int getWorldId(UUID uuid) {
-        if (worldMap.containsKey(uuid)) {
-            return worldMap.get(uuid);
+    public final int getWorldId(final String worldName) {
+        if (worldMap.containsKey(worldName)) {
+            return worldMap.get(worldName);
         }
 
         try (final Connection connection = getConnection()) {
@@ -324,9 +324,9 @@ public final class DatabaseManager implements Closeable {
                 return -1;
             }
 
-            Integer res = query.from(w).where(w.uuid.eq(Util.UUIDToByte(uuid))).uniqueResult(w.worldId);
+            Integer res = query.from(w).where(w.worldName.eq(worldName)).uniqueResult(w.worldId);
             if (res != null) {
-                worldMap.put(uuid, res);
+                worldMap.put(worldName, res);
                 return res;
             }
 
@@ -334,16 +334,16 @@ public final class DatabaseManager implements Closeable {
             if (clause == null) {
                 return -1;
             }
-            clause.columns(w.uuid).values((Object) Util.UUIDToByte(uuid)).execute();
+            clause.columns(w.worldName).values(worldName).execute();
 
             query = getNewQuery(connection);
             if (query == null) {
                 return -1;
             }
 
-            res = query.from(w).where(w.uuid.eq(Util.UUIDToByte(uuid))).uniqueResult(w.worldId);
+            res = query.from(w).where(w.worldName.eq(worldName)).uniqueResult(w.worldId);
             if (res != null) {
-                worldMap.put(uuid, res);
+                worldMap.put(worldName, res);
             }
             return res == null ? -1 : res;
         } catch (SQLException e) {

@@ -29,10 +29,10 @@ public class TabCompleteListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTabComplete(PlayerChatTabCompleteEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID worldUuid = event.getPlayer().getWorld().getUID();
+        final String worldName = event.getPlayer().getWorld().getName();
 
         plugin.getThreadManager().schedule(
-            QTabComplete.class, uuid, worldUuid,
+            QTabComplete.class, uuid, worldName,
             (t, clause, id, worldId) ->
                 clause.columns(t.id, t.worldId, t.amount).values(id, worldId, 1).execute(),
             (t, clause, id, worldId) ->

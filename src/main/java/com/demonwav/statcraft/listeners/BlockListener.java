@@ -35,10 +35,10 @@ public class BlockListener implements Listener {
         final short blockid = (short) event.getBlock().getTypeId();
         final short damage = Util.damageValue(blockid, event.getBlock().getData());
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID worldUuid = event.getPlayer().getWorld().getUID();
+        final String worldName = event.getPlayer().getWorld().getName();
 
         plugin.getThreadManager().schedule(
-            QBlockBreak.class, uuid, worldUuid,
+            QBlockBreak.class, uuid, worldName,
             (b, clause, id, worldId) ->
                 clause.columns(b.id, b.worldId, b.blockid, b.damage, b.amount)
                     .values(id, worldId, blockid, damage, 1).execute(),
@@ -54,10 +54,10 @@ public class BlockListener implements Listener {
         final short blockid = (short) event.getBlock().getTypeId();
         final short damage = Util.damageValue(blockid, event.getBlock().getData());
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID worldUuid = event.getPlayer().getWorld().getUID();
+        final String worldName = event.getPlayer().getWorld().getName();
 
         plugin.getThreadManager().schedule(
-            QBlockPlace.class, uuid, worldUuid,
+            QBlockPlace.class, uuid, worldName,
             (b, clause, id, worldId) ->
                 clause.columns(b.id, b.worldId, b.blockid, b.damage, b.amount)
                     .values(id, worldId, blockid, damage, 1).execute(),

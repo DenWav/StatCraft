@@ -54,18 +54,18 @@ public class ItemsCraftedListener implements Listener {
                     final short item = (short) toCraft.getType().getId();
                     final short damage = toCraft.getData().getData();
                     final UUID uuid = player.getUniqueId();
-                    final UUID worldUuid = player.getWorld().getUID();
+                    final String worldName = player.getWorld().getName();
 
-                    updateData(item, damage, uuid, worldUuid, newItemsCount);
+                    updateData(item, damage, uuid, worldName, newItemsCount);
                 }
             }
         }
     }
 
-    private void updateData(final short itemid, short initDamage, final UUID uuid, final UUID worldUuid, final int amount) {
+    private void updateData(final short itemid, short initDamage, final UUID uuid, final String worldName, final int amount) {
         final short damage = Util.damageValue(itemid, initDamage);
         plugin.getThreadManager().schedule(
-            QItemsCrafted.class, uuid, worldUuid,
+            QItemsCrafted.class, uuid, worldName,
             (i, clause, id, worldId) ->
                 clause.columns(i.id, i.worldId, i.item, i.damage, i.amount)
                     .values(id, worldId, itemid, damage, amount).execute(),
@@ -106,9 +106,9 @@ public class ItemsCraftedListener implements Listener {
                 final short item = (short) compareItem.getType().getId();
                 final short damage = compareItem.getData().getData();
                 final UUID uuid = player.getUniqueId();
-                final UUID worldUuid = player.getUniqueId();
+                final String worldName = player.getWorld().getName();
 
-                updateData(item, damage, uuid, worldUuid, newItemsCount);
+                updateData(item, damage, uuid, worldName, newItemsCount);
             }
         }, ticks);
     }

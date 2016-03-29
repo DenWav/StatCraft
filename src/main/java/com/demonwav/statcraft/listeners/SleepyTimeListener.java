@@ -30,11 +30,11 @@ public class SleepyTimeListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBedEnter(PlayerBedEnterEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID worldUuid = event.getPlayer().getWorld().getUID();
+        final String worldName = event.getPlayer().getWorld().getName();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
 
         plugin.getThreadManager().schedule(
-            QSleep.class, uuid, worldUuid,
+            QSleep.class, uuid, worldName,
             (s, clause, id, worldId) ->
                 clause.columns(s.id, s.worldId, s.enterBed).values(id, worldId, currentTime).execute(),
             (s, clause, id, worldId) ->
@@ -45,11 +45,11 @@ public class SleepyTimeListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBedLeave(PlayerBedLeaveEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID worldUuid = event.getPlayer().getWorld().getUID();
+        final String worldName = event.getPlayer().getWorld().getName();
         final int currentTime = (int) (System.currentTimeMillis() / 1000);
 
         plugin.getThreadManager().schedule(
-            QSleep.class, uuid, worldUuid,
+            QSleep.class, uuid, worldName,
             (l, clause, id, worldId) ->
                 clause.columns(l.id, l.worldId, l.leaveBed).values(id, worldId, currentTime).execute(),
             (l, clause, id, worldId) ->
@@ -57,7 +57,7 @@ public class SleepyTimeListener implements Listener {
         );
 
         plugin.getThreadManager().schedule(
-            QSleep.class, uuid, worldUuid,
+            QSleep.class, uuid, worldName,
             (s, query, id, worldId) -> {
                 Integer enterBed = query.from(s).where(s.id.eq(id), s.worldId.eq(worldId)).uniqueResult(s.enterBed);
                 enterBed = enterBed == null ? 0 : enterBed;

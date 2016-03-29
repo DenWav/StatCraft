@@ -31,13 +31,13 @@ public class ItemDropListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemDrop(PlayerDropItemEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID worldUuid = event.getPlayer().getWorld().getUID();
+        final String worldName = event.getPlayer().getWorld().getName();
         final short itemid = (short) event.getItemDrop().getItemStack().getTypeId();
         final short damage = Util.damageValue(itemid, event.getItemDrop().getItemStack().getData().getData());
         final int amount = event.getItemDrop().getItemStack().getAmount();
 
         plugin.getThreadManager().schedule(
-            QItemDrops.class, uuid, worldUuid,
+            QItemDrops.class, uuid, worldName,
             (i, clause, id, worldId) ->
                 clause.columns(i.id, i.worldId, i.item, i.damage, i.amount)
                     .values(id, worldId, itemid, damage, amount).execute(),

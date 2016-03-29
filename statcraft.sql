@@ -1,4 +1,4 @@
--- StatCraft Database Creation Script Generated on Mon Mar 28 21:16:51 CDT 2016
+-- StatCraft Database Creation Script Generated on Mon Mar 28 21:54:09 CDT 2016
 --
 -- Database: statcraft
 -- ----------------------------------------------------------------------------
@@ -458,10 +458,10 @@ CREATE TABLE `world_change` (
 DROP TABLE IF EXISTS `worlds`;
 CREATE TABLE `worlds` (
   `world_id` int(11) NOT NULL AUTO_INCREMENT,
-  `uuid` binary(16) NOT NULL,
   `world_name` varchar(50) NOT NULL,
+  `custom_name` varchar(50) NOT NULL,
   PRIMARY KEY (`world_id`),
-  UNIQUE KEY `id` (`uuid`)
+  UNIQUE KEY `worlds__name` (`world_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -475,4 +475,4 @@ CREATE TABLE `xp_gained` (
   UNIQUE KEY `id` (`id`,`world_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Generated in 12.686560ms
+-- Generated in 16.638491ms

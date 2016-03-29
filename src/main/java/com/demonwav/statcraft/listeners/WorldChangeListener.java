@@ -29,13 +29,13 @@ public class WorldChangeListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerWorldChange(PlayerChangedWorldEvent event) {
         final UUID uuid = event.getPlayer().getUniqueId();
-        final UUID fromWorldUuid = event.getPlayer().getWorld().getUID();
-        final UUID toWorldUuid = event.getPlayer().getWorld().getUID();
+        final String fromWorldName = event.getFrom().getName();
+        final String toWorldName = event.getPlayer().getWorld().getName();
 
         plugin.getThreadManager().schedule(
-            QWorldChange.class, uuid, fromWorldUuid,
+            QWorldChange.class, uuid, fromWorldName,
             (w, query, id, worldId) ->
-                plugin.getDatabaseManager().getWorldId(toWorldUuid),
+                plugin.getDatabaseManager().getWorldId(toWorldName),
             (w, clause, id, fromWorldId, toWorldId) ->
                 clause.columns(w.id, w.toWorld, w.fromWorld, w.amount)
                     .values(id, toWorldId, fromWorldId, 1).execute(),
@@ -47,6 +47,6 @@ public class WorldChangeListener implements Listener {
                 ).set(w.amount, w.amount.add(1)).execute()
         );
 
-        plugin.getMoveUpdater().run(event.getPlayer(), fromWorldUuid);
+        plugin.getMoveUpdater().run(event.getPlayer(), fromWorldName);
     }
 }
