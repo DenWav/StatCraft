@@ -1,4 +1,4 @@
--- StatCraft Database Creation Script Generated on Fri Mar 25 13:55:44 CDT 2016
+-- StatCraft Database Creation Script Generated on Mon Mar 28 21:16:51 CDT 2016
 --
 -- Database: statcraft
 -- ----------------------------------------------------------------------------
@@ -340,7 +340,7 @@ CREATE TABLE `players` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table: `projectiles`
@@ -462,7 +462,7 @@ CREATE TABLE `worlds` (
   `world_name` varchar(50) NOT NULL,
   PRIMARY KEY (`world_id`),
   UNIQUE KEY `id` (`uuid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Table: `xp_gained`
@@ -475,4 +475,4 @@ CREATE TABLE `xp_gained` (
   UNIQUE KEY `id` (`id`,`world_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Generated in 17.060555ms
+-- Generated in 12.686560ms

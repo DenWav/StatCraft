@@ -11,11 +11,19 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
+import com.demonwav.statcraft.querydsl.QBlockBreak;
+import com.demonwav.statcraft.querydsl.QBucketFill;
+import com.demonwav.statcraft.querydsl.QDeath;
+import com.demonwav.statcraft.querydsl.QMessagesSpoken;
+import com.demonwav.statcraft.querydsl.QPlayers;
+import com.demonwav.statcraft.querydsl.QWorlds;
 import com.mysema.query.Tuple;
+import com.mysema.query.sql.SQLQuery;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.stream.Collectors;
