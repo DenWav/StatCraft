@@ -47,16 +47,16 @@ public class SCDamageTaken extends SCTemplate {
             Integer total = query.from(d).where(d.id.eq(id)).uniqueResult(d.amount.sum());
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Damage Taken")
-                    .addStat("Total", df.format(total))
-                    .toString();
+                .setName(name)
+                .setStatName("Damage Taken")
+                .addStat("Total", df.format(total))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Damage Taken")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Damage Taken")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -68,13 +68,13 @@ public class SCDamageTaken extends SCTemplate {
         QDamageTaken d = QDamageTaken.damageTaken;
         QPlayers p = QPlayers.players;
         List<Tuple> list = query
-                .from(d)
-                .leftJoin(p)
-                .on(d.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(d.amount.sum().desc())
-                .limit(num)
-                .list(p.name, d.amount.sum());
+            .from(d)
+            .leftJoin(p)
+            .on(d.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(d.amount.sum().desc())
+            .limit(num)
+            .list(p.name, d.amount.sum());
 
         return topListResponse("Damage Taken", list);
     }

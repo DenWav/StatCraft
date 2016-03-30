@@ -47,16 +47,16 @@ public class SCHighestLevel extends SCTemplate {
             Integer result = query.from(h).where(h.id.eq(id)).uniqueResult(h.level);
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Highest Level")
-                    .addStat("Level", df.format(result))
-                    .toString();
+                .setName(name)
+                .setStatName("Highest Level")
+                .addStat("Level", df.format(result))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Highest Level")
-                    .addStat("Level", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Highest Level")
+                .addStat("Level", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -69,13 +69,13 @@ public class SCHighestLevel extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(h)
-                .leftJoin(p)
-                .on(h.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(h.level.desc())
-                .limit(num)
-                .list(p.name, h.level);
+            .from(h)
+            .leftJoin(p)
+            .on(h.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(h.level.desc())
+            .limit(num)
+            .list(p.name, h.level);
 
         return topListResponse("Highest Level", list);
     }

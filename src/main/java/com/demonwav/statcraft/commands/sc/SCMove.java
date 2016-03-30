@@ -23,13 +23,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import java.sql.Connection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.demonwav.statcraft.querydsl.QMove.move;
 
 public class SCMove extends SCTemplate {
+
+    private static List<String> tabComplete = new ArrayList<>(15);
 
     public SCMove(StatCraft plugin) {
         super(plugin);
@@ -168,25 +170,27 @@ public class SCMove extends SCTemplate {
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
         if (args[args.length -1].startsWith("-")) {
-            List<String> list = new LinkedList<>();
-            list.add("-all");
-            list.add("-boat");
-            list.add("-breakdown");
-            list.add("-climbing");
-            list.add("-crouching");
-            list.add("-diving");
-            list.add("-elytra");
-            list.add("-falling");
-            list.add("-flying");
-            list.add("-horse");
-            list.add("-minecart");
-            list.add("-pig");
-            list.add("-sprinting");
-            list.add("-swimming");
-            list.add("-walking");
-            return list.stream().filter(s -> s.startsWith(args[args.length - 1])).collect(Collectors.toList());
+            return tabComplete.stream().filter(s -> s.startsWith(args[args.length - 1])).collect(Collectors.toList());
         } else {
             return super.onTabComplete(sender, args);
         }
+    }
+
+    static {
+        tabComplete.add("-all");
+        tabComplete.add("-boat");
+        tabComplete.add("-breakdown");
+        tabComplete.add("-climbing");
+        tabComplete.add("-crouching");
+        tabComplete.add("-diving");
+        tabComplete.add("-elytra");
+        tabComplete.add("-falling");
+        tabComplete.add("-flying");
+        tabComplete.add("-horse");
+        tabComplete.add("-minecart");
+        tabComplete.add("-pig");
+        tabComplete.add("-sprinting");
+        tabComplete.add("-swimming");
+        tabComplete.add("-walking");
     }
 }

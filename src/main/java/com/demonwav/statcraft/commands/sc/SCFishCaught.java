@@ -67,7 +67,6 @@ public class SCFishCaught extends SCTemplate {
                 sum = sum == null ? 0 : sum;
                 switch (code) {
                     case FISH:
-
                         fish = sum;
                         break;
                     case TREASURE:
@@ -82,22 +81,22 @@ public class SCFishCaught extends SCTemplate {
             total = fish + treasure + junk;
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Fish Caught")
-                    .addStat("Total", df.format(total))
-                    .addStat("Fish", df.format(fish))
-                    .addStat("Treasure", df.format(treasure))
-                    .addStat("Junk", df.format(junk))
-                    .toString();
+                .setName(name)
+                .setStatName("Fish Caught")
+                .addStat("Total", df.format(total))
+                .addStat("Fish", df.format(fish))
+                .addStat("Treasure", df.format(treasure))
+                .addStat("Junk", df.format(junk))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Fish Caught")
-                    .addStat("Total", String.valueOf(0))
-                    .addStat("Fish", String.valueOf(0))
-                    .addStat("Treasure", String.valueOf(0))
-                    .addStat("Junk", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Fish Caught")
+                .addStat("Total", String.valueOf(0))
+                .addStat("Fish", String.valueOf(0))
+                .addStat("Treasure", String.valueOf(0))
+                .addStat("Junk", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -110,13 +109,13 @@ public class SCFishCaught extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(f)
-                .leftJoin(p)
-                .on(f.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(f.amount.sum().desc())
-                .limit(num)
-                .list(p.name, f.amount.sum());
+            .from(f)
+            .leftJoin(p)
+            .on(f.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(f.amount.sum().desc())
+            .limit(num)
+            .list(p.name, f.amount.sum());
 
         return topListResponse("Fish Caught", list);
     }

@@ -48,16 +48,16 @@ public class SCDeaths extends SCTemplate {
             Integer total = query.from(d).where(d.id.eq(id)).uniqueResult(d.amount.sum());
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Deaths")
-                    .addStat("Total", df.format(total == null ? 0 : total))
-                    .toString();
+                .setName(name)
+                .setStatName("Deaths")
+                .addStat("Total", df.format(total == null ? 0 : total))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Deaths")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Deaths")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -70,13 +70,13 @@ public class SCDeaths extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(d)
-                .leftJoin(p)
-                .on(d.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(d.amount.sum().desc())
-                .limit(num)
-                .list(p.name, d.amount.sum());
+            .from(d)
+            .leftJoin(p)
+            .on(d.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(d.amount.sum().desc())
+            .limit(num)
+            .list(p.name, d.amount.sum());
 
         return topListResponse("Deaths", list);
     }

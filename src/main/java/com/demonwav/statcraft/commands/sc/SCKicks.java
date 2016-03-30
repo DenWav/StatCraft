@@ -47,16 +47,16 @@ public class SCKicks extends SCTemplate {
             Integer result = query.from(k).where(k.id.eq(id)).uniqueResult(k.amount.sum());
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Kicks")
-                    .addStat("Total", df.format(result == null ? 0 : result))
-                    .toString();
+                .setName(name)
+                .setStatName("Kicks")
+                .addStat("Total", df.format(result == null ? 0 : result))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Kicks")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Kicks")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -69,13 +69,13 @@ public class SCKicks extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(k)
-                .leftJoin(p)
-                .on(k.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(k.amount.sum().desc())
-                .limit(num)
-                .list(p.name, k.amount.sum());
+            .from(k)
+            .leftJoin(p)
+            .on(k.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(k.amount.sum().desc())
+            .limit(num)
+            .list(p.name, k.amount.sum());
 
         return topListResponse("Kicks", list);
     }

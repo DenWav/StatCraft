@@ -69,16 +69,16 @@ public class SCPlayTime extends SCTemplate {
             }
 
             return new TimeResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Play Time")
-                    .addStat("Total", String.valueOf(result))
-                    .toString();
+                .setName(name)
+                .setStatName("Play Time")
+                .addStat("Total", String.valueOf(result))
+                .toString();
         } catch (Exception e) {
             return new TimeResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Play Time")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Play Time")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -91,13 +91,13 @@ public class SCPlayTime extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(t)
-                .leftJoin(p)
-                .on(t.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(t.amount.sum().desc())
-                .limit(num)
-                .list(p.name, t.amount.sum());
+            .from(t)
+            .leftJoin(p)
+            .on(t.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(t.amount.sum().desc())
+            .limit(num)
+            .list(p.name, t.amount.sum());
 
         return topListTimeResponse("Play Time", list);
     }

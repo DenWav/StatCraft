@@ -48,16 +48,16 @@ public class SCWordsSpoken extends SCTemplate {
             Integer result = query.from(m).where(m.id.eq(id)).uniqueResult(m.wordsSpoken.sum());
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Words Spoken")
-                    .addStat("Total", df.format(result == null ? 0 : result))
-                    .toString();
+                .setName(name)
+                .setStatName("Words Spoken")
+                .addStat("Total", df.format(result == null ? 0 : result))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Words Spoken")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Words Spoken")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -70,13 +70,13 @@ public class SCWordsSpoken extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(w)
-                .leftJoin(p)
-                .on(w.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(w.amount.sum().desc())
-                .limit(num)
-                .list(p.name, w.amount.sum());
+            .from(w)
+            .leftJoin(p)
+            .on(w.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(w.amount.sum().desc())
+            .limit(num)
+            .list(p.name, w.amount.sum());
 
         return topListResponse("Words Spoken", list);
     }

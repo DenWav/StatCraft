@@ -11,7 +11,6 @@ package com.demonwav.statcraft.commands;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.commands.sc.SCTemplate;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,6 +21,7 @@ import org.bukkit.event.Listener;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -202,7 +202,7 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
             List<String> result = subCommands.entrySet().stream()
                 .filter(entry -> entry.getValue().hasPermission(sender, null) && entry.getKey().startsWith(args[0]))
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
             result.sort(String.CASE_INSENSITIVE_ORDER);
             return result;
         } else {

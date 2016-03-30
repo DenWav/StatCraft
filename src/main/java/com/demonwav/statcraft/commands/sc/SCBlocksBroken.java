@@ -47,17 +47,17 @@ public class SCBlocksBroken extends SCTemplate {
             Integer total = query.from(b).where(b.id.eq(id)).uniqueResult(b.amount.sum());
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Blocks Broken")
-                    .addStat("Total", df.format(total == null ? 0 : total))
-                    .toString();
+                .setName(name)
+                .setStatName("Blocks Broken")
+                .addStat("Total", df.format(total == null ? 0 : total))
+                .toString();
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Blocks Broken")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Blocks Broken")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -69,13 +69,13 @@ public class SCBlocksBroken extends SCTemplate {
         QBlockBreak b = QBlockBreak.blockBreak;
         QPlayers p = QPlayers.players;
         List<Tuple> result = query
-                .from(b)
-                .leftJoin(p)
-                .on(b.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(b.amount.sum().desc())
-                .limit(num)
-                .list(p.name, b.amount.sum());
+            .from(b)
+            .leftJoin(p)
+            .on(b.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(b.amount.sum().desc())
+            .limit(num)
+            .list(p.name, b.amount.sum());
 
         return topListResponse("Blocks Broken", result);
     }

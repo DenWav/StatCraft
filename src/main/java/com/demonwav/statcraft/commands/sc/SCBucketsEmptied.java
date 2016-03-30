@@ -75,22 +75,22 @@ public class SCBucketsEmptied extends SCTemplate {
             total = water + lava + milk;
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Buckets Emptied")
-                    .addStat("Total", df.format(total))
-                    .addStat("Water", df.format(water))
-                    .addStat("Lava", df.format(lava))
-                    .addStat("Milk", df.format(milk))
-                    .toString();
+                .setName(name)
+                .setStatName("Buckets Emptied")
+                .addStat("Total", df.format(total))
+                .addStat("Water", df.format(water))
+                .addStat("Lava", df.format(lava))
+                .addStat("Milk", df.format(milk))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Buckets Emptied")
-                    .addStat("Total", String.valueOf(0))
-                    .addStat("Water", String.valueOf(0))
-                    .addStat("Lava", String.valueOf(0))
-                    .addStat("Milk", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Buckets Emptied")
+                .addStat("Total", String.valueOf(0))
+                .addStat("Water", String.valueOf(0))
+                .addStat("Lava", String.valueOf(0))
+                .addStat("Milk", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -102,13 +102,13 @@ public class SCBucketsEmptied extends SCTemplate {
         QBucketEmpty e = QBucketEmpty.bucketEmpty;
         QPlayers p = QPlayers.players;
         List<Tuple> result = query
-                .from(e)
-                .leftJoin(p)
-                .on(e.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(e.amount.sum().desc())
-                .limit(num)
-                .list(p.name, e.amount.sum());
+            .from(e)
+            .leftJoin(p)
+            .on(e.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(e.amount.sum().desc())
+            .limit(num)
+            .list(p.name, e.amount.sum());
 
         return topListResponse("Buckets Emptied", result);
     }

@@ -69,16 +69,16 @@ public class SCTimeSlept extends SCTemplate {
             }
 
             return new TimeResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Time Slept")
-                    .addStat("Total", String.valueOf(result))
-                    .toString();
+                .setName(name)
+                .setStatName("Time Slept")
+                .addStat("Total", String.valueOf(result))
+                .toString();
         } catch (Exception e) {
             return new TimeResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Time Slept")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Time Slept")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -91,13 +91,13 @@ public class SCTimeSlept extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(s)
-                .leftJoin(p)
-                .on(s.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(s.timeSlept.sum().desc())
-                .limit(num)
-                .list(p.name, s.timeSlept.sum());
+            .from(s)
+            .leftJoin(p)
+            .on(s.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(s.timeSlept.sum().desc())
+            .limit(num)
+            .list(p.name, s.timeSlept.sum());
 
         return topListTimeResponse("Time Slept", list);
     }

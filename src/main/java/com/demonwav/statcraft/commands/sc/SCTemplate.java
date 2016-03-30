@@ -11,19 +11,11 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
-import com.demonwav.statcraft.querydsl.QBlockBreak;
-import com.demonwav.statcraft.querydsl.QBucketFill;
-import com.demonwav.statcraft.querydsl.QDeath;
-import com.demonwav.statcraft.querydsl.QMessagesSpoken;
-import com.demonwav.statcraft.querydsl.QPlayers;
-import com.demonwav.statcraft.querydsl.QWorlds;
 import com.mysema.query.Tuple;
-import com.mysema.query.sql.SQLQuery;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,31 +46,31 @@ public abstract class SCTemplate {
         StringBuilder sb = new StringBuilder();
 
         sb  .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
-                .append("- ").append(name).append(" ")
-                .append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator()))
-                .append("| ")
-                .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
-                .append("Top ")
-                .append(list.size())
-                .append(" -");
+            .append("- ").append(name).append(" ")
+            .append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator()))
+            .append("| ")
+            .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
+            .append("Top ")
+            .append(list.size())
+            .append(" -");
 
         int i = 0;
 
         for (Tuple tuple : list) {
-            sb      .append("\n")
-                    .append(ChatColor.RESET)
-                    .append(ChatColor.BOLD)
-                    .append(ChatColor.valueOf(plugin.config().getColors().getListNumber()))
-                    .append(++i)
-                    .append(". ")
-                    .append(ChatColor.RESET)
-                    .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
-                    .append(tuple.get(0, String.class))
-                    .append(ChatColor.WHITE)
-                    .append(": ")
-                    .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
-                    .append(df.format(tuple.get(1, Integer.class)))
-                    .append(ChatColor.RESET);
+            sb  .append("\n")
+                .append(ChatColor.RESET)
+                .append(ChatColor.BOLD)
+                .append(ChatColor.valueOf(plugin.config().getColors().getListNumber()))
+                .append(++i)
+                .append(". ")
+                .append(ChatColor.RESET)
+                .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
+                .append(tuple.get(0, String.class))
+                .append(ChatColor.WHITE)
+                .append(": ")
+                .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
+                .append(df.format(tuple.get(1, Integer.class)))
+                .append(ChatColor.RESET);
         }
 
         return sb.toString();
@@ -88,32 +80,32 @@ public abstract class SCTemplate {
         StringBuilder sb = new StringBuilder();
 
         sb  .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
-                .append("- ").append(name).append(" ")
-                .append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator()))
-                .append("| ")
-                .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
-                .append("Top ")
-                .append(list.size())
-                .append(" -");
+            .append("- ").append(name).append(" ")
+            .append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator()))
+            .append("| ")
+            .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
+            .append("Top ")
+            .append(list.size())
+            .append(" -");
 
         int i = 0;
 
         for (Tuple tuple : list) {
             Integer res = tuple.get(1, Integer.class);
-            sb      .append("\n")
-                    .append(ChatColor.RESET)
-                    .append(ChatColor.BOLD)
-                    .append(ChatColor.valueOf(plugin.config().getColors().getListNumber()))
-                    .append(++i)
-                    .append(". ")
-                    .append(ChatColor.RESET)
-                    .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
-                    .append(tuple.get(0, String.class))
-                    .append(ChatColor.WHITE)
-                    .append(": ")
-                    .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
-                    .append(Util.transformTime(res == null ? 0 : res))
-                    .append(ChatColor.RESET);
+            sb  .append("\n")
+                .append(ChatColor.RESET)
+                .append(ChatColor.BOLD)
+                .append(ChatColor.valueOf(plugin.config().getColors().getListNumber()))
+                .append(++i)
+                .append(". ")
+                .append(ChatColor.RESET)
+                .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
+                .append(tuple.get(0, String.class))
+                .append(ChatColor.WHITE)
+                .append(": ")
+                .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
+                .append(Util.transformTime(res == null ? 0 : res))
+                .append(ChatColor.RESET);
         }
 
         return sb.toString();

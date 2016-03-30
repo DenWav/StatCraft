@@ -47,16 +47,16 @@ public class SCToolsBroken extends SCTemplate {
             Integer result = query.from(t).where(t.id.eq(id)).uniqueResult(t.amount.sum());
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Tools Broken")
-                    .addStat("Total", df.format(result))
-                    .toString();
+                .setName(name)
+                .setStatName("Tools Broken")
+                .addStat("Total", df.format(result))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Tools Broken")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Tools Broken")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -69,13 +69,13 @@ public class SCToolsBroken extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(t)
-                .leftJoin(p)
-                .on(t.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(t.amount.sum().desc())
-                .limit(num)
-                .list(p.name, t.amount.sum());
+            .from(t)
+            .leftJoin(p)
+            .on(t.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(t.amount.sum().desc())
+            .limit(num)
+            .list(p.name, t.amount.sum());
 
         return topListResponse("Tools Broken", list);
     }

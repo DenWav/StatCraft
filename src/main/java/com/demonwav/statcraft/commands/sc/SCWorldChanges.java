@@ -47,16 +47,16 @@ public class SCWorldChanges extends SCTemplate {
             Integer result = query.from(w).where(w.id.eq(id)).uniqueResult(w.amount.sum());
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("World Changes")
-                    .addStat("Total", df.format(result == null ? 0 : result))
-                    .toString();
+                .setName(name)
+                .setStatName("World Changes")
+                .addStat("Total", df.format(result == null ? 0 : result))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("World Changes")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("World Changes")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -69,13 +69,13 @@ public class SCWorldChanges extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(w)
-                .leftJoin(p)
-                .on(w.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(w.amount.sum().desc())
-                .limit(num)
-                .list(p.name, w.amount.sum());
+            .from(w)
+            .leftJoin(p)
+            .on(w.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(w.amount.sum().desc())
+            .limit(num)
+            .list(p.name, w.amount.sum());
 
         return topListResponse("World Changes", list);
     }

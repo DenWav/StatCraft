@@ -47,16 +47,16 @@ public class SCXpGained extends SCTemplate {
             Integer result = query.from(x).where(x.id.eq(id)).uniqueResult(x.amount.sum());
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Xp Gained")
-                    .addStat("Total", df.format(result == null ? 0 : result))
-                    .toString();
+                .setName(name)
+                .setStatName("Xp Gained")
+                .addStat("Total", df.format(result == null ? 0 : result))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Xp Gained")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Xp Gained")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -69,13 +69,13 @@ public class SCXpGained extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(x)
-                .leftJoin(p)
-                .on(x.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(x.amount.sum().desc())
-                .limit(num)
-                .list(p.name, x.amount.sum());
+            .from(x)
+            .leftJoin(p)
+            .on(x.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(x.amount.sum().desc())
+            .limit(num)
+            .list(p.name, x.amount.sum());
 
         return topListResponse("Xp Gained", list);
     }

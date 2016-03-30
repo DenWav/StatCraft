@@ -47,17 +47,17 @@ public class SCOnFire extends SCTemplate {
             Integer result = query.from(o).where(o.id.eq(id)).uniqueResult(o.time.sum());
 
             return new TimeResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("On Fire")
-                    .addStat("Total", String.valueOf(result))
-                    .toString();
+                .setName(name)
+                .setStatName("On Fire")
+                .addStat("Total", String.valueOf(result))
+                .toString();
 
         } catch (Exception e) {
             return new TimeResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("On Fire")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("On Fire")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -70,13 +70,13 @@ public class SCOnFire extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(o)
-                .leftJoin(p)
-                .on(o.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(o.time.sum().desc())
-                .limit(num)
-                .list(p.name, o.time.sum());
+            .from(o)
+            .leftJoin(p)
+            .on(o.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(o.time.sum().desc())
+            .limit(num)
+            .list(p.name, o.time.sum());
 
         return topListTimeResponse("On Fire", list);
     }

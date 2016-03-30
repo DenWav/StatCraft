@@ -47,16 +47,16 @@ public class SCTabCompletes extends SCTemplate {
             Integer result = query.from(t).where(t.id.eq(id)).uniqueResult(t.amount.sum());
 
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Tab Completes")
-                    .addStat("Total", df.format(result))
-                    .toString();
+                .setName(name)
+                .setStatName("Tab Completes")
+                .addStat("Total", df.format(result))
+                .toString();
         } catch (Exception e) {
             return new ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Tab Completes")
-                    .addStat("Total", String.valueOf(0))
-                    .toString();
+                .setName(name)
+                .setStatName("Tab Completes")
+                .addStat("Total", String.valueOf(0))
+                .toString();
         }
     }
 
@@ -69,13 +69,13 @@ public class SCTabCompletes extends SCTemplate {
         QPlayers p = QPlayers.players;
 
         List<Tuple> list = query
-                .from(t)
-                .leftJoin(p)
-                .on(t.id.eq(p.id))
-                .groupBy(p.name)
-                .orderBy(t.amount.desc())
-                .limit(num)
-                .list(p.name, t.amount);
+            .from(t)
+            .leftJoin(p)
+            .on(t.id.eq(p.id))
+            .groupBy(p.name)
+            .orderBy(t.amount.desc())
+            .limit(num)
+            .list(p.name, t.amount);
 
         return topListResponse("Tab Completes", list);
     }
