@@ -4,7 +4,7 @@ StatCraft <a href="https://tc.demonwav.com/viewType.html?buildTypeId=StatCraft_B
 StatCraft is an easy to use and setup plugin for keeping very in-depth stats on your CraftBukkit server. Most individual
 statistics have a list of sub-statistics that go with it. StatCraft is planned to support at least 44 different stats, but
 that list is not final and may grow in the future. StatCraft uses the server stats for some stats, but it keeps track
-of the majority of it's own stats itself. It uses MySQL databases to store the stats, using the Querydsl library
+of the majority of it's own stats itself. It uses a MySQL databas to store the stats, using the QueryDSL library
 for most of the database interfacing.
 
 Statistics Supported
@@ -99,4 +99,4 @@ questions or want to contact me for any reason, you can find me in IRC:
 
 `irc.spi.gt`
 
-I am usually in *#spigot* and *#spigot-dev*, but you can always just message me, username is DemonWav.
+I am usually in *#PaperSpigot* and *#spigot*, but you can always just message me, username is DemonWav.
