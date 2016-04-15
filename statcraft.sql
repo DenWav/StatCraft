@@ -1,4 +1,4 @@
--- StatCraft Database Creation Script Generated on Mon Mar 28 21:54:09 CDT 2016
+-- StatCraft Database Creation Script Generated on Tue Mar 29 21:58:04 CDT 2016
 --
 -- Database: statcraft
 -- ----------------------------------------------------------------------------
@@ -316,7 +316,8 @@ CREATE TABLE `on_fire` (
   `id` int(11) NOT NULL,
   `time` int(11) NOT NULL,
   `world_id` int(11) NOT NULL,
-  UNIQUE KEY `id` (`id`,`world_id`)
+  `source` varchar(50) NOT NULL,
+  UNIQUE KEY `id` (`id`,`world_id`,`source`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -340,6 +341,19 @@ CREATE TABLE `players` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table: `potioned`
+--
+DROP TABLE IF EXISTS `potioned`;
+CREATE TABLE `potioned` (
+  `id` int(11) NOT NULL,
+  `time` int(11) NOT NULL,
+  `source` varchar(50) NOT NULL,
+  `effect` int(11) NOT NULL,
+  `world_id` int(11) NOT NULL,
+  KEY `id` (`id`,`world_id`,`source`,`effect`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -475,4 +489,4 @@ CREATE TABLE `xp_gained` (
   UNIQUE KEY `id` (`id`,`world_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Generated in 16.638491ms
+-- Generated in 14.345307ms

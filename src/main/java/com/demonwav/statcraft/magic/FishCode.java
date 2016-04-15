@@ -11,9 +11,9 @@ package com.demonwav.statcraft.magic;
 
 public enum FishCode {
 
-    FISH((byte)0),
+    FISH    ((byte)0),
     TREASURE((byte)1),
-    JUNK((byte)2);
+    JUNK    ((byte)2);
 
     private byte code;
 

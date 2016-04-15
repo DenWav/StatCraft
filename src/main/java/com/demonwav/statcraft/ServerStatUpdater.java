@@ -10,11 +10,15 @@
 package com.demonwav.statcraft;
 
 import com.demonwav.statcraft.magic.MoveCode;
+import com.demonwav.statcraft.magic.PotionEffectCode;
 import com.demonwav.statcraft.querydsl.QMove;
+import com.demonwav.statcraft.querydsl.QPotioned;
 import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class ServerStatUpdater {
 
@@ -37,7 +41,7 @@ public class ServerStatUpdater {
 
         public void run(final Player player, final String worldName) {
             for (final MoveCode code : MoveCode.values()) {
-                Statistic stat = code.getStat();
+                final Statistic stat = code.getStat();
                 final int value = player.getStatistic(stat);
                 final UUID uuid = player.getUniqueId();
 
@@ -57,6 +61,37 @@ public class ServerStatUpdater {
 
         private static int get(Integer i) {
             return i == null ? 0 : i;
+        }
+    }
+
+    public static class PotionEffect implements Runnable {
+
+        private final StatCraft plugin;
+
+        public PotionEffect(StatCraft plugin) {
+            this.plugin = plugin;
+        }
+
+        @Override
+        public void run() {
+            plugin.getServer().getOnlinePlayers().forEach(this::run);
+        }
+
+        public void run(final Player player) {
+            final List<PotionEffectCode> potionEffects = player.getActivePotionEffects().stream().map(e -> PotionEffectCode.fromEffect(e.getType())).collect(Collectors.toList());
+            final UUID uuid = player.getUniqueId();
+            final String worldName = player.getWorld().getName();
+
+            plugin.getThreadManager().schedule(
+                QPotioned.class, uuid, worldName,
+                (p, query, id, worldId) -> {
+                    return new Object();
+                }, (p, clause, id, worldId, o) -> {
+
+                }, (p, clause, id, worldId, o) -> {
+
+                }
+            );
         }
     }
 }

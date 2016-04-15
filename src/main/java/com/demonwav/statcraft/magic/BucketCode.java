@@ -11,9 +11,9 @@ package com.demonwav.statcraft.magic;
 
 public enum BucketCode {
 
-    WATER((byte)0),
-    LAVA((byte)1),
-    MILK((byte)2);
+    WATER   ((byte)0),
+    LAVA    ((byte)1),
+    MILK    ((byte)2);
 
     private byte code;
 

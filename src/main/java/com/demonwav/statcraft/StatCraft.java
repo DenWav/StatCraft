@@ -48,6 +48,7 @@ import com.demonwav.statcraft.commands.sc.SCXpGained;
 import com.demonwav.statcraft.config.ColorConfig;
 import com.demonwav.statcraft.config.Config;
 import com.demonwav.statcraft.config.com.md_5.config.FileYamlStorage;
+import com.demonwav.statcraft.listeners.AnimalsBredListener;
 import com.demonwav.statcraft.listeners.ArrowsShotListener;
 import com.demonwav.statcraft.listeners.BlockListener;
 import com.demonwav.statcraft.listeners.BucketEmptyListener;
@@ -385,10 +386,10 @@ public final class StatCraft extends JavaPlugin {
             new SCJumps(this);
         }
 
-//        if (config.stats.animals_bred) {
-//            getServer().getPluginManager().registerEvents(new AnimalsBredListener(this), this);
-//            statsEnabled.append(" animals_bred");
-//        }
+        if (config.getStats().isAnimalsBred()) {
+            getServer().getPluginManager().registerEvents(new AnimalsBredListener(this), this);
+            statsEnabled.append(" animals_bred");
+        }
 
         if (config.getStats().isKicks()) {
             getServer().getPluginManager().registerEvents(new KickListener(this), this);
@@ -563,8 +564,9 @@ public final class StatCraft extends JavaPlugin {
         if (result == null) {
             SQLUpdateClause update = getDatabaseManager().getUpdateClause(connection, p);
 
-            if (update == null)
+            if (update == null) {
                 return -1;
+            }
 
             // Blank out any conflicting names
             update

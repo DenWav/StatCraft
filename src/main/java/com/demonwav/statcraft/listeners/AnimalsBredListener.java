@@ -11,6 +11,7 @@ package com.demonwav.statcraft.listeners;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.querydsl.QAnimalsBred;
+import com.destroystokyo.paper.event.entity.EntityBreedEvent;
 import org.bukkit.Material;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Chicken;
@@ -29,6 +30,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -44,59 +46,53 @@ public class AnimalsBredListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onAnimalSpawn(final CreatureSpawnEvent event) {
-        if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.BREEDING) {
-            if (event.getEntity() instanceof Ageable) {
-                Ageable entity = (Ageable) event.getEntity();
+    public void onAnimalSpawn(final EntityBreedEvent event) {
+        Ageable entity = event.getEntity();
 
-                switch (entity.getType()) {
-                    case HORSE:
-                    case PIG:
-                    case RABBIT:
-                    case SHEEP:
-                    case COW:
-                    case MUSHROOM_COW:
-                    case CHICKEN:
-                    case OCELOT:
-                    case WOLF:
-//                      Ageable[] parents = entity.getParents();
-                        @SuppressWarnings("MismatchedReadAndWriteOfArray")
-                        Ageable[] parents = new Ageable[0];
-                        if (parents.length != 0) {
-                            Player firstPlayer = null;
-                            for (int i = 0; i < parents.length; i++) {
-                                Player player = breedMap.get(parents[i].getUniqueId());
+        switch (entity.getType()) {
+            case HORSE:
+            case PIG:
+            case RABBIT:
+            case SHEEP:
+            case COW:
+            case MUSHROOM_COW:
+            case CHICKEN:
+            case OCELOT:
+            case WOLF:
+                Ageable[] parents = entity.getParents();
+                if (parents.length != 0) {
+                    Player firstPlayer = null;
+                    for (int i = 0; i < parents.length; i++) {
+                        Player player = breedMap.get(parents[i].getUniqueId());
 
-                                if (player != null) {
-                                    // Only register a player once if he fed both animals
-                                    if (i == 1 && player.equals(firstPlayer)) {
-                                        return;
-                                    } else {
-                                        firstPlayer = player;
-                                    }
-                                    breedMap.remove(parents[i].getUniqueId());
-
-                                    final UUID uuid = player.getUniqueId();
-                                    final String worldName = entity.getWorld().getName();
-                                    final String type = entity.getType().name();
-
-                                    plugin.getThreadManager().schedule(
-                                        QAnimalsBred.class, uuid, worldName,
-                                        (a, clause, id, worldId) ->
-                                            clause.columns(a.id, a.worldId, a.animal, a.amount)
-                                                .values(id, worldId, type, 1).execute(),
-                                        (a, clause, id, worldId) ->
-                                            clause.where(a.id.eq(id), a.worldId.eq(worldId), a.animal.eq(type))
-                                                .set(a.amount, a.amount.add(1)).execute()
-                                    );
-                                }
+                        if (player != null) {
+                            // Only register a player once if (s)he fed both animals
+                            if (i == 1 && player.equals(firstPlayer)) {
+                                return;
+                            } else {
+                                firstPlayer = player;
                             }
-                        }
-                        break;
-                }
+                            breedMap.remove(parents[i].getUniqueId());
 
-            }
+                            final UUID uuid = player.getUniqueId();
+                            final String worldName = entity.getWorld().getName();
+                            final String type = entity.getType().name();
+
+                            plugin.getThreadManager().schedule(
+                                QAnimalsBred.class, uuid, worldName,
+                                (a, clause, id, worldId) ->
+                                    clause.columns(a.id, a.worldId, a.animal, a.amount)
+                                        .values(id, worldId, type, 1).execute(),
+                                (a, clause, id, worldId) ->
+                                    clause.where(a.id.eq(id), a.worldId.eq(worldId), a.animal.eq(type))
+                                        .set(a.amount, a.amount.add(1)).execute()
+                            );
+                        }
+                    }
+                }
+                break;
         }
+
     }
 
     @SuppressWarnings("deprecation")

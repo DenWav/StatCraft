@@ -36,9 +36,9 @@ public class XpGainedListener implements Listener {
             plugin.getThreadManager().schedule(
                 QXpGained.class, uuid, worldName,
                 (x, clause, id, worldId) ->
-                    clause.columns(x.id, x.amount).values(id, amount).execute(),
+                    clause.columns(x.id, x.worldId, x.amount).values(id, worldId, amount).execute(),
                 (x, clause, id, worldId) ->
-                    clause.where(x.id.eq(id)).set(x.amount, x.amount.add(amount)).execute()
+                    clause.where(x.id.eq(id), x.worldId.eq(worldId)).set(x.amount, x.amount.add(amount)).execute()
             );
         }
     }

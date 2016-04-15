@@ -146,8 +146,8 @@
     <dependencies>
         <!-- Spigot API -->
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
+            <groupId>com.destroystokyo.paper</groupId>
+            <artifactId>paper-api</artifactId>
             <version>1.9-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
