@@ -334,7 +334,7 @@ public class DatabaseManager implements Closeable {
             if (clause == null) {
                 return -1;
             }
-            clause.columns(w.worldName, w.customName).values(worldName, "").execute();
+            clause.columns(w.worldName, w.customName).values(worldName, worldName).execute();
 
             query = getNewQuery(connection);
             if (query == null) {
