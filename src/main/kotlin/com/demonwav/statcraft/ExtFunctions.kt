@@ -10,7 +10,7 @@
 package com.demonwav.statcraft
 
 import java.nio.ByteBuffer
-import java.util.*
+import java.util.UUID
 
 inline fun <T : AutoCloseable, R> T.use(block: (T) -> R): R {
     var closed = false
