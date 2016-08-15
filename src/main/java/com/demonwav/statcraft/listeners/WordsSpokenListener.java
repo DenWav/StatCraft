@@ -13,6 +13,7 @@ import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.querydsl.QMessagesSpoken;
 import com.demonwav.statcraft.querydsl.QSeen;
 import com.demonwav.statcraft.querydsl.QWordFrequency;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;

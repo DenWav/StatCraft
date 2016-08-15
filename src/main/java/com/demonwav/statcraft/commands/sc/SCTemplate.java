@@ -11,6 +11,7 @@ package com.demonwav.statcraft.commands.sc;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
+
 import com.mysema.query.Tuple;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;

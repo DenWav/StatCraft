@@ -14,6 +14,7 @@ import com.demonwav.statcraft.Table;
 import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.querydsl.QPlayers;
 import com.demonwav.statcraft.querydsl.QWorlds;
+
 import com.mysema.query.sql.MySQLTemplates;
 import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.SQLQuery;
@@ -26,7 +27,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.OfflinePlayer;
 import org.mariadb.jdbc.MariaDbDataSource;
 
-import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -35,6 +35,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nullable;
 
 public class DatabaseManager implements Closeable {
 

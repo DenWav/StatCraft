@@ -11,6 +11,7 @@ package com.demonwav.statcraft.commands;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.commands.sc.SCTemplate;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

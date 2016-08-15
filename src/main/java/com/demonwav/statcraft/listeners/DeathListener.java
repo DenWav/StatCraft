@@ -13,6 +13,7 @@ import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.magic.EntityCode;
 import com.demonwav.statcraft.querydsl.QDeath;
 import com.demonwav.statcraft.querydsl.QDeathByCause;
+
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;

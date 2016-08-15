@@ -14,6 +14,7 @@ import com.demonwav.statcraft.Table;
 import com.demonwav.statcraft.commands.CustomResponse;
 import com.demonwav.statcraft.querydsl.QSeen;
 import com.demonwav.statcraft.querydsl.QSleep;
+
 import com.mysema.query.sql.SQLQuery;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;

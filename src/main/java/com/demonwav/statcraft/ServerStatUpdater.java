@@ -13,6 +13,7 @@ import com.demonwav.statcraft.magic.MoveCode;
 import com.demonwav.statcraft.magic.PotionEffectCode;
 import com.demonwav.statcraft.querydsl.QMove;
 import com.demonwav.statcraft.querydsl.QPotioned;
+
 import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 

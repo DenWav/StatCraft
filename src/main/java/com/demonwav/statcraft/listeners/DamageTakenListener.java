@@ -12,6 +12,7 @@ package com.demonwav.statcraft.listeners;
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.magic.EntityCode;
 import com.demonwav.statcraft.querydsl.QDamageTaken;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;

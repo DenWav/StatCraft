@@ -12,6 +12,7 @@ package com.demonwav.statcraft.listeners;
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.magic.EntityCode;
 import com.demonwav.statcraft.querydsl.QKills;
+
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;

@@ -11,6 +11,7 @@ package com.demonwav.statcraft.sql;
 
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
+
 import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;

@@ -13,6 +13,7 @@ import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.magic.FishCode;
 import com.demonwav.statcraft.querydsl.QFishCaught;
+
 import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

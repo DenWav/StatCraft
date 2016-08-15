@@ -12,6 +12,7 @@ package com.demonwav.statcraft.config;
 import com.demonwav.statcraft.config.com.md_5.config.AnnotatedConfig;
 import com.demonwav.statcraft.config.com.md_5.config.ConfigComment;
 import com.demonwav.statcraft.config.com.md_5.config.NewLine;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

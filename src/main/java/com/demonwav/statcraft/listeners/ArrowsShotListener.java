@@ -12,6 +12,7 @@ package com.demonwav.statcraft.listeners;
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.magic.ProjectilesCode;
 import com.demonwav.statcraft.querydsl.QProjectiles;
+
 import com.mysema.query.types.expr.CaseBuilder;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;

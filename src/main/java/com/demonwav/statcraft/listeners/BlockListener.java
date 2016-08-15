@@ -13,6 +13,7 @@ import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.querydsl.QBlockBreak;
 import com.demonwav.statcraft.querydsl.QBlockPlace;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;

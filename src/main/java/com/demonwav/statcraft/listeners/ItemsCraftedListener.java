@@ -12,6 +12,7 @@ package com.demonwav.statcraft.listeners;
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.querydsl.QItemsCrafted;
+
 import com.google.common.base.Objects;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.EventHandler;

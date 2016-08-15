@@ -99,4 +99,4 @@ questions or want to contact me for any reason, you can find me in IRC:
 
 `irc.spi.gt`
 
-I am usually in *#PaperSpigot* and *#spigot*, but you can always just message me, username is DemonWav.
+I am usually in *#paper* and *#spigot*, but you can always just message me, username is DemonWav.

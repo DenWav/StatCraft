@@ -16,6 +16,7 @@ import com.demonwav.statcraft.querydsl.QJoins;
 import com.demonwav.statcraft.querydsl.QPlayTime;
 import com.demonwav.statcraft.querydsl.QPlayers;
 import com.demonwav.statcraft.querydsl.QSeen;
+
 import org.bukkit.Statistic;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

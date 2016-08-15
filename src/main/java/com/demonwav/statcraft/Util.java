@@ -15,18 +15,20 @@ import com.demonwav.statcraft.sql.QueryIdRunner;
 import com.demonwav.statcraft.sql.QueryIdRunnerMap;
 import com.demonwav.statcraft.sql.QueryRunner;
 import com.demonwav.statcraft.sql.QueryRunnerMap;
+
 import com.mysema.query.QueryException;
 import com.mysema.query.sql.RelationalPath;
 import com.mysema.query.sql.dml.SQLInsertClause;
 import com.mysema.query.sql.dml.SQLUpdateClause;
 
-import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.UUID;
+
+import javax.validation.constraints.NotNull;
 
 public class Util {
 

@@ -9,6 +9,8 @@
 
 package com.demonwav.statcraft.commands.sc;
 
+import static com.demonwav.statcraft.querydsl.QMove.move;
+
 import com.demonwav.statcraft.StatCraft;
 import com.demonwav.statcraft.Util;
 import com.demonwav.statcraft.commands.ResponseBuilder;
@@ -16,6 +18,7 @@ import com.demonwav.statcraft.commands.SecondaryArgument;
 import com.demonwav.statcraft.magic.MoveCode;
 import com.demonwav.statcraft.querydsl.QMove;
 import com.demonwav.statcraft.querydsl.QPlayers;
+
 import com.mysema.query.Tuple;
 import com.mysema.query.sql.SQLQuery;
 import org.apache.commons.lang.WordUtils;
@@ -26,8 +29,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.demonwav.statcraft.querydsl.QMove.move;
 
 public class SCMove extends SCTemplate {
 
