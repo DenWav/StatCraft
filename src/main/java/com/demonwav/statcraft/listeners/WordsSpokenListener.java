@@ -66,7 +66,7 @@ public class WordsSpokenListener implements Listener {
         );
 
 
-        if (plugin.config().getStats().isSpecificWordsSpoken()) {
+        if (plugin.getConfig().getStats().getSpecificWordsSpoken()) {
             for (String word : words) {
                 plugin.getThreadManager().schedule(
                     QWordFrequency.class, uuid, worldName,

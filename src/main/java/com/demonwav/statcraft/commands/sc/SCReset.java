@@ -65,7 +65,7 @@ public class SCReset extends SCTemplate implements CustomResponse {
                 }
             } else {
                 UUID uuid = map.get(sender);
-                if (uuid.equals(plugin.players.get(sender.getName()))) {
+                if (uuid.equals(plugin.getPlayers().get(sender.getName()))) {
                     // this person is resetting their own stats
                     // check permissions one more time
                     if (sender.hasPermission("statcraft.user.resetstats")) {
@@ -78,7 +78,7 @@ public class SCReset extends SCTemplate implements CustomResponse {
                     // Check permissions one more time
                     if (sender.hasPermission("statcraft.admin.resetotherstats")) {
                         String name = null;
-                        for (Map.Entry<String, UUID> entry : plugin.players.entrySet()) {
+                        for (Map.Entry<String, UUID> entry : plugin.getPlayers().entrySet()) {
                             if (entry.getValue().equals(uuid)) {
                                 name = entry.getKey();
                                 break;
@@ -105,13 +105,13 @@ public class SCReset extends SCTemplate implements CustomResponse {
             } else if (args.length == 0) {
                 sender.sendMessage("You must be a player to reset your own stats.");
             } else if (args.length == 1) {
-                if (plugin.players.containsKey(args[0])) {
+                if (plugin.getPlayers().containsKey(args[0])) {
                     sender.sendMessage("Are you sure you want to reset " + args[0] + "'s stats?\n" +
                         "Run command: " + ChatColor.GRAY + ChatColor.ITALIC + "/sc resetstats yes" +
                         ChatColor.RESET + " to verify.");
                     sender.sendMessage("Run command: " + ChatColor.GRAY + ChatColor.ITALIC + "/sc resetstats cancel" +
                         ChatColor.RESET + " to cancel.");
-                    map.put(sender, plugin.players.get(args[0]));
+                    map.put(sender, plugin.getPlayers().get(args[0]));
                 } else {
                     sender.sendMessage(args[0] + " was not found.");
                 }
@@ -223,7 +223,7 @@ public class SCReset extends SCTemplate implements CustomResponse {
                     list.add("yes");
                 return list;
             } else {
-                ArrayList<String> players = new ArrayList<>(plugin.players.keySet());
+                ArrayList<String> players = new ArrayList<>(plugin.getPlayers().keySet());
                 List<String> secondary = plugin.getServer().getOnlinePlayers().stream()
                     .map(Player::getName).collect(Collectors.toList());
 

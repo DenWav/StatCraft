@@ -59,7 +59,7 @@ public class OnFireListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCombust(final EntityCombustEvent event) {
-        if (!plugin.config().getStats().isOnFireAnnounce()) {
+        if (!plugin.getConfig().getStats().getOnFireAnnounce()) {
             return;
         }
 
@@ -72,7 +72,7 @@ public class OnFireListener implements Listener {
                 if (giveWarning) {
                     event.getEntity().getServer().broadcastMessage(
                         ChatColor.RED +
-                        plugin.config().getStats().getOnFireAnnounceMessage().replaceAll(
+                        plugin.getConfig().getStats().getOnFireAnnounceMessage().replaceAll(
                             "~",
                             ((Player) event.getEntity()).getDisplayName() + ChatColor.RED
                         )

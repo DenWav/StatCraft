@@ -52,13 +52,13 @@ public class DamageTakenListener implements Listener {
             );
 
             // DROWN ANNOUNCE
-            if (plugin.config().getStats().isDrowningAnnounce())
+            if (plugin.getConfig().getStats().getDrowningAnnounce())
             if (event.getCause().equals(EntityDamageEvent.DamageCause.DROWNING)) {
                 if ((System.currentTimeMillis() / 1000) - plugin.getLastDrownTime(uuid) > 120) {
 
                     event.getEntity().getServer().broadcastMessage(
                             ChatColor.BLUE +
-                            plugin.config().getStats().getDrownAnnounceMessage().replaceAll(
+                            plugin.getConfig().getStats().getDrownAnnounceMessage().replaceAll(
                                     "~",
                                     ((Player) event.getEntity()).getDisplayName() + ChatColor.BLUE
                             )
@@ -67,13 +67,13 @@ public class DamageTakenListener implements Listener {
                 }
             }
             // POISON ANNOUNCE
-            if (plugin.config().getStats().isPoisonAnnounce())
+            if (plugin.getConfig().getStats().getPoisonAnnounce())
             if (event.getCause().equals(EntityDamageEvent.DamageCause.POISON)) {
                 if ((System.currentTimeMillis() / 1000) - plugin.getLastPoisonTime(uuid) > 120) {
 
                     event.getEntity().getServer().broadcastMessage(
                             ChatColor.GREEN +
-                            plugin.config().getStats().getPoisonAnnounceMessage().replaceAll(
+                            plugin.getConfig().getStats().getPoisonAnnounceMessage().replaceAll(
                                     "~",
                                     ((Player) event.getEntity()).getDisplayName() + ChatColor.GREEN
                             )
@@ -82,13 +82,13 @@ public class DamageTakenListener implements Listener {
                 }
             }
             // WITHER ANNOUNCE
-            if (plugin.config().getStats().isWitherAnnounce())
+            if (plugin.getConfig().getStats().getWitherAnnounce())
                 if (event.getCause().equals(EntityDamageEvent.DamageCause.WITHER)) {
                     if ((System.currentTimeMillis() / 1000) - plugin.getLastWitherTime(uuid) > 120) {
 
                         event.getEntity().getServer().broadcastMessage(
                                 ChatColor.DARK_GRAY +
-                                plugin.config().getStats().getWitherAnnounceMessage().replaceAll(
+                                plugin.getConfig().getStats().getWitherAnnounceMessage().replaceAll(
                                         "~",
                                         ((Player) event.getEntity()).getDisplayName() + ChatColor.DARK_GRAY
                                 )

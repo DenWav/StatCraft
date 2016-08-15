@@ -74,13 +74,13 @@ public class SCMove extends SCTemplate {
 
                     StringBuilder sb = new StringBuilder();
 
-                    sb  .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
+                    sb  .append(ChatColor.valueOf(plugin.getConfig().getColors().getStatTitle()))
                         .append("- ")
-                        .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
+                        .append(ChatColor.valueOf(plugin.getConfig().getColors().getPlayerName()))
                         .append(name).append(" ")
-                        .append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator()))
+                        .append(ChatColor.valueOf(plugin.getConfig().getColors().getStatSeparator()))
                         .append("| ")
-                        .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
+                        .append(ChatColor.valueOf(plugin.getConfig().getColors().getStatTitle()))
                         .append("Move Breakdown")
                         .append(" -");
 
@@ -98,10 +98,10 @@ public class SCMove extends SCTemplate {
                             }
 
                             sb.append("\n")
-                                .append(ChatColor.valueOf(plugin.config().getColors().getStatLabel()))
+                                .append(ChatColor.valueOf(plugin.getConfig().getColors().getStatLabel()))
                                 .append(WordUtils.capitalizeFully(code.name()))
                                 .append(": ")
-                                .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
+                                .append(ChatColor.valueOf(plugin.getConfig().getColors().getStatValue()))
                                 .append(Util.distanceUnits(distance));
                         }
                     }

@@ -15,11 +15,11 @@ import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
 import java.io.Reader;
 
-public class YamlStorageReader<T extends AnnotatedConfig> {
+public class YamlStorageReader<T> {
 
     private Reader reader;
 
-    public YamlStorageReader(Reader reader, Plugin plugin) {
+    public YamlStorageReader(Reader reader) {
         this.reader = reader;
     }
 

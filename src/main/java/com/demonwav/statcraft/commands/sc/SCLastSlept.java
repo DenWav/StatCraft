@@ -41,7 +41,7 @@ public class SCLastSlept extends SCTemplate {
     @Override
     public String playerStatResponse(String name, List<String> args, Connection connection) {
         try {
-            UUID uuid = plugin.players.get(name);
+            UUID uuid = plugin.getPlayers().get(name);
             OfflinePlayer player;
             if (uuid == null) {
                 player = plugin.getServer().getOfflinePlayer(name);
@@ -50,8 +50,8 @@ public class SCLastSlept extends SCTemplate {
             }
 
             if (player.isOnline() && player.getPlayer().isSleeping()) {
-                return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) +
-                    name + ChatColor.valueOf(plugin.config().getColors().getStatValue()) +
+                return ChatColor.valueOf(plugin.getConfig().getColors().getPlayerName()) +
+                    name + ChatColor.valueOf(plugin.getConfig().getColors().getStatValue()) +
                     " is sleeping now!";
             } else {
                 // only use this new UUID if it's a real player
@@ -88,13 +88,13 @@ public class SCLastSlept extends SCTemplate {
 
                 time = time + " (" + Util.transformTime((int) (difference / 1000L)).split(",")[0] + " ago)";
 
-                return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) + name +
-                    ChatColor.valueOf(plugin.config().getColors().getStatTitle()) + " - Last Slept - " +
-                    ChatColor.valueOf(plugin.config().getColors().getStatValue()) + time;
+                return ChatColor.valueOf(plugin.getConfig().getColors().getPlayerName()) + name +
+                    ChatColor.valueOf(plugin.getConfig().getColors().getStatTitle()) + " - Last Slept - " +
+                    ChatColor.valueOf(plugin.getConfig().getColors().getStatValue()) + time;
             }
         } catch (Exception e) {
-            return ChatColor.valueOf(plugin.config().getColors().getPlayerName()) +
-                name + ChatColor.valueOf(plugin.config().getColors().getStatValue()) +
+            return ChatColor.valueOf(plugin.getConfig().getColors().getPlayerName()) +
+                name + ChatColor.valueOf(plugin.getConfig().getColors().getStatValue()) +
                 " has not slept on this server.";
         }
     }

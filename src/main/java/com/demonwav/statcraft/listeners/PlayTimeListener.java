@@ -47,9 +47,9 @@ public class PlayTimeListener implements Listener {
                 // This MUST be done before the other two jobs
                 final int id = plugin.setupPlayer(event.getPlayer(), conn);
                 final int worldId = plugin.getDatabaseManager().getWorldId(worldName);
-                plugin.players.put(name, uuid);
+                plugin.getPlayers().put(name, uuid);
 
-                if (plugin.config().getStats().isJoins()) {
+                if (plugin.getConfig().getStats().getJoins()) {
                     plugin.getThreadManager().scheduleRaw(
                         QJoins.class,
                         (connection) ->

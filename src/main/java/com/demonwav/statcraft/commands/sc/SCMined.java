@@ -152,7 +152,7 @@ public class SCMined extends SCTemplate implements CustomResponse {
                 }
 
                 if (finalAll)
-                    response = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
+                    response = ChatColor.valueOf(plugin.getConfig().getColors().getPublicIdentifier())
                         + "@" + sender.getName() + ": " + response;
 
                 final String finalResponse = response;

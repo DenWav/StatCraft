@@ -51,7 +51,7 @@ public class SCTimeSlept extends SCTemplate {
             if (result == null)
                 result = 0;
 
-            UUID uuid = plugin.players.get(name);
+            UUID uuid = plugin.getPlayers().get(name);
             OfflinePlayer player = plugin.getServer().getOfflinePlayer(uuid);
 
             if (player.isOnline() && player.getPlayer().isSleeping()) {

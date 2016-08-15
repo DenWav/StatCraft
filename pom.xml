@@ -36,7 +36,7 @@
             <plugin>
                 <groupId>com.demonwav.statcraft</groupId>
                 <artifactId>statcraft-maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>1.1-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
@@ -145,7 +145,7 @@
                                     <directory>${basedir}/target</directory>
                                     <includes>
                                         <include>original*</include>
-                                        <include>${artifactId}-${project.version}.jar</include>
+                                        <include>${project.artifactId}-${project.version}.jar</include>
                                     </includes>
                                 </fileset>
                             </filesets>
@@ -190,12 +190,6 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
-        </dependency>
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.14.8</version>
         </dependency>
         <!-- Querydsl -->
         <dependency>

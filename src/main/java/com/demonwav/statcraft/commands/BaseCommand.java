@@ -162,7 +162,7 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
                                 sender.sendMessage("\"-top\" cannot be used with this command.");
                             } else {
                                 if (finalPublicCmd) {
-                                    String endResponse = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
+                                    String endResponse = ChatColor.valueOf(plugin.getConfig().getColors().getPublicIdentifier())
                                         + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
                                     plugin.getServer().broadcastMessage(endResponse);
                                 } else {
@@ -180,7 +180,7 @@ public class BaseCommand implements CommandExecutor, TabCompleter, Listener {
                                 final String response = command.playerStatResponse(player, secondaryArgsList, connection);
 
                                 if (finalPublicCmd) {
-                                    String endResponse = ChatColor.valueOf(plugin.config().getColors().getPublicIdentifier())
+                                    String endResponse = ChatColor.valueOf(plugin.getConfig().getColors().getPublicIdentifier())
                                         + "@" + sender.getName() + ChatColor.WHITE + ": " + response;
                                     plugin.getServer().broadcastMessage(endResponse);
                                 } else {

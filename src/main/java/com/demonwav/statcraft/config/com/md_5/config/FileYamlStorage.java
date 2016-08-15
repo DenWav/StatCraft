@@ -16,22 +16,20 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.PrintWriter;
 
-public class FileYamlStorage<T extends AnnotatedConfig> {
+public class FileYamlStorage<T> {
 
     private File file;
     private Class<T> clazz;
     private T config;
-    private Plugin plugin;
 
-    public FileYamlStorage(File file, Class<T> clazz, Plugin plugin) {
+    public FileYamlStorage(File file, Class<T> clazz) {
         this.file = file;
         this.clazz = clazz;
-        this.plugin = plugin;
     }
 
     public T load() {
         try {
-            config = new YamlStorageReader<T>(new FileReader(file), plugin).load(clazz);
+            config = new YamlStorageReader<T>(new FileReader(file)).load(clazz);
         } catch (Exception ex) {
             try {
                 config = clazz.newInstance();

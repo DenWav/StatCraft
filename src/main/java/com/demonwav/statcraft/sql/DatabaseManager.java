@@ -51,11 +51,11 @@ public class DatabaseManager implements Closeable {
         this.plugin = plugin;
         HikariConfig config = new HikariConfig();
         config.setDataSourceClassName(MariaDbDataSource.class.getName());
-        config.setUsername(plugin.config().getMysql().getUsername());
-        config.setPassword(plugin.config().getMysql().getPassword());
-        config.addDataSourceProperty("databaseName", plugin.config().getMysql().getDatabase());
-        config.addDataSourceProperty("portNumber", plugin.config().getMysql().getPort());
-        config.addDataSourceProperty("serverName", plugin.config().getMysql().getHostname());
+        config.setUsername(plugin.getConfig().getMysql().getUsername());
+        config.setPassword(plugin.getConfig().getMysql().getPassword());
+        config.addDataSourceProperty("databaseName", plugin.getConfig().getMysql().getDatabase());
+        config.addDataSourceProperty("portNumber", plugin.getConfig().getMysql().getPort());
+        config.addDataSourceProperty("serverName", plugin.getConfig().getMysql().getHostname());
         config.setMaximumPoolSize(Table.values().length);
 
         try {
@@ -180,7 +180,7 @@ public class DatabaseManager implements Closeable {
             createTable(table);
             plugin.getLogger().info("Created table `" + table.getName() + "`.");
         } else {
-            if (plugin.config().getMysql().isForceSetup()) {
+            if (plugin.getConfig().getMysql().getForceSetup()) {
                 dropTable(table);
                 createTable(table);
                 plugin.getLogger().info("Created table `" + table.getName() + "`.");

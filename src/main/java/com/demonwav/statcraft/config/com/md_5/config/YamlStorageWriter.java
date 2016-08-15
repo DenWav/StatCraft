@@ -30,7 +30,7 @@ public class YamlStorageWriter {
         this.writer = writer;
     }
 
-    public void save(AnnotatedConfig object) {
+    public void save(Object object) {
         try {
             writeToFile(object, 0, object.getClass());
         } catch (IllegalAccessException e) {
@@ -52,15 +52,15 @@ public class YamlStorageWriter {
                 if (writeKey(field, depth, data)) {
                     continue;
                 }
-                if (data instanceof AnnotatedConfig) {
-                    writer.println();
-                    writeToFile(data, depth + 1, data.getClass());
-                } else if (data instanceof Map) {
+                if (data instanceof Map) {
                     writeMap((Map<Object, Object>) data, depth + 1);
                 } else if (data instanceof Collection) {
                     writeCollection((Collection<Object>) data, depth + 1);
-                } else {
+                } else if (data instanceof String || data instanceof Boolean || data instanceof Number) {
                     writeScalar(data);
+                } else {
+                    writer.println();
+                    writeToFile(data, depth + 1, data.getClass());
                 }
                 writeNewLines(field, false);
             }
@@ -134,11 +134,11 @@ public class YamlStorageWriter {
             if (entry != null) {
                 writeIndention(depth);
                 writer.print("- ");
-                if (entry instanceof AnnotatedConfig) {
+                if (entry instanceof String || entry instanceof Boolean || entry instanceof Number) {
+                    writeScalar(entry);
+                } else {
                     writer.println();
                     writeToFile(entry, depth + 1, entry.getClass());
-                } else {
-                    writeScalar(entry);
                 }
             }
         }
@@ -156,15 +156,15 @@ public class YamlStorageWriter {
                 writeIndention(depth);
                 writeKey(entry.getKey());
                 writer.print(": ");
-                if (value instanceof AnnotatedConfig) {
-                    writer.println();
-                    writeToFile(value, depth + 1, value.getClass());
-                } else if (value instanceof Map) {
+                if (value instanceof Map) {
                     writeMap((Map<Object, Object>) value, depth + 1);
                 } else if (value instanceof Collection) {
                     writeCollection((Collection<Object>) value, depth + 1);
-                } else {
+                } else if (value instanceof String || value instanceof Boolean || value instanceof Number) {
                     writeScalar(value);
+                } else {
+                    writer.println();
+                    writeToFile(value, depth + 1, value.getClass());
                 }
             }
         }

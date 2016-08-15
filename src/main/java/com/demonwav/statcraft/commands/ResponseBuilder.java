@@ -47,22 +47,22 @@ public class ResponseBuilder {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb  .append(ChatColor.valueOf(plugin.config().getColors().getPlayerName()))
+        sb  .append(ChatColor.valueOf(plugin.getConfig().getColors().getPlayerName()))
             .append(name)
-            .append(ChatColor.valueOf(plugin.config().getColors().getStatTitle()))
+            .append(ChatColor.valueOf(plugin.getConfig().getColors().getStatTitle()))
             .append(" - ").append(statName).append(" - ");
 
         Iterator<Map.Entry<String, String>> iterator = stats.entrySet().iterator();
 
         while (iterator.hasNext()) {
             Map.Entry<String, String> entry = iterator.next();
-            sb  .append(ChatColor.valueOf(plugin.config().getColors().getStatLabel()))
+            sb  .append(ChatColor.valueOf(plugin.getConfig().getColors().getStatLabel()))
                 .append(entry.getKey()).append(": ")
-                .append(ChatColor.valueOf(plugin.config().getColors().getStatValue()))
+                .append(ChatColor.valueOf(plugin.getConfig().getColors().getStatValue()))
                 .append(entry.getValue());
 
             if (iterator.hasNext())
-                sb.append(ChatColor.valueOf(plugin.config().getColors().getStatSeparator())).append(" | ");
+                sb.append(ChatColor.valueOf(plugin.getConfig().getColors().getStatSeparator())).append(" | ");
         }
 
         return sb.toString();
