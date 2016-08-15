@@ -3,7 +3,7 @@
  * StatCraft Bukkit Plugin
  *
  * Copyright (c) 2016 Kyle Wood (DemonWav)
- * http://demonwav.com
+ * https://www.demonwav.com
  *
  * MIT License
  */
