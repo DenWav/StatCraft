@@ -9,7 +9,6 @@
 
 package com.demonwav.statcraft
 
-import com.mysema.query.Query
 import com.mysema.query.QueryException
 import com.mysema.query.sql.RelationalPath
 import com.mysema.query.sql.SQLQuery
@@ -19,10 +18,10 @@ import java.nio.ByteBuffer
 import java.sql.Connection
 import java.util.UUID
 
-inline fun <T : AutoCloseable, R> T.use(block: (T) -> R): R {
+inline fun <T : AutoCloseable, R> T.use(block: T.() -> R): R {
     var closed = false
     try {
-        return block(this)
+        return block()
     } catch (e: Exception) {
         closed = true
         try {
@@ -99,8 +98,8 @@ inline fun <T : RelationalPath<*>> T.runQuery(playerId: UUID,
                                               connection: Connection,
                                               plugin: StatCraft) {
 
-    val id = plugin.databaseManager.getPlayerId(playerId)
-    val wid = plugin.databaseManager.getWorldId(worldName)
+    val id = plugin.databaseManager.getPlayerId(playerId) ?: return
+    val wid = plugin.databaseManager.getWorldId(worldName) ?: return
 
     try {
         val clause = plugin.databaseManager.getInsertClause(connection, this) ?: return
@@ -121,8 +120,8 @@ inline fun <T : RelationalPath<*>, R> T.runQuery(playerId: UUID,
                                                  connection: Connection,
                                                  plugin: StatCraft) {
 
-    val id = plugin.databaseManager.getPlayerId(playerId)
-    val wid = plugin.databaseManager.getWorldId(worldName)
+    val id = plugin.databaseManager.getPlayerId(playerId) ?: return
+    val wid = plugin.databaseManager.getWorldId(worldName) ?: return
 
     val r = workBefore(this, plugin.databaseManager.getNewQuery(connection) ?: return, id, wid)
 

@@ -115,11 +115,11 @@ class ThreadManager(val plugin: StatCraft) : Runnable, Closeable {
     override fun close() {
         work.clear()
         map.forEach { key, queue ->
-            plugin.databaseManager.connection.use { connection ->
+            plugin.databaseManager.connection.use {
                 var consumer = queue.poll()
                 while (consumer != null) {
                     try {
-                        consumer(connection)
+                        consumer(this)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }

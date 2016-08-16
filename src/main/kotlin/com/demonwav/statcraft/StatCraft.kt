@@ -389,7 +389,7 @@ class StatCraft : JavaPlugin() {
                 // Insert game join / bed enter data
                 var id = 0
                 try {
-                    databaseManager.connection.use { id = setupPlayer(player, it) }
+                    databaseManager.connection.use { id = setupPlayer(player, this) ?: return@forEach }
                 } catch (e: SQLException) {
                     e.printStackTrace()
                     return@forEach
@@ -424,8 +424,8 @@ class StatCraft : JavaPlugin() {
     private fun setupPlayers() {
         var players: List<Players>? = null
         try {
-            databaseManager.connection.use { connection ->
-                val query = databaseManager.getNewQuery(connection) ?: return@use
+            databaseManager.connection.use {
+                val query = databaseManager.getNewQuery(this) ?: return@use
                 players = query.from(QPlayers.players).list(QPlayers.players)
             }
         } catch (e: SQLException) {
@@ -453,18 +453,19 @@ class StatCraft : JavaPlugin() {
     private fun finishPlaytimeAndBed() {
         val currentTime = (System.currentTimeMillis() / 1000L).toInt()
 
+        val plugin = this
         // We can't start an async task here, so just do it on the main thread
         server.onlinePlayers.forEach { player ->
             val uuid = player.uniqueId
             val id = databaseManager.getPlayerId(uuid)
 
             try {
-                databaseManager.connection.use { connection ->
+                databaseManager.connection.use {
                     Util.runQuery(
                         QSeen::class.java,
                         { s, clause -> clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute() },
                         { s, clause -> clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute() },
-                        connection, this
+                        this, plugin
                     )
                 }
             } catch (e: SQLException) {
@@ -474,22 +475,21 @@ class StatCraft : JavaPlugin() {
             val currentPlayTime = Math.round(player.getStatistic(Statistic.PLAY_ONE_TICK) * 0.052).toInt()
 
             try {
-                databaseManager.connection.use { connection ->
+                databaseManager.connection.use {
                     Util.runQuery(
                         QPlayTime::class.java,
                         { p, clause -> clause.columns(p.id, p.amount).values(id, currentPlayTime).execute() },
                         { p, clause -> clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute() },
-                        connection, this
+                        this, plugin
                     )
                 }
             } catch (e: SQLException) {
                 e.printStackTrace()
             }
 
-
             if (player.isSleeping) {
                 try {
-                    databaseManager.connection.use { connection ->
+                    databaseManager.connection.use {
                         Util.runQuery(
                             QSleep::class.java,
                             { s, query ->
@@ -517,7 +517,7 @@ class StatCraft : JavaPlugin() {
                                     clause.where(s.id.eq(id)).set(s.leaveBed, currentPlayTime).set(s.timeSlept, map["timeSlept"]).execute()
                                 }
                             },
-                            connection, this
+                            this, plugin
                         )
                     }
                 } catch (e: SQLException) {
@@ -527,28 +527,28 @@ class StatCraft : JavaPlugin() {
         }
     }
 
-    fun setupPlayer(player: OfflinePlayer, connection: Connection): Int {
+    fun setupPlayer(player: OfflinePlayer, connection: Connection): Int? {
         val array = player.uniqueId.toByte()
         val name = player.name
         // Check player / id listing
         val p = QPlayers.players
-        var query = databaseManager.getNewQuery(connection) ?: return -1
+        var query = databaseManager.getNewQuery(connection) ?: return null
 
         val result = query.from(p).where(p.uuid.eq(array)).uniqueResult(p)
 
         if (result == null) {
-            val update = databaseManager.getUpdateClause(connection, p) ?: return -1
+            val update = databaseManager.getUpdateClause(connection, p) ?: return null
 
             // Blank out any conflicting names
             update.where(p.name.eq(name)).set(p.name, "").execute()
-            val insert = databaseManager.getInsertClause(connection, p) ?: return -1
+            val insert = databaseManager.getInsertClause(connection, p) ?: return null
 
             // Insert new player listing
             insert.columns(p.uuid, p.name).values(array, name).execute()
 
             checkBlanks()
         } else if (result.name != name) {
-            val update = databaseManager.getUpdateClause(connection, p) ?: return -1
+            val update = databaseManager.getUpdateClause(connection, p) ?: return null
 
             // Blank out any conflicting names
             update.where(p.name.eq(name)).set(p.name, "").execute()
@@ -561,17 +561,17 @@ class StatCraft : JavaPlugin() {
         val id = databaseManager.getPlayerId(player.uniqueId)
 
         if (config.stats.firstJoinTime) {
-            query = databaseManager.getNewQuery(connection) ?: return -1
+            query = databaseManager.getNewQuery(connection) ?: return null
 
             val s = QSeen.seen
             var time = query.from(s).where(s.id.eq(id)).uniqueResult(s.firstJoinTime)
             time = if (time == null) 0 else time
             if (time !== (player.firstPlayed / 1000L).toInt()) {
                 try {
-                    val clause = databaseManager.getInsertClause(connection, s) ?: return -1
+                    val clause = databaseManager.getInsertClause(connection, s) ?: return null
                     clause.columns(s.id, s.firstJoinTime).values(id, (player.firstPlayed / 1000L).toInt()).execute()
                 } catch (e: QueryException) {
-                    val clause = databaseManager.getUpdateClause(connection, s) ?: return -1
+                    val clause = databaseManager.getUpdateClause(connection, s) ?: return null
                     clause.where(s.id.eq(id)).set(s.firstJoinTime, (player.firstPlayed / 1000L).toInt()).execute()
                 }
 
@@ -601,7 +601,7 @@ class StatCraft : JavaPlugin() {
             val conn = URL(url).openConnection() as HttpURLConnection
             conn.requestMethod = "GET"
             conn.inputStream.reader().buffered().use {
-                s = it.readText()
+                s = readText()
             }
         } catch (e: Exception) {
             e.printStackTrace()

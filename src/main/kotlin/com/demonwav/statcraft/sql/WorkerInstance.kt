@@ -18,11 +18,11 @@ class WorkerInstance(private val work: ConcurrentLinkedQueue<(Connection) -> Uni
 
     override fun run() {
         try {
-            plugin.databaseManager.connection.use { connection ->
+            plugin.databaseManager.connection.use {
                 var consumer = work.poll()
                 while (consumer != null) {
                     try {
-                        consumer(connection)
+                        consumer(this)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
