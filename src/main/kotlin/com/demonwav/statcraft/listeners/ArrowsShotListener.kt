@@ -39,8 +39,7 @@ class ArrowsShotListener(private val plugin: StatCraft) : Listener {
             val distance = playerLocation.distance(arrowLocation)
             val finalDistance = Math.round(distance * 100.0).toInt()
 
-            plugin.threadManager.schedule(
-                QProjectiles::class.java, uuid, worldName,
+            plugin.threadManager.schedule<QProjectiles>(uuid, worldName,
                 { p, clause, id, worldId ->
                     clause.columns(p.id, p.worldId, p.type, p.amount, p.totalDistance, p.maxThrow)
                         .values(id, worldId, code.code, 1, finalDistance, finalDistance).execute()

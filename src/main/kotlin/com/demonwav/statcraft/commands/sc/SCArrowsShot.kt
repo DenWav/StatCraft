@@ -27,7 +27,7 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
         plugin.baseCommand.registerCommand("arrowsshot", this)
     }
 
-    override fun hasPermission(sender: CommandSender, args: Array<String>) = sender.hasPermission("statcraft.user.arrowsshot")
+    override fun hasPermission(sender: CommandSender, args: Array<String>?) = sender.hasPermission("statcraft.user.arrowsshot")
 
     @SecondaryArgument("distance", "farthest")
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {

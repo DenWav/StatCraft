@@ -443,10 +443,10 @@ class StatCraft : JavaPlugin() {
         if (enabler.get()) {
             finishPlaytimeAndBed()
 
+            threadManager.close()
             databaseManager.close()
         }
 
-        threadManager.close()
         server.scheduler.cancelTasks(this)
     }
 

@@ -17,6 +17,7 @@ import com.demonwav.statcraft.querydsl.QPlayTime;
 import com.demonwav.statcraft.querydsl.QPlayers;
 import com.demonwav.statcraft.querydsl.QSeen;
 
+import kotlin.Unit;
 import org.bukkit.Statistic;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -52,32 +53,37 @@ public class PlayTimeListener implements Listener {
                 if (plugin.getConfig().getStats().getJoins()) {
                     plugin.getThreadManager().scheduleRaw(
                         QJoins.class,
-                        (connection) ->
+                        (connection) -> {
                             Util.runQuery(
-                                QJoins.class,
-                                (j, clause) ->
-                                    clause.columns(j.id, j.worldId, j.amount).values(id, worldId, 1).execute(),
-                                (j, clause) ->
-                                    clause.where(j.id.eq(id), j.worldId.eq(worldId)).set(j.amount, j.amount.add(1)).execute(),
-                                connection,
-                                plugin
-                            )
+                                    QJoins.class,
+                                    (j, clause) ->
+                                            clause.columns(j.id, j.worldId, j.amount).values(id, worldId, 1).execute(),
+                                    (j, clause) ->
+                                            clause.where(j.id.eq(id), j.worldId.eq(worldId)).set(j.amount, j.amount.add(1)).execute(),
+                                    connection,
+                                    plugin
+                            );
+                            return Unit.INSTANCE;
+                        }
                     );
                 }
 
                 plugin.getThreadManager().scheduleRaw(
                     QSeen.class,
-                    (connection) ->
+                    (connection) -> {
                         Util.runQuery(
-                            QSeen.class,
-                            (s, clause) ->
-                                clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute(),
-                            (s, clause) ->
-                                clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
-                            connection,
-                            plugin
-                        )
+                                QSeen.class,
+                                (s, clause) ->
+                                        clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute(),
+                                (s, clause) ->
+                                        clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute(),
+                                connection,
+                                plugin
+                        );
+                        return Unit.INSTANCE;
+                    }
                 );
+                return Unit.INSTANCE;
             }
         );
 
