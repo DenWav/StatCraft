@@ -47,7 +47,7 @@ import com.demonwav.statcraft.commands.sc.SCWorldChanges
 import com.demonwav.statcraft.commands.sc.SCXpGained
 import com.demonwav.statcraft.config.ColorConfig
 import com.demonwav.statcraft.config.Config
-import com.demonwav.statcraft.config.com.md_5.config.FileYamlStorage
+import com.md_5.config.FileYamlStorage
 import com.demonwav.statcraft.listeners.ArrowsShotListener
 import com.demonwav.statcraft.listeners.BlockListener
 import com.demonwav.statcraft.listeners.BucketEmptyListener

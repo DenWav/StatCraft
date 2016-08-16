@@ -9,8 +9,8 @@
 
 package com.demonwav.statcraft.config
 
-import com.demonwav.statcraft.config.com.md_5.config.ConfigComment
-import com.demonwav.statcraft.config.com.md_5.config.NewLine
+import com.md_5.config.ConfigComment
+import com.md_5.config.NewLine
 
 data class SqlConfig(
     var hostname: String = "localhost",

@@ -7,9 +7,7 @@
  * MIT License
  */
 
-package com.demonwav.statcraft.config.com.md_5.config;
-
-import org.bukkit.plugin.Plugin;
+package com.md_5.config;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -7,7 +7,7 @@
  * MIT License
  */
 
-package com.demonwav.statcraft.config.com.md_5.config;
+package com.md_5.config;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

@@ -9,8 +9,8 @@
 
 package com.demonwav.statcraft.config
 
-import com.demonwav.statcraft.config.com.md_5.config.ConfigComment
-import com.demonwav.statcraft.config.com.md_5.config.NewLine
+import com.md_5.config.ConfigComment
+import com.md_5.config.NewLine
 
 data class ColorConfig(
     @ConfigComment("The color of the @<playername> text that proceeds a public command response, which denotes",

@@ -123,6 +123,12 @@
                                     </excludes>
                                 </filter>
                             </filters>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.md_5</pattern>
+                                    <shadedPattern>com.demonwav.statcraft.config.com.md_5</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
