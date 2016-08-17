@@ -11,7 +11,7 @@ package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
 import com.demonwav.statcraft.Util
-import com.demonwav.statcraft.commands.ResponseBuilder
+import com.demonwav.statcraft.commands.ResponseBuilderKt
 import com.demonwav.statcraft.commands.SecondaryArgument
 import com.demonwav.statcraft.magic.ProjectilesCode
 import com.demonwav.statcraft.querydsl.QPlayers
@@ -94,30 +94,30 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
 
         when (arg) {
             "distance" -> {
-                return ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Arrows Shot Total Distance")
-                    .addStat("Total", Util.distanceUnits(normalDistance + flamingDistance))
-                    .addStat("Normal", Util.distanceUnits(normalDistance))
-                    .addStat("Flaming", Util.distanceUnits(flamingDistance))
-                    .toString()
+                return ResponseBuilderKt.build(plugin) {
+                    playerName { name }
+                    statName { "Arrows Shot Total Distance" }
+                    stats["Total"] = Util.distanceUnits(normalDistance + flamingDistance)
+                    stats["Normal"] = Util.distanceUnits(normalDistance)
+                    stats["Flaming"] = Util.distanceUnits(flamingDistance)
+                }
             }
             "farthest" -> {
-                return ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Farthest Arrows Shot")
-                    .addStat("Normal", Util.distanceUnits(normalMaxThrow))
-                    .addStat("Flaming", Util.distanceUnits(flamingMaxThrow))
-                    .toString()
+                return ResponseBuilderKt.build(plugin) {
+                    playerName { name }
+                    statName { "Farthest Arrows Shot" }
+                    stats["Normal"] = Util.distanceUnits(normalMaxThrow)
+                    stats["Flaming"] = Util.distanceUnits(flamingMaxThrow)
+                }
             }
             else -> {
-                return ResponseBuilder(plugin)
-                    .setName(name)
-                    .setStatName("Arrows Shot")
-                    .addStat("Total", df.format(total))
-                    .addStat("Normal", df.format(normal))
-                    .addStat("Flaming", df.format(flaming))
-                    .toString()
+                return ResponseBuilderKt.build(plugin) {
+                    playerName { name }
+                    statName { "Arrows Shot" }
+                    stats["Total"] = df.format(total)
+                    stats["Normal"] = df.format(normal)
+                    stats["Flaming"] = df.format(flaming)
+                }
             }
         }
     }

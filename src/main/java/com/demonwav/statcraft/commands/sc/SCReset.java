@@ -23,6 +23,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -54,7 +55,7 @@ public class SCReset extends SCTemplate implements CustomResponse {
     }
 
     @Override
-    public void respondToCommand(CommandSender sender, String[] args) {
+    public void respondToCommand(@NotNull CommandSender sender, @NotNull String[] args) {
         if (args.length == 1 &&
             (args[0].equalsIgnoreCase("yes") || args[0].equalsIgnoreCase("cancel")) &&
             map.containsKey(sender)) {

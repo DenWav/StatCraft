@@ -75,7 +75,7 @@ class BaseCommand(private val plugin: StatCraft) : CommandExecutor, TabCompleter
             // control variables
             var publicCmd = false
             var top = false
-            var secondaryArgs: Array<String>? = null
+            var secondaryArgs: Array<out String>? = null
             val secondaryArgsList = LinkedList<String>()
             val players = LinkedList<String>()
 

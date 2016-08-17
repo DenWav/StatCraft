@@ -20,6 +20,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -49,7 +50,7 @@ public class SCMined extends SCTemplate implements CustomResponse {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void respondToCommand(final CommandSender sender, String[] args) {
+    public void respondToCommand(@NotNull final CommandSender sender, @NotNull String[] args) {
         if (args.length < 2 || args.length > 3) {
             sender.sendMessage("Usage: /sc mined <playername> <material|blockid|blockid:damage> [-all]");
             return;
