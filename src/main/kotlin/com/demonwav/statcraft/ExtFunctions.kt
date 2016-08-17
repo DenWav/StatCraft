@@ -56,6 +56,15 @@ inline fun <T> MutableIterable<T>.iter(func: MutableIterator<T>.(T) -> Unit) {
     }
 }
 
+/**
+ * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
+ * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
+ * caller.
+ *
+ * @param insertClause The action to run for the insert query
+ * @param updateClause The action to run for the update query if the insert fails
+ * @param plugin The StatCraft object
+ */
 inline fun <T : RelationalPath<*>> T.runQuery(insertClause: (T, SQLInsertClause) -> Unit,
                                               updateClause: (T, SQLUpdateClause) -> Unit,
                                               connection: Connection,
@@ -72,6 +81,18 @@ inline fun <T : RelationalPath<*>> T.runQuery(insertClause: (T, SQLInsertClause)
     }
 }
 
+/**
+ * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
+ * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
+ * caller. This also allows work to be done before the insert and update queries. The work function can return any
+ * object, and this object will be passed to the insert and update functions, and in that order. Because of this, if
+ * the object is modified in the insert function, these modifications will be present in the update function.
+ *
+ * @param workBefore The action to run before the queries, returning an object which will be passed to the two queries
+ * @param insertClause The action to run for the insert query
+ * @param updateClause The action to run for the update query if the insert fails
+ * @param plugin The StatCraft object
+ */
 inline fun <T : RelationalPath<*>, R> T.runQuery(workBefore: (T, SQLQuery) -> R,
                                                  insertClause: (T, SQLInsertClause, R) -> Unit,
                                                  updateClause: (T, SQLUpdateClause, R) -> Unit,
@@ -91,6 +112,23 @@ inline fun <T : RelationalPath<*>, R> T.runQuery(workBefore: (T, SQLQuery) -> R,
     }
 }
 
+/**
+ * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
+ * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
+ * caller.
+ *
+ * For convenience this method also allows a player's UUID and world UUID to be passed in. The database id of the
+ * player and world will be fetched before the insert and update functions are called, and the id will be passed to
+ * them. This is not an expensive operation as both of these values are cached.
+ *
+ * Thanks to type inferencing no type parameters should need to be explicitly provided.
+ *
+ * @param playerId The UUID of the relevant player
+ * @param worldName The UUID of the relevant world
+ * @param insertClause The action to run for the insert query
+ * @param updateClause The action to run for the update query if the insert fails
+ * @param plugin The StatCraft object
+ */
 inline fun <T : RelationalPath<*>> T.runQuery(playerId: UUID,
                                               worldName: String,
                                               insertClause: (T, SQLInsertClause, Int, Int) -> Unit,
@@ -112,6 +150,26 @@ inline fun <T : RelationalPath<*>> T.runQuery(playerId: UUID,
     }
 }
 
+/**
+ * Run an insert/update query on the given table. This method handles the clause object creation and fall-through
+ * to update when insert fails. This method run on the thread it is called, all threading must be managed by the
+ * caller. This also allows work to be done before the insert and update queries. The work function can return any
+ * object, and this object will be passed to the insert and update functions, and in that order. Because of this, if
+ * the object is modified in the insert function, these modifications will be present in the update function.
+ *
+ * For convenience this method also allows a player's UUID and a world's UUID to be passed in. The database id of
+ * the player and world will be fetched before the insert and update functions are called, and the id will be
+ * passed to them. This is not an expensive operation as both of these values are cached.
+ *
+ * Thanks to type inferencing no type parameters should need to be explicitly provided.
+ *
+ * @param playerId The UUID of the relevant player
+ * @param worldName The UUID of the relevant world
+ * @param workBefore The action to run before the queries, returning an object which will be passed to the two queries
+ * @param insertClause The action to run for the insert query
+ * @param updateClause The action to run for the update query if the insert fails
+ * @param plugin The StatCraft object
+ */
 inline fun <T : RelationalPath<*>, R> T.runQuery(playerId: UUID,
                                                  worldName: String,
                                                  workBefore: (T, SQLQuery, Int, Int) -> R,
