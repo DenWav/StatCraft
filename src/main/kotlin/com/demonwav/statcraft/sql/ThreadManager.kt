@@ -83,8 +83,8 @@ class ThreadManager(val plugin: StatCraft) : Runnable, Closeable {
     // kotlin style
     inline fun <reified T : RelationalPath<*>> schedule(playerId: UUID,
                                                         worldName: String,
-                                                        crossinline insertRunner: (T, SQLInsertClause, Int, Int) -> Unit,
-                                                        crossinline updateRunner: (T, SQLUpdateClause, Int, Int) -> Unit) {
+                                                        /* TODO crossinline */ noinline insertRunner: (T, SQLInsertClause, Int, Int) -> Unit,
+                                                        /* TODO crossinline */ noinline updateRunner: (T, SQLUpdateClause, Int, Int) -> Unit) {
         scheduleRaw(T::class.java) { connection ->
             val path = T::class.java.getConstructor(String::class.java).newInstance(T::class.java.simpleName)
             path.runQuery(playerId, worldName, insertRunner, updateRunner, connection, plugin)
@@ -93,9 +93,9 @@ class ThreadManager(val plugin: StatCraft) : Runnable, Closeable {
 
     inline fun <reified T : RelationalPath<*>, R> schedule(playerId: UUID,
                                                            worldName: String,
-                                                           crossinline workBefore: (T, SQLQuery, Int, Int) -> R,
-                                                           crossinline insertRunner: (T, SQLInsertClause, Int, Int, R) -> Unit,
-                                                           crossinline updateRunner: (T, SQLUpdateClause, Int, Int, R) -> Unit) {
+                                                           /* TODO crossinline */ noinline workBefore: (T, SQLQuery, Int, Int) -> R,
+                                                           /* TODO crossinline */ noinline insertRunner: (T, SQLInsertClause, Int, Int, R) -> Unit,
+                                                           /* TODO crossinline */ noinline updateRunner: (T, SQLUpdateClause, Int, Int, R) -> Unit) {
 
         scheduleRaw(T::class.java) { connection ->
             val path = T::class.java.getConstructor(String::class.java).newInstance(T::class.java.simpleName)

@@ -65,7 +65,7 @@ inline fun <T> MutableIterable<T>.iter(func: MutableIterator<T>.(T) -> Unit) {
  * @param updateClause The action to run for the update query if the insert fails
  * @param plugin The StatCraft object
  */
-inline fun <T : RelationalPath<*>> T.runQuery(insertClause: (T, SQLInsertClause) -> Unit,
+/* TODO inline */ fun <T : RelationalPath<*>> T.runQuery(insertClause: (T, SQLInsertClause) -> Unit,
                                               updateClause: (T, SQLUpdateClause) -> Unit,
                                               connection: Connection,
                                               plugin: StatCraft) {
@@ -93,7 +93,7 @@ inline fun <T : RelationalPath<*>> T.runQuery(insertClause: (T, SQLInsertClause)
  * @param updateClause The action to run for the update query if the insert fails
  * @param plugin The StatCraft object
  */
-inline fun <T : RelationalPath<*>, R> T.runQuery(workBefore: (T, SQLQuery) -> R,
+/* TODO inline */ fun <T : RelationalPath<*>, R> T.runQuery(workBefore: (T, SQLQuery) -> R,
                                                  insertClause: (T, SQLInsertClause, R) -> Unit,
                                                  updateClause: (T, SQLUpdateClause, R) -> Unit,
                                                  connection: Connection,
@@ -129,7 +129,7 @@ inline fun <T : RelationalPath<*>, R> T.runQuery(workBefore: (T, SQLQuery) -> R,
  * @param updateClause The action to run for the update query if the insert fails
  * @param plugin The StatCraft object
  */
-inline fun <T : RelationalPath<*>> T.runQuery(playerId: UUID,
+/* TODO inline */ fun <T : RelationalPath<*>> T.runQuery(playerId: UUID,
                                               worldName: String,
                                               insertClause: (T, SQLInsertClause, Int, Int) -> Unit,
                                               updateClause: (T, SQLUpdateClause, Int, Int) -> Unit,
@@ -170,7 +170,7 @@ inline fun <T : RelationalPath<*>> T.runQuery(playerId: UUID,
  * @param updateClause The action to run for the update query if the insert fails
  * @param plugin The StatCraft object
  */
-inline fun <T : RelationalPath<*>, R> T.runQuery(playerId: UUID,
+/* TODO inline */ fun <T : RelationalPath<*>, R> T.runQuery(playerId: UUID,
                                                  worldName: String,
                                                  workBefore: (T, SQLQuery, Int, Int) -> R,
                                                  insertClause: (T, SQLInsertClause, Int, Int, R) -> Unit,

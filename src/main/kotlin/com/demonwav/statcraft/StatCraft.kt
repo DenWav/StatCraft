@@ -47,7 +47,6 @@ import com.demonwav.statcraft.commands.sc.SCWorldChanges
 import com.demonwav.statcraft.commands.sc.SCXpGained
 import com.demonwav.statcraft.config.ColorConfig
 import com.demonwav.statcraft.config.Config
-import com.md_5.config.FileYamlStorage
 import com.demonwav.statcraft.listeners.ArrowsShotListener
 import com.demonwav.statcraft.listeners.BlockListener
 import com.demonwav.statcraft.listeners.BucketEmptyListener
@@ -81,6 +80,7 @@ import com.demonwav.statcraft.querydsl.QSeen
 import com.demonwav.statcraft.querydsl.QSleep
 import com.demonwav.statcraft.sql.DatabaseManager
 import com.demonwav.statcraft.sql.ThreadManager
+import com.md_5.config.FileYamlStorage
 import com.mysema.query.QueryException
 import org.bukkit.ChatColor
 import org.bukkit.OfflinePlayer
@@ -397,7 +397,7 @@ class StatCraft : JavaPlugin() {
 
                 threadManager.scheduleRaw(
                     QSeen::class.java, { connection ->
-                        Util.runQuery(QSeen::class.java,
+                        QSeen.seen.runQuery(
                             { s, clause -> clause.columns(s.id, s.lastJoinTime).values(id, currentTime).execute() },
                             { s, clause -> clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute() },
                             connection, this
@@ -408,7 +408,7 @@ class StatCraft : JavaPlugin() {
                 if (player.isSleeping) {
                     threadManager.scheduleRaw(
                         QSleep::class.java, { connection ->
-                            Util.runQuery(QSleep::class.java,
+                            QSleep.sleep.runQuery(
                                 { s, clause -> clause.columns(s.id, s.enterBed).values(id, currentTime).execute() },
                                 { s, clause -> clause.where(s.id.eq(id)).set(s.enterBed, currentTime).execute() },
                                 connection, this
@@ -461,8 +461,7 @@ class StatCraft : JavaPlugin() {
 
             try {
                 databaseManager.connection.use {
-                    Util.runQuery(
-                        QSeen::class.java,
+                    QSeen.seen.runQuery(
                         { s, clause -> clause.columns(s.id, s.lastLeaveTime).values(id, currentTime).execute() },
                         { s, clause -> clause.where(s.id.eq(id)).set(s.lastJoinTime, currentTime).execute() },
                         this, plugin
@@ -476,8 +475,7 @@ class StatCraft : JavaPlugin() {
 
             try {
                 databaseManager.connection.use {
-                    Util.runQuery(
-                        QPlayTime::class.java,
+                    QPlayTime.playTime.runQuery(
                         { p, clause -> clause.columns(p.id, p.amount).values(id, currentPlayTime).execute() },
                         { p, clause -> clause.where(p.id.eq(id)).set(p.amount, currentPlayTime).execute() },
                         this, plugin
@@ -490,8 +488,7 @@ class StatCraft : JavaPlugin() {
             if (player.isSleeping) {
                 try {
                     databaseManager.connection.use {
-                        Util.runQuery(
-                            QSleep::class.java,
+                        QSleep.sleep.runQuery(
                             { s, query ->
                                 val map = HashMap<String, Int>()
 
@@ -581,8 +578,7 @@ class StatCraft : JavaPlugin() {
         if (player.isOnline) {
             val currentPlayTime = Math.round((player as Player).getStatistic(Statistic.PLAY_ONE_TICK) * 0.052).toInt()
 
-            Util.runQuery(
-                QPlayTime::class.java,
+            QPlayTime.playTime.runQuery(
                 { pl, clause -> clause.columns(pl.id, pl.amount).values(id, currentPlayTime).execute() },
                 { pl, clause -> clause.where(pl.id.eq(id)).set(pl.amount, currentPlayTime).execute() },
                 connection, this
