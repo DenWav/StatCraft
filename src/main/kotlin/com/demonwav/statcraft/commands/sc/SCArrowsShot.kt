@@ -27,7 +27,7 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
         plugin.baseCommand.registerCommand("arrowsshot", this)
     }
 
-    override fun hasPermission(sender: CommandSender, args: Array<String>?) = sender.hasPermission("statcraft.user.arrowsshot")
+    override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.arrowsshot")
 
     @SecondaryArgument("distance", "farthest")
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
@@ -42,10 +42,7 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
         var flamingMaxThrow = 0
 
         try {
-            val id = getId(name)
-            if (id < 0) {
-                throw Exception()
-            }
+            val id = getId(name) ?: throw Exception()
 
             val query = plugin.databaseManager.getNewQuery(connection) ?:
                 return "Sorry, there seems to be an issue connecting to the database right now"
@@ -123,7 +120,7 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
     }
 
     @SecondaryArgument("distance", "farthest", "flaming")
-    override fun serverStatListResponse(num: Int, args: List<String>, connection: Connection): String {
+    override fun serverStatListResponse(num: Long, args: List<String>, connection: Connection): String? {
         var distance = false
         val p = QProjectiles.projectiles
         val pl = QPlayers.players
@@ -178,7 +175,7 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
         }
     }
 
-    override fun onTabComplete(sender: CommandSender, args: Array<String>): List<String> {
+    override fun onTabComplete(sender: CommandSender, args: Array<out String>): List<String> {
         if (args[args.size - 1].startsWith("-")) {
             var top = false
             for (s in args) {

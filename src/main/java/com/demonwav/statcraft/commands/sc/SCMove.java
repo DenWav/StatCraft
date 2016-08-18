@@ -132,7 +132,7 @@ public class SCMove extends SCTemplate {
     @Override
     @SecondaryArgument({"walking", "crouching", "sprinting", "swimming", "falling", "climbing",
         "flying", "diving", "minecart", "boat", "pig", "horse", "elytra"})
-    public String serverStatListResponse(int num, List<String> args, Connection connection) {
+    public String serverStatListResponse(long num, List<String> args, Connection connection) {
         QMove m = move;
         QPlayers p = QPlayers.players;
         SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);

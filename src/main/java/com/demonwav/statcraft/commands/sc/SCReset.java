@@ -257,7 +257,7 @@ public class SCReset extends SCTemplate implements CustomResponse {
     }
 
     @Override
-    public String serverStatListResponse(int num, List<String> args, Connection connection) {
+    public String serverStatListResponse(long num, List<String> args, Connection connection) {
         return null;
     }
 }

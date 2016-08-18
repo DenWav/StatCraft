@@ -132,7 +132,7 @@ public class SCEggsThrown extends SCTemplate {
 
     @Override
     @SecondaryArgument({"distance", "farthest", "unhatched"})
-    public String serverStatListResponse(int num, List<String> args, Connection connection) {
+    public String serverStatListResponse(long num, List<String> args, Connection connection) {
         boolean distance = false;
         QProjectiles p = QProjectiles.projectiles;
         QPlayers pl = QPlayers.players;

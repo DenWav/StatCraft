@@ -80,7 +80,7 @@ class BaseCommand(private val plugin: StatCraft) : CommandExecutor, TabCompleter
             val players = LinkedList<String>()
 
             // if type == true, this is how many to display
-            var topNumber = 0
+            var topNumber = 0L
 
             // look for -all and -top# arguments
             args.forEach { arg ->
@@ -92,7 +92,7 @@ class BaseCommand(private val plugin: StatCraft) : CommandExecutor, TabCompleter
 
                     // check if it is valid, first remove -top from the front and then check for integers
                     try {
-                        topNumber = arg.substring(4).toInt()
+                        topNumber = arg.substring(4).toLong()
                         // this was successful, so nothing more needs to be done
                     } catch (e: NumberFormatException) {
                         // the argument was invalid, so show an error and exit

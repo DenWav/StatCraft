@@ -85,7 +85,7 @@ public class SCSnowballs extends SCTemplate {
 
     @Override
     @SecondaryArgument({"distance", "farthest"})
-    public String serverStatListResponse(int num, List<String> args, Connection connection) {
+    public String serverStatListResponse(long num, List<String> args, Connection connection) {
         boolean distance = false;
         QProjectiles p = QProjectiles.projectiles;
         QPlayers pl = QPlayers.players;

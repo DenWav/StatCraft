@@ -64,7 +64,7 @@ public class SCJumps extends SCTemplate {
     }
 
     @Override
-    public String serverStatListResponse(int num, List<String> args, Connection connection) {
+    public String serverStatListResponse(long num, List<String> args, Connection connection) {
         QJumps j = QJumps.jumps;
         QPlayers p = QPlayers.players;
         SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);

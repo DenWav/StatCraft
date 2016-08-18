@@ -61,7 +61,7 @@ public class SCHighestLevel extends SCTemplate {
     }
 
     @Override
-    public String serverStatListResponse(int num, List<String> args, Connection connection) {
+    public String serverStatListResponse(long num, List<String> args, Connection connection) {
         SQLQuery query = plugin.getDatabaseManager().getNewQuery(connection);
         if (query == null)
             return "Sorry, there seems to be an issue connecting to the database right now.";
