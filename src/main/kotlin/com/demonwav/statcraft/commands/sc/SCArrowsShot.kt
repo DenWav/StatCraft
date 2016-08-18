@@ -44,8 +44,7 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
         try {
             val id = getId(name) ?: throw Exception()
 
-            val query = plugin.databaseManager.getNewQuery(connection) ?:
-                return "Sorry, there seems to be an issue connecting to the database right now"
+            val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
             val p = QProjectiles.projectiles
             val result = query.from(p).where(
@@ -53,8 +52,8 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
                 p.type.eq(ProjectilesCode.NORMAL_ARROW.code).or(p.type.eq(ProjectilesCode.FLAMING_ARROW.code))
             ).list(p)
 
-            result.forEach { projectiles ->
-                val code = ProjectilesCode.fromCode(projectiles.type) ?: return@forEach
+            for (projectiles in result) {
+                val code = ProjectilesCode.fromCode(projectiles.type) ?: continue
 
                 when (code) {
                     ProjectilesCode.NORMAL_ARROW -> {
@@ -124,8 +123,7 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
         var distance = false
         val p = QProjectiles.projectiles
         val pl = QPlayers.players
-        val query = plugin.databaseManager.getNewQuery(connection) ?:
-            return "Sorry, there seems to be an issue connecting to the database right now."
+        val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
         var path: NumberPath<Int>? = null
         var titlePrefix = ""
@@ -191,7 +189,7 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
                 list.add("-flaming")
             }
 
-            return list.filter({ s -> s.startsWith(args[args.size - 1]) }).toList()
+            return list.filter { s -> s.startsWith(args[args.size - 1]) }
         } else {
             return super.onTabComplete(sender, args)
         }

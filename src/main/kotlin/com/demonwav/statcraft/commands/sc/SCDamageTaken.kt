@@ -11,57 +11,57 @@ package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
 import com.demonwav.statcraft.commands.ResponseBuilderKt
-import com.demonwav.statcraft.querydsl.QBlockPlace
+import com.demonwav.statcraft.querydsl.QDamageTaken
 import com.demonwav.statcraft.querydsl.QPlayers
 import org.bukkit.command.CommandSender
 import java.sql.Connection
 
-class SCBlocksPlaced(plugin: StatCraft) : SCTemplate(plugin) {
+class SCDamageTaken(plugin: StatCraft) : SCTemplate(plugin) {
 
     init {
-        plugin.baseCommand.registerCommand("blocksplaced", this)
+        this.plugin.baseCommand.registerCommand("damagetaken", this)
     }
 
-    override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.blocksplaced")
+    override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.damagetaken")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
         try {
             val id = getId(name) ?: throw Exception()
 
             val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
+            val d = QDamageTaken.damageTaken
 
-            val b = QBlockPlace.blockPlace
-            val total = query.from(b).where(b.id.eq(id)).uniqueResult(b.amount.sum()) ?: 0
+            val total = query.from(d).where(d.id.eq(id)).uniqueResult(d.amount.sum()) ?: 0
 
             return ResponseBuilderKt.build(plugin) {
                 playerName { name }
-                statName { "Blocks Placed" }
+                statName { "Damage Taken" }
                 stats["Total"] = df.format(total)
             }
         } catch (e: Exception) {
             return ResponseBuilderKt.build(plugin) {
                 playerName { name }
-                statName { "Blocks Placed" }
+                statName { "Damage Taken" }
                 stats["Total"] = 0.toString()
             }
         }
+
     }
 
-    override fun serverStatListResponse(num: Long, args: List<String>, connection: Connection): String {
+    override fun serverStatListResponse(num: Long, args: List<String>, connection: Connection): String? {
         val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
-
-        val b = QBlockPlace.blockPlace
+        val d = QDamageTaken.damageTaken
         val p = QPlayers.players
 
-        val result = query
-            .from(b)
+        val list = query
+            .from(d)
             .leftJoin(p)
-            .on(b.id.eq(p.id))
+            .on(d.id.eq(p.id))
             .groupBy(p.name)
-            .orderBy(b.amount.sum().desc())
+            .orderBy(d.amount.sum().desc())
             .limit(num)
-            .list(p.name, b.amount.sum())
+            .list(p.name, d.amount.sum())
 
-        return topListResponse("Blocks Placed", result)
+        return topListResponse("Damage Taken", list)
     }
 }
