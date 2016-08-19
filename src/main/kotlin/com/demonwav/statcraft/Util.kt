@@ -265,7 +265,6 @@ object Util {
             }
 
         } catch (e: Exception) {
-            // By the class generator we use, this should never happen
             e.printStackTrace()
         }
     }
@@ -306,7 +305,6 @@ object Util {
                 updateClause.run(path, clause, r)
             }
         } catch (e: Exception) {
-            // By the class generator we use, this should never happen
             e.printStackTrace()
         }
     }
@@ -352,7 +350,6 @@ object Util {
                 updateClause.run(path, clause, id, wid)
             }
         } catch (e: Exception) {
-            // By the class generator we use, this should never happen
             e.printStackTrace()
         }
     }
@@ -403,17 +400,9 @@ object Util {
                 updateClause.run(path, clause, id, wid, r)
             }
 
-        } catch (e: InstantiationException) {
-            // By the class generator we use, this should never happen
-            e.printStackTrace()
-        } catch (e: IllegalAccessException) {
-            e.printStackTrace()
-        } catch (e: NoSuchMethodException) {
-            e.printStackTrace()
-        } catch (e: InvocationTargetException) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
 }
 
