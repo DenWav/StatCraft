@@ -19,7 +19,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerTeleportEvent
 
 class EnderPearlListener(private val plugin: StatCraft) : Listener {
-
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onEnderPearl(event: PlayerTeleportEvent) {
         if (event.cause == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
