@@ -11,68 +11,72 @@ package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
 import com.demonwav.statcraft.commands.ResponseBuilderKt
-import com.demonwav.statcraft.magic.BucketCode
-import com.demonwav.statcraft.querydsl.QBucketFill
+import com.demonwav.statcraft.magic.FishCode
+import com.demonwav.statcraft.querydsl.QFishCaught
 import com.demonwav.statcraft.querydsl.QPlayers
 import org.bukkit.command.CommandSender
 import java.sql.Connection
 
-class SCBucketsFilled(plugin: StatCraft) : SCTemplate(plugin) {
+class SCFishCaught(plugin: StatCraft) : SCTemplate(plugin) {
 
     init {
-        plugin.baseCommand.registerCommand("bucketsfilled", this)
+        plugin.baseCommand.registerCommand("fishcaught", this)
     }
 
-    override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.bucketsfilled")
+    override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.fishcaught")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
         val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
             playerName { name }
-            statName { "Buckets Filled" }
+            statName { "Fish Caught" }
             stats["Total"] = "0"
-            stats["Water"] = "0"
-            stats["Lava"] = "0"
-            stats["Milk"] = "0"
+            stats["Fish"] = "0"
+            stats["Treasure"] = "0"
+            stats["Junk"] = "0"
         }
 
         val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-        val f = QBucketFill.bucketFill
+        val f = QFishCaught.fishCaught
+        val list = query.from(f).where(f.id.eq(id)).groupBy(f.type).list(f.type, f.amount.sum())
 
-        val results = query.from(f).where(f.id.eq(id)).list(f)
+        var fish = 0
+        var treasure = 0
+        var junk = 0
 
-        var water = 0
-        var lava = 0
-        var milk = 0
+        for (tuple in list) {
+            val type = tuple.get(f.type) ?: continue
 
-        for (bucketFill in results) {
-            val code = BucketCode.fromCode(bucketFill.type) ?: continue
+            val code = FishCode.fromCode(type) ?: continue
+
+            val sum = tuple.get(f.amount.sum()) ?: 0
 
             when (code) {
-                BucketCode.WATER -> water += bucketFill.amount
-                BucketCode.LAVA -> lava += bucketFill.amount
-                BucketCode.MILK -> milk += bucketFill.amount
+                FishCode.FISH -> fish = sum
+                FishCode.TREASURE -> treasure = sum
+                FishCode.JUNK -> junk = sum
             }
         }
-        val total = water + lava + milk
+
+        val total = fish + treasure + junk
 
         return ResponseBuilderKt.build(plugin) {
             playerName { name }
-            statName { "Buckets Filled" }
+            statName { "Fish Caught" }
             stats["Total"] = df.format(total)
-            stats["Water"] = df.format(water)
-            stats["Lava"] = df.format(lava)
-            stats["Milk"] = df.format(milk)
+            stats["Fish"] = df.format(fish)
+            stats["Treasure"] = df.format(treasure)
+            stats["Junk"] = df.format(junk)
         }
     }
 
     override fun serverStatListResponse(num: Long, args: List<String>, connection: Connection): String {
         val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-        val f = QBucketFill.bucketFill
+        val f = QFishCaught.fishCaught
         val p = QPlayers.players
 
-        val result = query
+        val list = query
             .from(f)
             .leftJoin(p)
             .on(f.id.eq(p.id))
@@ -81,6 +85,6 @@ class SCBucketsFilled(plugin: StatCraft) : SCTemplate(plugin) {
             .limit(num)
             .list(p.name, f.amount.sum())
 
-        return topListResponse("Buckets Filled", result)
+        return topListResponse("Fish Caught", list)
     }
 }

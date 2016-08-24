@@ -28,31 +28,27 @@ class SCFirstJoin(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.firstjoin")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        try {
-            val id = getId(name) ?: throw Exception()
+        val id = getId(name) ?: return "${ChatColor.valueOf(plugin.config.colors.playerName)}$name" +
+            "${ChatColor.valueOf(plugin.config.colors.statValue)} has not been seen on this server."
 
-            val s = QSeen.seen
-            val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
+        val s = QSeen.seen
+        val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-            val result = query.from(s).where(s.id.eq(id)).uniqueResult(s.firstJoinTime) ?: throw Exception()
+        val result = query.from(s).where(s.id.eq(id)).uniqueResult(s.firstJoinTime) ?: throw Exception()
 
-            val date = Date(result.toLong() * 1000L)
-            val format = SimpleDateFormat("EEE, dd MMM yyyy, hh:mm aa zzz")
-            format.timeZone = TimeZone.getTimeZone(plugin.timeZone)
-            var time = format.format(date)
+        val date = Date(result.toLong() * 1000L)
+        val format = SimpleDateFormat("EEE, dd MMM yyyy, hh:mm aa zzz")
+        format.timeZone = TimeZone.getTimeZone(plugin.timeZone)
+        var time = format.format(date)
 
-            val now = Date()
-            val difference = now.time - date.time
+        val now = Date()
+        val difference = now.time - date.time
 
-            time = "$time (${Util.transformTime((difference / 1000L).toInt()).split(",".toRegex())[0]} ago)"
+        time = "$time (${Util.transformTime((difference / 1000L).toInt()).split(",".toRegex())[0]} ago)"
 
-            return "${ChatColor.valueOf(plugin.config.colors.playerName)}$name" +
-                "${ChatColor.valueOf(plugin.config.colors.statTitle)} - First Join - " +
-                "${ChatColor.valueOf(plugin.config.colors.statValue)}$time"
-        } catch (e: Exception) {
-            return "${ChatColor.valueOf(plugin.config.colors.playerName)}$name" +
-                "${ChatColor.valueOf(plugin.config.colors.statValue)} has not been seen on this server."
-        }
+        return "${ChatColor.valueOf(plugin.config.colors.playerName)}$name" +
+            "${ChatColor.valueOf(plugin.config.colors.statTitle)} - First Join - " +
+            "${ChatColor.valueOf(plugin.config.colors.statValue)}$time"
     }
 
     override fun serverStatListResponse(num: Long, args: List<String>, connection: Connection): String? {

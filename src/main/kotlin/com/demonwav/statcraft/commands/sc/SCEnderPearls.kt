@@ -30,34 +30,30 @@ class SCEnderPearls(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.enderpearls")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        try {
-            val id = getId(name) ?: throw Exception()
+        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+            playerName { name }
+            statName { "Ender Pearls Thrown" }
+            stats["Thrown"] = "0"
+            stats["Distance"] = "0"
+            stats["Farthest Throw"] = "0"
+        }
 
-            val p = QProjectiles.projectiles
-            val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
+        val p = QProjectiles.projectiles
+        val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-            val tuple = query.from(p).where(p.id.eq(id), p.type.eq(ProjectilesCode.ENDER_PEARL.code))
-                .uniqueResult(p.amount.sum(), p.totalDistance.sum(), p.maxThrow.max()) ?: throw Exception()
+        val tuple = query.from(p).where(p.id.eq(id), p.type.eq(ProjectilesCode.ENDER_PEARL.code))
+            .uniqueResult(p.amount.sum(), p.totalDistance.sum(), p.maxThrow.max()) ?: throw Exception()
 
-            val amount = tuple.get(p.amount) ?: 0
-            val distance = tuple.get(p.totalDistance) ?: 0
-            val maxThrow = tuple.get(p.maxThrow) ?: 0
+        val amount = tuple.get(p.amount) ?: 0
+        val distance = tuple.get(p.totalDistance) ?: 0
+        val maxThrow = tuple.get(p.maxThrow) ?: 0
 
-            return ResponseBuilderKt.build(plugin) {
-                playerName { name }
-                statName { "Ender Pearls Thrown" }
-                stats["Total"] = df.format(amount)
-                stats["Distance"] = Util.distanceUnits(distance)
-                stats["Farthest Throw"] = Util.distanceUnits(maxThrow)
-            }
-        } catch (e: Exception) {
-            return ResponseBuilderKt.build(plugin) {
-                playerName { name }
-                statName { "Ender Pearls Thrown" }
-                stats["Thrown"] = 0.toString()
-                stats["Distance"] = 0.toString()
-                stats["Farthest Throw"] = 0.toString()
-            }
+        return ResponseBuilderKt.build(plugin) {
+            playerName { name }
+            statName { "Ender Pearls Thrown" }
+            stats["Total"] = df.format(amount)
+            stats["Distance"] = Util.distanceUnits(distance)
+            stats["Farthest Throw"] = Util.distanceUnits(maxThrow)
         }
     }
 

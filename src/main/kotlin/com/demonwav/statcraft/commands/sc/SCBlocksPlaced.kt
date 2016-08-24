@@ -25,25 +25,21 @@ class SCBlocksPlaced(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.blocksplaced")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        try {
-            val id = getId(name) ?: throw Exception()
+        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+            playerName { name }
+            statName { "Blocks Placed" }
+            stats["Total"] = "0"
+        }
 
-            val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
+        val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-            val b = QBlockPlace.blockPlace
-            val total = query.from(b).where(b.id.eq(id)).uniqueResult(b.amount.sum()) ?: 0
+        val b = QBlockPlace.blockPlace
+        val total = query.from(b).where(b.id.eq(id)).uniqueResult(b.amount.sum()) ?: 0
 
-            return ResponseBuilderKt.build(plugin) {
-                playerName { name }
-                statName { "Blocks Placed" }
-                stats["Total"] = df.format(total)
-            }
-        } catch (e: Exception) {
-            return ResponseBuilderKt.build(plugin) {
-                playerName { name }
-                statName { "Blocks Placed" }
-                stats["Total"] = 0.toString()
-            }
+        return ResponseBuilderKt.build(plugin) {
+            playerName { name }
+            statName { "Blocks Placed" }
+            stats["Total"] = df.format(total)
         }
     }
 

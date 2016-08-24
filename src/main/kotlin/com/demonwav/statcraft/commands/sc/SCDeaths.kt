@@ -25,25 +25,21 @@ class SCDeaths(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.deaths")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        try {
-            val id = getId(name) ?: throw Exception()
+        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+            playerName { name }
+            statName { "Deaths" }
+            stats["Total"] = "0"
+        }
 
-            val query = plugin.databaseManager.getNewQuery(connection)  ?: return databaseError
-            val d = QDeath.death
+        val query = plugin.databaseManager.getNewQuery(connection)  ?: return databaseError
+        val d = QDeath.death
 
-            val total = query.from(d).where(d.id.eq(id)).uniqueResult(d.amount.sum()) ?: 0
+        val total = query.from(d).where(d.id.eq(id)).uniqueResult(d.amount.sum()) ?: 0
 
-            return ResponseBuilderKt.build(plugin) {
-                playerName { name }
-                statName { "Deaths" }
-                stats["Total"] = df.format(total)
-            }
-        } catch (e: Exception) {
-            return ResponseBuilderKt.build(plugin) {
-                playerName { name }
-                statName { "Deaths" }
-                stats["Total"] = 0.toString()
-            }
+        return ResponseBuilderKt.build(plugin) {
+            playerName { name }
+            statName { "Deaths" }
+            stats["Total"] = df.format(total)
         }
     }
 

@@ -26,47 +26,43 @@ class SCBucketsEmptied(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.bucketsemptied")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        try {
-            val id = getId(name) ?: throw Exception()
+        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+            playerName { name }
+            statName { "Buckets Emptied" }
+            stats["Total"] = "0"
+            stats["Water"] = "0"
+            stats["Lava"] = "0"
+            stats["Milk"] = "0"
+        }
 
-            val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
+        val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-            val e = QBucketEmpty.bucketEmpty
-            val results = query.from(e).where(e.id.eq(id)).list(e)
+        val e = QBucketEmpty.bucketEmpty
+        val results = query.from(e).where(e.id.eq(id)).list(e)
 
-            var water = 0
-            var lava = 0
-            var milk = 0
+        var water = 0
+        var lava = 0
+        var milk = 0
 
-            for (bucketEmpty in results) {
-                val code = BucketCode.fromCode(bucketEmpty.type) ?: continue
+        for (bucketEmpty in results) {
+            val code = BucketCode.fromCode(bucketEmpty.type) ?: continue
 
-                when (code) {
-                    BucketCode.WATER -> water += bucketEmpty.amount
-                    BucketCode.LAVA -> lava += bucketEmpty.amount
-                    BucketCode.MILK -> milk += bucketEmpty.amount
-                }
+            when (code) {
+                BucketCode.WATER -> water += bucketEmpty.amount
+                BucketCode.LAVA -> lava += bucketEmpty.amount
+                BucketCode.MILK -> milk += bucketEmpty.amount
             }
+        }
 
-            val total = water + lava + milk
+        val total = water + lava + milk
 
-            return ResponseBuilderKt.build(plugin) {
-                playerName { name }
-                statName { "Buckets Emptied" }
-                stats["Total"] = df.format(total)
-                stats["Water"] = df.format(water)
-                stats["Lava"] = df.format(lava)
-                stats["Milk"] = df.format(milk)
-            }
-        } catch (e: Exception) {
-            return ResponseBuilderKt.build(plugin) {
-                playerName { name }
-                statName { "Buckets Emptied" }
-                stats["Total"] = 0.toString()
-                stats["Water"] = 0.toString()
-                stats["Lava"] = 0.toString()
-                stats["Milk"] = 0.toString()
-            }
+        return ResponseBuilderKt.build(plugin) {
+            playerName { name }
+            statName { "Buckets Emptied" }
+            stats["Total"] = df.format(total)
+            stats["Water"] = df.format(water)
+            stats["Lava"] = df.format(lava)
+            stats["Milk"] = df.format(milk)
         }
     }
 
