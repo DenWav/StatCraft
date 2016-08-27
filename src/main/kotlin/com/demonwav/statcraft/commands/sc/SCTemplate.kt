@@ -31,7 +31,7 @@ abstract class SCTemplate(@JvmField protected val plugin: StatCraft) {
 
     abstract fun hasPermission(sender: CommandSender, args: Array<out String>?): Boolean
 
-    abstract fun playerStatResponse(name: String, args: List<String>, connection: Connection): String
+    abstract fun playerStatResponse(name: String, args: List<String>, connection: Connection): String?
 
     abstract fun serverStatListResponse(num: Long, args: List<String>, connection: Connection): String?
 
