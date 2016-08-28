@@ -260,3 +260,4 @@ local.properties
 
 # sftp configuration file
 sftp-config.json
+/src/main/resources/rebel.xml
