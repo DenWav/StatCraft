@@ -10,9 +10,9 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.commands.SecondaryArgument
+import com.demonwav.statcraft.distanceUnits
 import com.demonwav.statcraft.magic.ProjectilesCode
 import com.demonwav.statcraft.querydsl.QPlayers
 import com.demonwav.statcraft.querydsl.QProjectiles
@@ -43,12 +43,12 @@ class SCSnowballs(plugin: StatCraft) : SCTemplate(plugin) {
         val distance = tuple[p.totalDistance] ?: 0
         val maxThrow = tuple[p.maxThrow] ?: 0
 
-        return ResponseBuilderKt.build(plugin) {
+        return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Snowballs Thrown" }
             stats["Thrown"] = df.format(amount)
-            stats["Distance"] = Util.distanceUnits(distance)
-            stats["Farthest Thrown"] = Util.distanceUnits(maxThrow)
+            stats["Distance"] = distanceUnits(distance)
+            stats["Farthest Thrown"] = distanceUnits(maxThrow)
         }
     }
 
@@ -89,7 +89,7 @@ class SCSnowballs(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(p)
-            .leftJoin(pl)
+            .innerJoin(pl)
             .on(p.id.eq(pl.id))
             .where(p.type.eq(ProjectilesCode.SNOWBALL.code))
             .groupBy(pl.name)
@@ -128,11 +128,11 @@ class SCSnowballs(plugin: StatCraft) : SCTemplate(plugin) {
         }
     }
 
-    private fun emptyResponse(name: String) = ResponseBuilderKt.build(plugin) {
+    private fun emptyResponse(name: String) = ResponseBuilder.build(plugin) {
         playerName { name }
         statName { "Snowballs Thrown" }
         stats["Thrown"] = "0"
-        stats["Distance"] = Util.distanceUnits(0)
-        stats["Farthest Throw"] = Util.distanceUnits(0)
+        stats["Distance"] = distanceUnits(0)
+        stats["Farthest Throw"] = distanceUnits(0)
     }
 }

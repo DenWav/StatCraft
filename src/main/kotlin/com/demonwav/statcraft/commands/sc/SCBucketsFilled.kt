@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.magic.BucketCode
 import com.demonwav.statcraft.querydsl.QBucketFill
 import com.demonwav.statcraft.querydsl.QPlayers
@@ -26,7 +26,7 @@ class SCBucketsFilled(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.bucketsfilled")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+        val id = getId(name) ?: return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Buckets Filled" }
             stats["Total"] = "0"
@@ -56,7 +56,7 @@ class SCBucketsFilled(plugin: StatCraft) : SCTemplate(plugin) {
         }
         val total = water + lava + milk
 
-        return ResponseBuilderKt.build(plugin) {
+        return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Buckets Filled" }
             stats["Total"] = df.format(total)
@@ -74,7 +74,7 @@ class SCBucketsFilled(plugin: StatCraft) : SCTemplate(plugin) {
 
         val result = query
             .from(f)
-            .leftJoin(p)
+            .innerJoin(p)
             .on(f.id.eq(p.id))
             .groupBy(p.name)
             .orderBy(f.amount.sum().desc())

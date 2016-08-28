@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.listeners
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
+import com.demonwav.statcraft.damageValue
 import com.demonwav.statcraft.magic.FishCode
 import com.demonwav.statcraft.querydsl.QFishCaught
 import org.bukkit.Material
@@ -34,7 +34,7 @@ class FishCaughtListener(private val plugin: StatCraft) : Listener {
 
         if (caught is Item) {
             val itemId = caught.itemStack.typeId.toShort()
-            val damage = Util.damageValue(itemId, caught.itemStack.data.data.toShort())
+            val damage = damageValue(itemId, caught.itemStack.data.data.toShort())
 
             val code = when (caught.itemStack.type) {
                 Material.RAW_FISH ->

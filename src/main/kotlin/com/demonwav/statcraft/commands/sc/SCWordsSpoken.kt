@@ -11,34 +11,35 @@ package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
 import com.demonwav.statcraft.commands.ResponseBuilder
-import com.demonwav.statcraft.querydsl.QItemDrops
+import com.demonwav.statcraft.querydsl.QMessagesSpoken
 import com.demonwav.statcraft.querydsl.QPlayers
+import com.demonwav.statcraft.querydsl.QWordFrequency
 import org.bukkit.command.CommandSender
 import java.sql.Connection
 
-class SCItemsDropped(plugin: StatCraft) : SCTemplate(plugin) {
+class SCWordsSpoken(plugin: StatCraft) : SCTemplate(plugin) {
 
     init {
-        plugin.baseCommand.registerCommand("itemsdropped", this)
+        plugin.baseCommand.registerCommand("wordsspoken", this)
     }
 
-    override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.itemsdropped")
+    override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.wordsspoken")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
         val id = getId(name) ?: return ResponseBuilder.build(plugin) {
             playerName { name }
-            statName { "Items Dropped" }
+            statName { "Words Spoken" }
             stats["Total"] = "0"
         }
 
         val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-        val i = QItemDrops.itemDrops
-        val result = query.from(i).where(i.id.eq(id)).uniqueResult(i.amount.sum()) ?: 0
+        val m = QMessagesSpoken.messagesSpoken
+        val result = query.from(m).where(m.id.eq(id)).uniqueResult(m.wordsSpoken.sum()) ?: 0
 
         return ResponseBuilder.build(plugin) {
             playerName { name }
-            statName { "Items Dropped" }
+            statName { "Words Spoken" }
             stats["Total"] = df.format(result)
         }
     }
@@ -46,18 +47,18 @@ class SCItemsDropped(plugin: StatCraft) : SCTemplate(plugin) {
     override fun serverStatListResponse(num: Long, args: List<String>, connection: Connection): String {
         val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-        val i = QItemDrops.itemDrops
+        val m = QMessagesSpoken.messagesSpoken
         val p = QPlayers.players
 
         val list = query
-            .from(i)
+            .from(m)
             .innerJoin(p)
-            .on(i.id.eq(p.id))
+            .on(m.id.eq(p.id))
             .groupBy(p.name)
-            .orderBy(i.amount.sum().desc())
+            .orderBy(m.amount.desc())
             .limit(num)
-            .list(p.name, i.amount.sum())
+            .list(p.name, m.amount)
 
-        return topListResponse("Items Dropped", list)
+        return topListResponse("Words Spoken", list)
     }
 }

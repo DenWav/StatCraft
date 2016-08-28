@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.commands.TimeResponseBuilderKt
+import com.demonwav.statcraft.commands.TimeResponseBuilder
 import com.demonwav.statcraft.querydsl.QPlayTime
 import com.demonwav.statcraft.querydsl.QPlayers
 import com.demonwav.statcraft.querydsl.QSeen
@@ -26,7 +26,7 @@ class SCPlayTime(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.playtime")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return TimeResponseBuilderKt.build(plugin) {
+        val id = getId(name) ?: return TimeResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Play Time" }
             stats["Total"] = "0"
@@ -53,7 +53,7 @@ class SCPlayTime(plugin: StatCraft) : SCTemplate(plugin) {
             }
         }
 
-        return TimeResponseBuilderKt.build(plugin) {
+        return TimeResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Play Time" }
             stats["Total"] = result.toString()
@@ -68,7 +68,7 @@ class SCPlayTime(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(t)
-            .leftJoin(p)
+            .innerJoin(p)
             .on(t.id.eq(p.id))
             .groupBy(p.name)
             .orderBy(t.amount.sum().desc())

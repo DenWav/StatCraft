@@ -10,7 +10,8 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
+import com.demonwav.statcraft.distanceUnits
+import com.demonwav.statcraft.transformTime
 import com.mysema.query.Tuple
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
@@ -100,7 +101,7 @@ abstract class SCTemplate(@JvmField protected val plugin: StatCraft) {
                 .append(ChatColor.WHITE)
                 .append(": ")
                 .append(ChatColor.valueOf(plugin.config.colors.statValue))
-                .append(Util.transformTime(res ?: 0))
+                .append(transformTime(res ?: 0))
                 .append(ChatColor.RESET)
         }
 
@@ -138,7 +139,7 @@ abstract class SCTemplate(@JvmField protected val plugin: StatCraft) {
                 .append(ChatColor.WHITE)
                 .append(": ")
                 .append(ChatColor.valueOf(plugin.config.colors.statValue))
-                .append(Util.distanceUnits(res ?: 0))
+                .append(distanceUnits(res ?: 0))
                 .append(ChatColor.RESET)
         }
 

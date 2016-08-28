@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.magic.FishCode
 import com.demonwav.statcraft.querydsl.QFishCaught
 import com.demonwav.statcraft.querydsl.QPlayers
@@ -26,7 +26,7 @@ class SCFishCaught(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.fishcaught")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+        val id = getId(name) ?: return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Fish Caught" }
             stats["Total"] = "0"
@@ -60,7 +60,7 @@ class SCFishCaught(plugin: StatCraft) : SCTemplate(plugin) {
 
         val total = fish + treasure + junk
 
-        return ResponseBuilderKt.build(plugin) {
+        return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Fish Caught" }
             stats["Total"] = df.format(total)
@@ -78,7 +78,7 @@ class SCFishCaught(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(f)
-            .leftJoin(p)
+            .innerJoin(p)
             .on(f.id.eq(p.id))
             .groupBy(p.name)
             .orderBy(f.amount.sum().desc())

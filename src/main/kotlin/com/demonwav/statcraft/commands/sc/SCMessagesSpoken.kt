@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.querydsl.QMessagesSpoken
 import com.demonwav.statcraft.querydsl.QPlayers
 import org.bukkit.command.CommandSender
@@ -25,7 +25,7 @@ class SCMessagesSpoken(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.messgesspoken")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+        val id = getId(name) ?: return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Messages Spoken" }
             stats["Total"] = "0"
@@ -36,7 +36,7 @@ class SCMessagesSpoken(plugin: StatCraft) : SCTemplate(plugin) {
         val m = QMessagesSpoken.messagesSpoken
         val result = query.from(m).where(m.id.eq(id)).uniqueResult(m.amount.sum()) ?: 0
 
-        return ResponseBuilderKt.build(plugin) {
+        return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Messages Spoken" }
             stats["Total"] = df.format(result)
@@ -51,7 +51,7 @@ class SCMessagesSpoken(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(m)
-            .leftJoin(p)
+            .innerJoin(p)
             .on(m.id.eq(p.id))
             .groupBy(p.name)
             .orderBy(m.amount.sum().desc())

@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.listeners
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
+import com.demonwav.statcraft.damageValue
 import com.demonwav.statcraft.querydsl.QItemDrops
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -23,7 +23,7 @@ class ItemDropListener(private val plugin: StatCraft) : Listener {
         val uuid = event.player.uniqueId
         val worldName = event.player.world.name
         val itemid = event.itemDrop.itemStack.typeId.toShort()
-        val damage = Util.damageValue(itemid, event.itemDrop.itemStack.data.data.toShort())
+        val damage = damageValue(itemid, event.itemDrop.itemStack.data.data.toShort())
         val amount = event.itemDrop.itemStack.amount
 
         plugin.threadManager.schedule<QItemDrops>(

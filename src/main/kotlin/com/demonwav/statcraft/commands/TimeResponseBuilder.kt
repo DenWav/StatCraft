@@ -11,23 +11,10 @@ package com.demonwav.statcraft.commands
 
 import com.demonwav.statcraft.StatCraft
 import com.demonwav.statcraft.iter
+import com.demonwav.statcraft.transformTime
 import org.bukkit.ChatColor
-import java.util.LinkedHashMap
 
-// We'll remove the Kt once we've totally moved away from Java
-open class ResponseBuilderKt(protected val plugin: StatCraft) {
-
-    protected var name = ""
-    protected var statName = ""
-    val stats = LinkedHashMap<String, String>()
-
-    inline fun playerName(name: () -> String) {
-        this.name = name()
-    }
-
-    inline fun statName(statName: () -> String) {
-        this.statName = statName()
-    }
+class TimeResponseBuilder(plugin: StatCraft) : ResponseBuilder(plugin) {
 
     override fun toString(): String {
         val sb = StringBuilder()
@@ -44,7 +31,7 @@ open class ResponseBuilderKt(protected val plugin: StatCraft) {
                 .append(entry.key)
                 .append(": ")
                 .append(ChatColor.valueOf(plugin.config.colors.statValue))
-                .append(entry.value)
+                .append(transformTime(entry.value.toInt()))
 
             if (hasNext()) {
                 sb.append(ChatColor.valueOf(plugin.config.colors.statSeparator)).append(" | ")
@@ -55,8 +42,8 @@ open class ResponseBuilderKt(protected val plugin: StatCraft) {
     }
 
     companion object {
-        inline fun build(plugin: StatCraft, builder: ResponseBuilderKt.() -> Unit): String {
-            val inst = ResponseBuilderKt(plugin)
+        inline fun build(plugin: StatCraft, builder: TimeResponseBuilder.() -> Unit): String {
+            val inst = TimeResponseBuilder(plugin)
 
             inst.builder()
             return inst.toString()

@@ -10,9 +10,9 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.commands.SecondaryArgument
+import com.demonwav.statcraft.distanceUnits
 import com.demonwav.statcraft.magic.MoveCode
 import com.demonwav.statcraft.querydsl.QMove
 import com.demonwav.statcraft.querydsl.QPlayers
@@ -61,10 +61,10 @@ class SCMove(plugin: StatCraft) : SCTemplate(plugin) {
             if (args.size == 0) {
                 val result = query.from(m).where(m.id.eq(id)).uniqueResult(m.distance.sum()) ?: throw Exception()
 
-                return ResponseBuilderKt.build(plugin) {
+                return ResponseBuilder.build(plugin) {
                     playerName { name }
                     statName { "Move" }
-                    stats["Total"] = Util.distanceUnits(result)
+                    stats["Total"] = distanceUnits(result)
                 }
             } else {
                 arg = args[0]
@@ -98,7 +98,7 @@ class SCMove(plugin: StatCraft) : SCTemplate(plugin) {
                             .append(WordUtils.capitalizeFully(code.name))
                             .append(": ")
                             .append(ChatColor.valueOf(plugin.config.colors.statValue))
-                            .append(Util.distanceUnits(distance))
+                            .append(distanceUnits(distance))
 
                     }
 
@@ -110,18 +110,18 @@ class SCMove(plugin: StatCraft) : SCTemplate(plugin) {
                         .where(m.id.eq(id), m.vehicle.eq(code.code))
                         .uniqueResult(m.distance.sum()) ?: throw Exception()
 
-                    return ResponseBuilderKt.build(plugin) {
+                    return ResponseBuilder.build(plugin) {
                         playerName { name }
                         statName { "Move" }
-                        stats[WordUtils.capitalizeFully(arg)] = Util.distanceUnits(result)
+                        stats[WordUtils.capitalizeFully(arg)] = distanceUnits(result)
                     }
                 }
             }
         } catch (e: Exception) {
-            return ResponseBuilderKt.build(plugin) {
+            return ResponseBuilder.build(plugin) {
                 playerName { name }
                 statName { "Move" }
-                stats[if (arg == null) "Total" else WordUtils.capitalizeFully(arg)] = Util.distanceUnits(0)
+                stats[if (arg == null) "Total" else WordUtils.capitalizeFully(arg)] = distanceUnits(0)
             }
         }
     }
@@ -138,7 +138,7 @@ class SCMove(plugin: StatCraft) : SCTemplate(plugin) {
         val list = if (args.size == 0) {
             query
                 .from(m)
-                .leftJoin(p)
+                .innerJoin(p)
                 .on(m.id.eq(p.id))
                 .groupBy(p.name)
                 .orderBy(m.distance.sum().desc())
@@ -150,7 +150,7 @@ class SCMove(plugin: StatCraft) : SCTemplate(plugin) {
             query
                 .from(m)
                 .where(m.vehicle.eq(code.code))
-                .leftJoin(p)
+                .innerJoin(p)
                 .on(m.id.eq(p.id))
                 .groupBy(p.name)
                 .orderBy(m.distance.sum().desc())

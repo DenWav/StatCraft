@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.listeners
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
+import com.demonwav.statcraft.damageValue
 import com.demonwav.statcraft.querydsl.QItemsCrafted
 import com.google.common.base.Objects
 import org.bukkit.entity.HumanEntity
@@ -50,7 +50,7 @@ class ItemsCraftedListener(private val plugin: StatCraft) : Listener {
     }
 
     private fun updateData(itemid: Short, initDamage: Short, uuid: UUID, worldName: String, amount: Int) {
-        val damage = Util.damageValue(itemid, initDamage)
+        val damage = damageValue(itemid, initDamage)
         plugin.threadManager.schedule<QItemsCrafted>(
             uuid, worldName,
             { i, clause, id, worldId ->

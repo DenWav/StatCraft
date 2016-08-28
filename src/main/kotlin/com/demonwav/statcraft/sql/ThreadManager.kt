@@ -45,42 +45,6 @@ class ThreadManager(val plugin: StatCraft) : Runnable, Closeable {
         }
     }
 
-    // java style, until everything is converted to kotlin
-    fun <T : RelationalPath<*>> schedule(clazz: Class<T>,
-                                         playerId: UUID,
-                                         worldName: String,
-                                         insertRunner: QueryIdRunner<T, SQLInsertClause>,
-                                         updateRunner: QueryIdRunner<T, SQLUpdateClause>) {
-
-        scheduleRaw(clazz) { connection ->
-            val path = clazz.getConstructor(String::class.java).newInstance(clazz.simpleName)
-            path.runQuery(playerId, worldName, { t, sqlInsertClause, id, worldId ->
-                insertRunner.run(t, sqlInsertClause, id, worldId)
-            }, { t, sqlUpdateClause, id, worldId ->
-                updateRunner.run(t, sqlUpdateClause, id, worldId)
-            }, connection, plugin)
-        }
-    }
-
-    fun <T : RelationalPath<*>, R> schedule(clazz: Class<T>,
-                                            playerId: UUID,
-                                            worldName: String,
-                                            workBefore: (T, SQLQuery, Int, Int) -> R,
-                                            insertRunner: QueryIdRunnerMap<T, SQLInsertClause, R>,
-                                            updateRunner: QueryIdRunnerMap<T, SQLUpdateClause, R>) {
-
-        scheduleRaw(clazz) { connection ->
-            val path = clazz.getConstructor(String::class.java).newInstance(clazz.simpleName)
-            path.runQuery(playerId, worldName, workBefore,
-            { t, sqlInsertClause, id, worldId, r ->
-                insertRunner.run(t, sqlInsertClause, id, worldId, r)
-            }, { t, sqlUpdateClause, id, worldId, r ->
-                updateRunner.run(t, sqlUpdateClause, id, worldId, r)
-            }, connection, plugin)
-        }
-    }
-
-    // kotlin style
     inline fun <reified T : RelationalPath<*>> schedule(playerId: UUID,
                                                         worldName: String,
                                                         /* TODO crossinline */ noinline insertRunner: (T, SQLInsertClause, Int, Int) -> Unit,

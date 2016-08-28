@@ -10,54 +10,54 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.commands.TimeResponseBuilder
-import com.demonwav.statcraft.querydsl.QOnFire
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.querydsl.QPlayers
+import com.demonwav.statcraft.querydsl.QToolsBroken
 import org.bukkit.command.CommandSender
 import java.sql.Connection
 
-class SCOnFire(plugin: StatCraft) : SCTemplate(plugin) {
+class SCToolsBroken(plugin: StatCraft) : SCTemplate(plugin) {
 
     init {
-        plugin.baseCommand.registerCommand("onfire", this)
+        plugin.baseCommand.registerCommand("toolsbroken", this)
     }
 
-    override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.onfire")
+    override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.toolsbroken")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return TimeResponseBuilder.build(plugin) {
+        val id = getId(name) ?: return ResponseBuilder.build(plugin) {
             playerName { name }
-            statName { "On Fire" }
+            statName { "Tools Broken" }
             stats["Total"] = "0"
         }
 
         val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-        val o = QOnFire.onFire
-        val result = query.from(o).where(o.id.eq(id)).uniqueResult(o.time.sum()) ?: 0
+        val t = QToolsBroken.toolsBroken
+        val result = query.from(t).where(t.id.eq(id)).uniqueResult(t.amount.sum())
 
-        return TimeResponseBuilder.build(plugin) {
+        return ResponseBuilder.build(plugin) {
             playerName { name }
-            statName { "On Fire" }
-            stats["Total"] = result.toString()
+            statName { "Tools Broken" }
+            stats["Total"] = df.format(result)
         }
     }
 
     override fun serverStatListResponse(num: Long, args: List<String>, connection: Connection): String {
         val query = plugin.databaseManager.getNewQuery(connection) ?: return databaseError
 
-        val o = QOnFire.onFire
+        val t = QToolsBroken.toolsBroken
         val p = QPlayers.players
 
         val list = query
-            .from(o)
+            .from(t)
             .innerJoin(p)
-            .on(o.id.eq(p.id))
+            .on(t.id.eq(p.id))
             .groupBy(p.name)
-            .orderBy(o.time.sum().desc())
+            .orderBy(t.amount.sum().desc())
             .limit(num)
-            .list(p.name, o.time.sum())
+            .list(p.name, t.amount.sum())
 
-        return topListTimeResponse("On Fire", list)
+        return topListResponse("Tools Broken", list)
     }
 }

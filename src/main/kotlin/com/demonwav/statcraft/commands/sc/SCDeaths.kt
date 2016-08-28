@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.querydsl.QDeath
 import com.demonwav.statcraft.querydsl.QPlayers
 import org.bukkit.command.CommandSender
@@ -25,7 +25,7 @@ class SCDeaths(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.deaths")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+        val id = getId(name) ?: return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Deaths" }
             stats["Total"] = "0"
@@ -36,7 +36,7 @@ class SCDeaths(plugin: StatCraft) : SCTemplate(plugin) {
 
         val total = query.from(d).where(d.id.eq(id)).uniqueResult(d.amount.sum()) ?: 0
 
-        return ResponseBuilderKt.build(plugin) {
+        return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Deaths" }
             stats["Total"] = df.format(total)
@@ -51,7 +51,7 @@ class SCDeaths(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(d)
-            .leftJoin(p)
+            .innerJoin(p)
             .on(d.id.eq(p.id))
             .groupBy(p.name)
             .orderBy(d.amount.sum().desc())

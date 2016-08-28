@@ -10,9 +10,9 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.commands.SecondaryArgument
+import com.demonwav.statcraft.distanceUnits
 import com.demonwav.statcraft.magic.ProjectilesCode
 import com.demonwav.statcraft.querydsl.QPlayers
 import com.demonwav.statcraft.querydsl.QProjectiles
@@ -90,20 +90,20 @@ class SCEggsThrown(plugin: StatCraft) : SCTemplate(plugin) {
         }
 
         when (arg) {
-            "distance" -> return ResponseBuilderKt.build(plugin) {
+            "distance" -> return ResponseBuilder.build(plugin) {
                 playerName { name }
                 statName { "Eggs Thrown Total Distance" }
-                stats["Total"] = Util.distanceUnits(hatchedDistance + unHatchedDistance)
-                stats["Hatched"] = Util.distanceUnits(hatchedDistance)
-                stats["Not Hatched"] = Util.distanceUnits(unHatchedDistance)
+                stats["Total"] = distanceUnits(hatchedDistance + unHatchedDistance)
+                stats["Hatched"] = distanceUnits(hatchedDistance)
+                stats["Not Hatched"] = distanceUnits(unHatchedDistance)
             }
-            "farthest" -> return ResponseBuilderKt.build(plugin) {
+            "farthest" -> return ResponseBuilder.build(plugin) {
                 playerName { name }
                 statName { "Eggs Thrown Farthest Distance" }
-                stats["Hatched"] = Util.distanceUnits(hatchedMaxThrow)
-                stats["Not Hatched"] = Util.distanceUnits(unHatchedMaxThrow)
+                stats["Hatched"] = distanceUnits(hatchedMaxThrow)
+                stats["Not Hatched"] = distanceUnits(unHatchedMaxThrow)
             }
-            else -> return ResponseBuilderKt.build(plugin) {
+            else -> return ResponseBuilder.build(plugin) {
                 playerName { name }
                 statName { "Eggs Thrown" }
                 stats["Total"] = df.format(total)
@@ -155,7 +155,7 @@ class SCEggsThrown(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(p)
-            .leftJoin(pl)
+            .innerJoin(pl)
             .on(p.id.eq(pl.id))
             .where(p.type.eq(code.code))
             .groupBy(pl.name)

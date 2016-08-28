@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.commands.TimeResponseBuilderKt
+import com.demonwav.statcraft.commands.TimeResponseBuilder
 import com.demonwav.statcraft.querydsl.QPlayers
 import com.demonwav.statcraft.querydsl.QSleep
 import org.bukkit.command.CommandSender
@@ -25,7 +25,7 @@ class SCTimeSlept(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.bed")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return TimeResponseBuilderKt.build(plugin) {
+        val id = getId(name) ?: return TimeResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Time Slept" }
             stats["Total"] = "0"
@@ -52,7 +52,7 @@ class SCTimeSlept(plugin: StatCraft) : SCTemplate(plugin) {
             }
         }
 
-        return TimeResponseBuilderKt.build(plugin) {
+        return TimeResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Time Slept" }
             stats["Total"] = result.toString()
@@ -67,7 +67,7 @@ class SCTimeSlept(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(s)
-            .leftJoin(p)
+            .innerJoin(p)
             .on(s.id.eq(p.id))
             .groupBy(p.name)
             .orderBy(s.timeSlept.sum().desc())

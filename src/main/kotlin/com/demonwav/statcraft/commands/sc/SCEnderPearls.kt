@@ -10,9 +10,9 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.commands.SecondaryArgument
+import com.demonwav.statcraft.distanceUnits
 import com.demonwav.statcraft.magic.ProjectilesCode
 import com.demonwav.statcraft.querydsl.QPlayers
 import com.demonwav.statcraft.querydsl.QProjectiles
@@ -30,7 +30,7 @@ class SCEnderPearls(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.enderpearls")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+        val id = getId(name) ?: return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Ender Pearls Thrown" }
             stats["Thrown"] = "0"
@@ -48,12 +48,12 @@ class SCEnderPearls(plugin: StatCraft) : SCTemplate(plugin) {
         val distance = tuple.get(p.totalDistance) ?: 0
         val maxThrow = tuple.get(p.maxThrow) ?: 0
 
-        return ResponseBuilderKt.build(plugin) {
+        return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Ender Pearls Thrown" }
             stats["Total"] = df.format(amount)
-            stats["Distance"] = Util.distanceUnits(distance)
-            stats["Farthest Throw"] = Util.distanceUnits(maxThrow)
+            stats["Distance"] = distanceUnits(distance)
+            stats["Farthest Throw"] = distanceUnits(maxThrow)
         }
     }
 
@@ -93,7 +93,7 @@ class SCEnderPearls(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(p)
-            .leftJoin(pl)
+            .innerJoin(pl)
             .on(p.id.eq(pl.id))
             .where(p.type.eq(ProjectilesCode.ENDER_PEARL.code))
             .groupBy(pl.name)

@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.querydsl.QBlockBreak
 import com.demonwav.statcraft.querydsl.QPlayers
 import org.bukkit.command.CommandSender
@@ -25,7 +25,7 @@ class SCBlocksBroken(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.blocksbroken")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+        val id = getId(name) ?: return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "BlocksBroken" }
             stats["Total"] = "0"
@@ -36,7 +36,7 @@ class SCBlocksBroken(plugin: StatCraft) : SCTemplate(plugin) {
         val b = QBlockBreak.blockBreak
         val total = query.from(b).where(b.id.eq(id)).uniqueResult(b.amount.sum()) ?: 0
 
-        return ResponseBuilderKt.build(plugin) {
+        return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "BlocksBroken" }
             stats["Total"] = df.format(total)
@@ -51,7 +51,7 @@ class SCBlocksBroken(plugin: StatCraft) : SCTemplate(plugin) {
 
         val result = query
             .from(b)
-            .leftJoin(p)
+            .innerJoin(p)
             .on(b.id.eq(p.id))
             .groupBy(p.name)
             .orderBy(b.amount.sum().desc())

@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.listeners
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
+import com.demonwav.statcraft.damageValue
 import com.demonwav.statcraft.querydsl.QItemPickups
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -21,7 +21,7 @@ class ItemPickUpListener(private val plugin: StatCraft) : Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onItemPickup(event: PlayerPickupItemEvent) {
         val itemid = event.item.itemStack.typeId.toShort()
-        val damage = Util.damageValue(itemid, event.item.itemStack.data.data.toShort())
+        val damage = damageValue(itemid, event.item.itemStack.data.data.toShort())
         val uuid = event.player.uniqueId
         val worldName = event.player.world.name
         val amount = event.item.itemStack.amount

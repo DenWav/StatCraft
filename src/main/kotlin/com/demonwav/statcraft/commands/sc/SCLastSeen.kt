@@ -10,8 +10,8 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
 import com.demonwav.statcraft.querydsl.QSeen
+import com.demonwav.statcraft.transformTime
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
 import java.sql.Connection
@@ -60,7 +60,7 @@ class SCLastSeen(plugin: StatCraft) : SCTemplate(plugin) {
                 val now = Date()
                 val difference = now.time - date.time
 
-                val time = "${format.format(date)} (${Util.transformTime((difference / 1000L).toInt()).split(",".toRegex())[0]} ago)"
+                val time = "${format.format(date)} (${transformTime((difference / 1000L).toInt()).split(",".toRegex())[0]} ago)"
 
                 return "${ChatColor.valueOf(plugin.config.colors.playerName)}$name${ChatColor.valueOf(plugin.config.colors.statTitle)} " +
                     "- Last Seen - ${ChatColor.valueOf(plugin.config.colors.statValue)}$time"

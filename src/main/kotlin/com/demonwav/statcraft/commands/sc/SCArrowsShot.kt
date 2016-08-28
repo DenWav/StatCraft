@@ -10,9 +10,9 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.commands.SecondaryArgument
+import com.demonwav.statcraft.distanceUnits
 import com.demonwav.statcraft.magic.ProjectilesCode
 import com.demonwav.statcraft.querydsl.QPlayers
 import com.demonwav.statcraft.querydsl.QProjectiles
@@ -90,24 +90,24 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
 
         when (arg) {
             "distance" -> {
-                return ResponseBuilderKt.build(plugin) {
+                return ResponseBuilder.build(plugin) {
                     playerName { name }
                     statName { "Arrows Shot Total Distance" }
-                    stats["Total"] = Util.distanceUnits(normalDistance + flamingDistance)
-                    stats["Normal"] = Util.distanceUnits(normalDistance)
-                    stats["Flaming"] = Util.distanceUnits(flamingDistance)
+                    stats["Total"] = distanceUnits(normalDistance + flamingDistance)
+                    stats["Normal"] = distanceUnits(normalDistance)
+                    stats["Flaming"] = distanceUnits(flamingDistance)
                 }
             }
             "farthest" -> {
-                return ResponseBuilderKt.build(plugin) {
+                return ResponseBuilder.build(plugin) {
                     playerName { name }
                     statName { "Farthest Arrows Shot" }
-                    stats["Normal"] = Util.distanceUnits(normalMaxThrow)
-                    stats["Flaming"] = Util.distanceUnits(flamingMaxThrow)
+                    stats["Normal"] = distanceUnits(normalMaxThrow)
+                    stats["Flaming"] = distanceUnits(flamingMaxThrow)
                 }
             }
             else -> {
-                return ResponseBuilderKt.build(plugin) {
+                return ResponseBuilder.build(plugin) {
                     playerName { name }
                     statName { "Arrows Shot" }
                     stats["Total"] = df.format(total)
@@ -158,7 +158,7 @@ class SCArrowsShot(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(p)
-            .leftJoin(pl)
+            .innerJoin(pl)
             .on(p.id.eq(pl.id))
             .where(p.type.eq(code.code))
             .groupBy(pl.name)

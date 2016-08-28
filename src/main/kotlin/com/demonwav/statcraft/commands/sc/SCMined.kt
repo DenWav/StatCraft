@@ -11,7 +11,7 @@ package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
 import com.demonwav.statcraft.commands.CustomResponse
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.querydsl.QBlockBreak
 import com.demonwav.statcraft.use
 import org.apache.commons.lang.WordUtils
@@ -110,13 +110,13 @@ class SCMined(plugin: StatCraft) : SCTemplate(plugin), CustomResponse {
                                 .uniqueResult(b.amount.sum())
                         } ?: 0
 
-                        ResponseBuilderKt.build(plugin) {
+                        ResponseBuilder.build(plugin) {
                             playerName { name }
                             statName { WordUtils.capitalizeFully(type) + " mined" }
                             stats["Total"] = df.format(result)
                         }
                     } catch (e: Exception) {
-                        ResponseBuilderKt.build(plugin) {
+                        ResponseBuilder.build(plugin) {
                             playerName { name }
                             statName { WordUtils.capitalizeFully(type) + " mined" }
                             stats["Total"] = "0"

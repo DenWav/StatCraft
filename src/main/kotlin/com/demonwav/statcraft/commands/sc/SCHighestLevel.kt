@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.commands.sc
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.commands.ResponseBuilderKt
+import com.demonwav.statcraft.commands.ResponseBuilder
 import com.demonwav.statcraft.querydsl.QHighestLevel
 import com.demonwav.statcraft.querydsl.QPlayers
 import org.bukkit.command.CommandSender
@@ -25,7 +25,7 @@ class SCHighestLevel(plugin: StatCraft) : SCTemplate(plugin) {
     override fun hasPermission(sender: CommandSender, args: Array<out String>?) = sender.hasPermission("statcraft.user.highestlevel")
 
     override fun playerStatResponse(name: String, args: List<String>, connection: Connection): String {
-        val id = getId(name) ?: return ResponseBuilderKt.build(plugin) {
+        val id = getId(name) ?: return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Highest Level" }
             stats["Level"] = "0"
@@ -36,7 +36,7 @@ class SCHighestLevel(plugin: StatCraft) : SCTemplate(plugin) {
         val h = QHighestLevel.highestLevel
         val result = query.from(h).where(h.id.eq(id)).uniqueResult(h.level) ?: 0
 
-        return ResponseBuilderKt.build(plugin) {
+        return ResponseBuilder.build(plugin) {
             playerName { name }
             statName { "Highest Level" }
             stats["Level"] = df.format(result)
@@ -51,7 +51,7 @@ class SCHighestLevel(plugin: StatCraft) : SCTemplate(plugin) {
 
         val list = query
             .from(h)
-            .leftJoin(p)
+            .innerJoin(p)
             .on(h.id.eq(p.id))
             .groupBy(p.name)
             .orderBy(h.level.desc())

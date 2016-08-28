@@ -10,7 +10,7 @@
 package com.demonwav.statcraft.listeners
 
 import com.demonwav.statcraft.StatCraft
-import com.demonwav.statcraft.Util
+import com.demonwav.statcraft.damageValue
 import com.demonwav.statcraft.querydsl.QBlockBreak
 import com.demonwav.statcraft.querydsl.QBlockPlace
 import org.bukkit.event.EventHandler
@@ -24,7 +24,7 @@ class BlockListener(private val plugin: StatCraft) : Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onBlockBreak(event: BlockBreakEvent) {
         val blockid = event.block.typeId.toShort()
-        val damage = Util.damageValue(blockid, event.block.data.toShort())
+        val damage = damageValue(blockid, event.block.data.toShort())
         val uuid = event.player.uniqueId
         val worldName = event.player.world.name
 
@@ -42,7 +42,7 @@ class BlockListener(private val plugin: StatCraft) : Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onBlockPlace(event: BlockPlaceEvent) {
         val blockid = event.block.typeId.toShort()
-        val damage = Util.damageValue(blockid, event.block.data.toShort())
+        val damage = damageValue(blockid, event.block.data.toShort())
         val uuid = event.player.uniqueId
         val worldName = event.player.world.name
 
