@@ -18,9 +18,8 @@ import org.bukkit.command.CommandSender
 import java.sql.Connection
 import java.text.DecimalFormat
 
-abstract class SCTemplate(@JvmField protected val plugin: StatCraft) {
+abstract class SCTemplate(protected val plugin: StatCraft) {
 
-    @JvmField
     protected val df = DecimalFormat("#,###")
     protected val databaseError = "Sorry, there seems to be an issue connecting to the database right now."
 
